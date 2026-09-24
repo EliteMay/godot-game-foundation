@@ -124,27 +124,43 @@ RepositoryがGodot 4.7.2でCold Startでき、Foundation本体とGame固有領�
 
 ## Phase 3 — Input System
 
-- [ ] Input Action Contract
+状態: **完了 / Headless Smoke Test済み**
+
+- [x] Input Action Contract
   - 担当: ChatGPT
   - Game固有Action名をFoundationへ固定しない
-- [ ] Key Rebind
+  - Game側がAction名、Deadzone、Default EventをDictionary Contractとして渡す
+  - Contract外のActionをFoundationが勝手に作成・変更しない
+  - 不正Action名、Deadzone、Event Descriptorを適用前に拒否する
+- [x] Key Rebind
   - 担当: ChatGPT
-  - InputMapのBindingを変更・保存・復元できるようにする
-- [ ] Reset to Default
+  - Contractで宣言されたActionだけをInputMap上でRebindできる
+  - Keyboard / Mouse / Gamepad Eventを共通DescriptorへSerialize / Deserializeする
+  - 現在Bindingを `user://input_bindings.json` へ保存し、次回起動時に復元できる
+  - 保存Fileに存在しない新ActionはGame ContractのDefaultを使う
+- [x] Reset to Default
   - 担当: ChatGPT
-  - Gameが定義したDefault Bindingへ戻せるようにする
-- [ ] Keyboard / Mouse
+  - Gameが定義したDefault BindingへAction単位ではなくContract全体を安全に戻せる
+  - InputMapにActionが無ければ作成し、既存ActionはDeadzoneとEventをDefaultへ置換する
+  - Binding Fileが無い・壊れている場合もDefaultへFallbackする
+- [x] Keyboard / Mouse
   - 担当: ChatGPT
-  - Prototypeで主要Keyboard / Mouse Bindingを扱う
-- [ ] Gamepad拡張点
+  - Keyboardはkeycode / physical_keycodeとModifierを保存できる
+  - Mouse ButtonとModifierを保存できる
+  - Mouse Motion自体はAction Bindingに含めず、SensitivityはSettings SystemのGame拡張Settingへ残す
+- [x] Gamepad拡張点
   - 担当: ChatGPT
-  - 将来Gamepadへ拡張できるData Modelにする
-- [ ] Input Smoke Test
+  - Joypad ButtonとJoypad Motion / Axisを同じDescriptor形式で保存・復元できる
+  - Deviceを固定しない `-1` Bindingを扱えるData Modelにする
+  - Gamepad UIは固定せず、将来のRebind UIから同じAPIを利用できる
+- [x] Input Smoke Test
   - 担当: ChatGPT
-  - Rebind / Save / Restoreを検証する
+  - Contract検証、Default適用、Keyboard Rebind、Save / Restore、ResetをHeadlessで検証する
+  - Mouse / Joypad Button / Joypad MotionがSerialize / Deserializeされることを確認する
+  - 壊れたBinding FileとFile未作成時にDefaultへ安全に戻ることを確認する
 
 完了条件:
-Game側が定義したInput Actionを、Foundationの共通UI/APIから安全にRebind・保存できる。
+Game側が定義したInput Actionを、Foundationの共通APIから安全にRebind・保存・復元できる。
 
 ## Phase 4 — Game Flow
 
@@ -235,3 +251,18 @@ Phase 2をGame固有UIやGameplayへ依存しない形で実装した。
 - Headless Smoke TestでDefault / Invalid Value / Persistence / Recovery / Resetを検証
 
 Settings UI自体は各Gameの見た目・操作へ依存するためFoundationへ固定せず、Phase 7のStarter Templateで再利用UIを追加するか判断する。
+
+### 2026-09-25 Input System
+
+Phase 3をGame固有Action名へ依存しないContract方式で実装した。
+
+- Game側がAction名 / Deadzone / Default Bindingを定義
+- Contract外ActionをFoundationが変更しない
+- Keyboard / Mouse Button / Joypad Button / Joypad Motionを共通Descriptor化
+- InputMapへのDefault適用、Rebind、現在Binding取得を追加
+- `user://input_bindings.json` へAtomic Save
+- Game Updateで新Actionが増えた場合は保存済みBindingとDefaultをMerge
+- File欠落・JSON破損・Schema不一致時はDefault Bindingへ安全にFallback
+- Headless Smoke TestでKeyboard / Mouse / Gamepad Data ModelとSave / Restoreを検証
+
+Key Conflictの扱いと実際のRebind UIはGameのUXに依存するためFoundation Coreへ固定せず、Phase 7のStarter Templateで共通UI候補を検討する。

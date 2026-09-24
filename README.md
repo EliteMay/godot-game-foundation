@@ -88,6 +88,6 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0 — Foundation / Architecture、Phase 1 — Generic Save System、Phase 2 — Settings Systemが完了しています。次はPhase 3 — Input Systemです。
+Phase 0 — Foundation / Architecture、Phase 1 — Generic Save System、Phase 2 — Settings System、Phase 3 — Input Systemが完了しています。次はPhase 4 — Game Flowです。
 
 Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。
