@@ -2,7 +2,7 @@
 
 ## 現在
 
-Foundation CoreとGeneric Save Systemまで完成しているが、Settings / Input / Flowが揃うまでは実ゲームへの全面導入は開始しない。Save Systemだけを先行評価する場合もGame Adapterを介し、FoundationへGame固有Fieldを追加しない。
+Foundation Core、Generic Save System、Settings Systemまで完成しているが、Input / Flowが揃うまでは実ゲームへの全面導入は開始しない。Save / Settingsだけを先行評価する場合もGame Adapterを介し、FoundationへGame固有Fieldを追加しない。
 
 Deep FactoryはPilot Gameとして後から使用する。
 

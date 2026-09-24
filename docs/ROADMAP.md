@@ -85,24 +85,39 @@ RepositoryがGodot 4.7.2でCold Startでき、Foundation本体とGame固有領�
 
 ## Phase 2 — Settings System
 
-- [ ] Settings Schema
+状態: **完了 / Headless Smoke Test済み**
+
+- [x] Settings Schema
   - 担当: ChatGPT
-  - Foundation共通SettingとGame拡張Settingを分離する
-- [ ] Audio Settings
+  - Foundation共通Settingを `audio` / `display` に固定し、Game固有Settingは `gameplay` へ分離する
+  - InvalidなCommon Settingは起動不能にせず安全なDefaultへNormalizeする
+  - Settings FileはSave Dataと別の `user://settings.json` に保存する
+- [x] Audio Settings
   - 担当: ChatGPT
-  - Master / BGM / SFXの基本Volumeを扱えるようにする
-- [ ] Display Settings
+  - Master / BGM / SFXを0.0〜1.0で扱う
+  - Runtime適用時のAudio Bus名はGame側からMappingを差し替えられる
+  - 存在しないBusはCrashさせずResultへmissingとして返す
+- [x] Display Settings
   - 担当: ChatGPT
-  - Window Mode / Resolution / VSyncの基本設定を扱えるようにする
-- [ ] Gameplay Settings Extension
+  - Windowed / Fullscreen / Borderlessを扱う
+  - ResolutionとVSyncを保存・復元できる
+  - 不正Resolutionは安全範囲へClampし、不正Mode / VSyncはDefaultへ戻す
+  - HeadlessではDisplay適用を安全にskipする
+- [x] Gameplay Settings Extension
   - 担当: ChatGPT
-  - Mouse SensitivityなどGame固有Settingを追加できる拡張点を作る
-- [ ] Settings Persistence
+  - Mouse Sensitivity等のGame固有SettingをFoundation改造なしで `gameplay` へ追加できる
+  - Game Defaultと保存済みSettingをDeep Mergeし、新規Setting追加時に不足Defaultを補う
+  - FoundationはJSON互換性だけを保証し、Game固有の意味ValidationはGame側へ残す
+- [x] Settings Persistence
   - 担当: ChatGPT
-  - Save Dataとは分離したSettings Fileへ保存する
-- [ ] Settings Smoke Test
+  - 一時Fileで検証してからPrimaryへrenameする
+  - 正常な既存Settingsを `.bak` へ保持する
+  - Primary破損時はBackupを試し、利用不能ならDefault Settingsで安全に起動する
+  - Reset APIでPrimary / Backup / Tempを削除してDefaultへ戻せる
+- [x] Settings Smoke Test
   - 担当: ChatGPT
-  - Default / Save / Load / Invalid Valueを検証する
+  - Default / Normalize / Gameplay Extension / Save / Load / Backup Recovery / ResetをHeadlessで検証する
+  - HeadlessでRuntime Applyが安全にskipされることを確認する
 
 完了条件:
 共通Settingを保存・復元でき、Game固有SettingをFoundation改造なしで追加できる。
@@ -205,3 +220,18 @@ Phase 1を特定GameのState構造へ依存しない形で実装した。
 - Headless Smoke TestでSave / Load / Backup / Version / Migration / Auto Saveを検証
 
 FoundationはGame固有のField名を一切解釈しない。何を保存するか、どのGameplay EventでAuto Saveを要求するかはGame側の責務とする。
+
+### 2026-09-25 Settings System
+
+Phase 2をGame固有UIやGameplayへ依存しない形で実装した。
+
+- Audio / DisplayをFoundation共通Schemaとして定義
+- Game固有Settingは `gameplay` Containerへ分離
+- Invalid値を安全なDefaultへNormalize
+- Settings専用FileへAtomic Save
+- Backup RecoveryとResetを追加
+- Audio Bus MappingをGame側から差し替え可能
+- Headless環境ではRuntime Applyを安全にskip
+- Headless Smoke TestでDefault / Invalid Value / Persistence / Recovery / Resetを検証
+
+Settings UI自体は各Gameの見た目・操作へ依存するためFoundationへ固定せず、Phase 7のStarter Templateで再利用UIを追加するか判断する。
