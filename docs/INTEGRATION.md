@@ -2,7 +2,7 @@
 
 ## 現在
 
-Foundation Core、Generic Save System、Settings System、Input Systemまで完成している。Game Flowが揃うまでは実ゲームへの全面導入は開始せず、先行評価する場合もGame Adapterと各SystemのContractを介してGame固有仕様をFoundationへ混ぜない。
+Foundation Core、Generic Save System、Settings System、Input System、Game Flowまで完成している。主要Core Systemは揃ったが、DiagnosticsとWindows Buildを整えてからDeep FactoryへのPilot導入へ進む。先行評価する場合もGame Adapterと各SystemのContractを介してGame固有仕様をFoundationへ混ぜない。
 
 Deep FactoryはPilot Gameとして後から使用する。
 

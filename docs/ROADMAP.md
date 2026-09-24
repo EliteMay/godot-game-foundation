@@ -164,14 +164,40 @@ Game側が定義したInput Actionを、Foundationの共通APIから安全にReb
 
 ## Phase 4 — Game Flow
 
-- [ ] Pause Service
-- [ ] Scene Transition
-- [ ] Main Menu Contract
-- [ ] Safe Quit Hook
-- [ ] Flow Smoke Test
+状態: **完了 / Headless Smoke Test済み**
+
+- [x] Pause Service
+  - 担当: ChatGPT
+  - `SceneTree.paused` を共通Serviceから変更・取得できる
+  - `toggle_pause()` と `pause_changed` Signalを提供する
+  - Service自身はPause中も動ける `PROCESS_MODE_ALWAYS` とする
+  - Pause KeyやPause Menu UIはGame側へ残す
+- [x] Scene Transition
+  - 担当: ChatGPT
+  - Game側がLogical Scene ID → `res://*.tscn` PathのContractを渡す
+  - Contract外Sceneや不正Pathを安全に拒否する
+  - SceneをPackedSceneとしてLoadできるか確認してから `change_scene_to_file()` を呼ぶ
+  - Scene切替時はPause状態を解除する
+- [x] Main Menu Contract
+  - 担当: ChatGPT
+  - Game側が任意のLogical IDをMain Menuとして登録できる
+  - Foundationは `main_menu` などの固定Scene名を要求しない
+  - Main Menuを持たないGameでは未設定のまま利用できる
+- [x] Safe Quit Hook
+  - 担当: ChatGPT
+  - Save / Settings flush等を終了前Hookとして複数登録できる
+  - Hookが `false` または `{ ok: false }` を返した場合は終了を中止する
+  - 全Hook成功時だけ `SceneTree.quit()` を呼ぶ
+  - Duplicate登録、解除、全解除を扱える
+- [x] Flow Smoke Test
+  - 担当: ChatGPT
+  - Scene Contract検証・Scene Resolve / LoadをHeadlessで確認する
+  - Pause / Resume / SignalをHeadlessで確認する
+  - Safe Quit Hook成功・Block・解除を確認する
+  - Smoke Test終了時にSceneTreeを必ずUnpauseへ戻す
 
 完了条件:
-Game固有Scene名を固定せず、Pause・Scene切替・終了前処理を共通化できる。
+Game固有Scene名を固定せず、Pause・Scene切替・Main Menu・終了前処理を共通化できる。
 
 ## Phase 5 — Diagnostics
 
@@ -266,3 +292,18 @@ Phase 3をGame固有Action名へ依存しないContract方式で実装した。
 - Headless Smoke TestでKeyboard / Mouse / Gamepad Data ModelとSave / Restoreを検証
 
 Key Conflictの扱いと実際のRebind UIはGameのUXに依存するためFoundation Coreへ固定せず、Phase 7のStarter Templateで共通UI候補を検討する。
+
+### 2026-09-25 Game Flow
+
+Phase 4をGame固有Scene名やUIへ依存しないServiceとして実装した。
+
+- Logical Scene ID → Scene PathのContract方式
+- Scene Resolve / Load / Change API
+- 任意のLogical IDをMain Menuとして登録
+- SceneTree Pause / Resume / ToggleとSignal
+- Pause中もService自身は動作
+- Save等を終了前にflushするSafe Quit Hook
+- Hook失敗時は終了を中止してData Lossを避ける
+- Headless Smoke TestでContract / Pause / Quit Hookを検証
+
+Pause Menu、Transition Animation、Loading Screen、Quit確認DialogはGameごとのUXに依存するためFoundation Coreへ固定しない。

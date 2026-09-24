@@ -14,8 +14,10 @@ godot-game-foundation/
 │     ├─ settings/
 │     │  ├─ settings_system.gd
 │     │  └─ settings_runtime.gd
-│     └─ input/
-│        └─ input_system.gd
+│     ├─ input/
+│     │  └─ input_system.gd
+│     └─ flow/
+│        └─ game_flow_service.gd
 ├─ demo/
 │  └─ demo.tscn
 ├─ tests/
@@ -26,7 +28,9 @@ godot-game-foundation/
 │  ├─ settings_system_smoke.gd
 │  ├─ settings_system_smoke.tscn
 │  ├─ input_system_smoke.gd
-│  └─ input_system_smoke.tscn
+│  ├─ input_system_smoke.tscn
+│  ├─ game_flow_smoke.gd
+│  └─ game_flow_smoke.tscn
 ├─ docs/
 │  ├─ ARCHITECTURE.md
 │  ├─ INTEGRATION.md
@@ -34,7 +38,8 @@ godot-game-foundation/
 │  ├─ ROADMAP.md
 │  ├─ SAVE_SYSTEM.md
 │  ├─ SETTINGS_SYSTEM.md
-│  └─ INPUT_SYSTEM.md
+│  ├─ INPUT_SYSTEM.md
+│  └─ GAME_FLOW.md
 ├─ project.godot
 └─ README.md
 ```
@@ -57,6 +62,10 @@ godot-game-foundation/
 
 - `input_system.gd` — Action Contract / Rebind / Default / Event Codec / Binding Persistence
 
+### flow
+
+- `game_flow_service.gd` — Pause / Scene Contract / Main Menu / Safe Quit
+
 ## Demo
 
 Foundationの機能を目視確認するためのHarness。実GameはDemoへ依存しない。
@@ -71,12 +80,12 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 - Generic Save System
 - Settings System
 - Input System
+- Game Flow
 
 ## 今後追加する予定
 
 ```text
 addons/game_foundation/
-├─ flow/
 └─ diagnostics/
 ```
 
