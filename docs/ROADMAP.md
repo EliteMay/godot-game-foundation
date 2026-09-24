@@ -38,38 +38,47 @@ RepositoryがGodot 4.7.2でCold Startでき、Foundation本体とGame固有領�
 
 ## Phase 1 — Generic Save System
 
+状態: **完了 / Headless Smoke Test済み**
+
 目的: Game固有Stateを知らずに利用できる、安全なSave / Load基盤を作る。
 
-- [ ] Save Payload Contract
+- [x] Save Payload Contract
   - 担当: ChatGPT
   - Foundationが受け取るPayloadをJSON互換Dictionaryに限定する
   - Game固有FieldをFoundationへ定義しない
   - MetadataとGame Payloadを分離する
-- [ ] Save Version
+  - String以外のDictionary KeyやJSON非対応型は保存前に拒否する
+- [x] Save Version
   - 担当: ChatGPT
-  - Foundation Schema Versionを持たせる
-  - Game側Schema Versionを別Fieldとして保持できるようにする
-  - 古いVersion / 未知の新Versionを区別する
-- [ ] Atomic Save
+  - Foundation Schema VersionとGame Schema Versionを別々に保持する
+  - 古いFoundation Schema / 未知の新しいFoundation Schema / Game Version差を区別して返す
+  - 非対応の新Versionを既存Saveへ上書きせず安全に拒否する
+- [x] Atomic Save
   - 担当: ChatGPT
-  - 一時Fileへ書いてから本番Saveへ置換する
-  - 書込み失敗で既存Saveを壊さない
-- [ ] Backup
+  - 同Directoryの一時Fileへ完全なJSONを書き、再読込Validation後に本番Pathへrenameする
+  - rename失敗時は既存Saveを残し、一時Fileを削除してErrorを返す
+- [x] Backup
   - 担当: ChatGPT
-  - 最後に読み込めた正常SaveをBackupとして維持する
-- [ ] Load Validation
+  - 正常な既存Saveを更新前に `.bak` へ保持する
+  - 正常Load時にもPrimaryをBackupへ同期できる
+  - Primary破損時は対応VersionのBackupを自動で試す
+- [x] Load Validation
   - 担当: ChatGPT
-  - JSON Parse失敗、必須Metadata欠落、非対応Versionを安全に返す
+  - JSON Parse失敗、必須Metadata欠落、Payload不正、非対応VersionをResult Codeで返す
   - Load失敗でGameをCrashさせない
-- [ ] Migration Hook
+  - 非対応の新Versionでは古いBackupへ勝手に戻らず、Data Lossを避ける
+- [x] Migration Hook
   - 担当: ChatGPT
-  - Game側が古いPayloadをMigrationできる入口を用意する
-- [ ] Auto Save API
+  - 保存Game Schemaが現在より古い場合、Game側CallableへPayload Migrationを委譲する
+  - Migration後のPayloadもJSON互換性を再Validationする
+- [x] Auto Save API
   - 担当: ChatGPT
-  - Foundationは保存要求APIを提供し、どのGameplay Eventで呼ぶかはGame側へ残す
-- [ ] Save System Smoke Test
+  - `AutoSaveService.request_save()` でGame側Eventから保存要求を出せる
+  - 短時間の連続要求をDebounceし、最後のStateを保存する
+  - Safe Quit等から `flush_pending()` で待機中Saveを即時確定できる
+- [x] Save System Smoke Test
   - 担当: ChatGPT
-  - Save → Load、破損JSON、Backup、Version mismatchをHeadlessで検証する
+  - Payload Contract、Save → Load、Atomic置換、Backup Recovery、Version mismatch、Migration、Auto SaveをHeadlessで検証する
 
 完了条件:
 任意のJSON互換Game Payloadを安全に保存・読込でき、破損やVersion差で既存Saveを壊さない。
@@ -180,3 +189,19 @@ Game Dev HubからFoundationを使った新しいGodot Gameを迷わず作成で
 
 完了条件:
 Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用化の問題点がFoundationへ反映される。
+
+### 2026-09-25 Generic Save System
+
+Phase 1を特定GameのState構造へ依存しない形で実装した。
+
+- Save FileはFoundation MetadataとGame Payloadを分離
+- Foundation Schema / Game Schemaを別Versionとして保持
+- JSON互換性を保存前とLoad時にValidation
+- 一時FileからのrenameでPrimary Saveを置換
+- 既存の正常SaveをBackupとして保持
+- Primary破損時のみBackup Recovery
+- Game Schemaが古い場合はGame側Migration Callableへ委譲
+- Debounce可能なAutoSaveServiceを追加
+- Headless Smoke TestでSave / Load / Backup / Version / Migration / Auto Saveを検証
+
+FoundationはGame固有のField名を一切解釈しない。何を保存するか、どのGameplay EventでAuto Saveを要求するかはGame側の責務とする。

@@ -1,6 +1,6 @@
 extends RefCounted
 
-const FOUNDATION_VERSION: String = "0.1.0-dev"
+const FOUNDATION_VERSION: String = "0.2.0-dev"
 const GODOT_BASELINE: String = "4.7.2"
 
 
@@ -15,4 +15,10 @@ static func info() -> Dictionary:
 static func capabilities() -> PackedStringArray:
 	return PackedStringArray([
 		"foundation_core",
+		"generic_save_system",
+		"save_versioning",
+		"atomic_save",
+		"backup_recovery",
+		"migration_hook",
+		"autosave_api",
 	])

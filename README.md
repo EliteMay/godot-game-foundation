@@ -88,6 +88,6 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0 — Foundation / Architectureを構築中です。
+Phase 0 — Foundation / ArchitectureとPhase 1 — Generic Save Systemが完了しています。次はPhase 2 — Settings Systemです。
 
 Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。
