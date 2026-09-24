@@ -1,0 +1,17 @@
+; Engine configuration file.
+; Foundation development harness.
+
+config_version=5
+
+[application]
+
+config/name="Godot Game Foundation"
+run/main_scene="res://demo/demo.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/size/window_width_override=960
+window/size/window_height_override=540

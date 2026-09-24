@@ -1,0 +1,27 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="FoundationDemo" type="Node"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="ColorRect" parent="CanvasLayer"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 936.0
+offset_bottom = 516.0
+color = Color(0.035, 0.055, 0.07, 1)
+
+[node name="Title" type="Label" parent="CanvasLayer/Panel"]
+offset_left = 32.0
+offset_top = 28.0
+offset_right = 880.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 28
+text = "Godot Game Foundation"
+
+[node name="Description" type="Label" parent="CanvasLayer/Panel"]
+offset_left = 32.0
+offset_top = 88.0
+offset_right = 880.0
+offset_bottom = 200.0
+text = "Reusable core systems for multiple Godot games.\n\nThis project is a development and verification harness."
