@@ -283,40 +283,53 @@ Foundation StarterをWindows向けに再現可能な方法でBuildでき、同�
 
 ## Phase 7 — Starter Template / Game Dev Hub
 
-状態: **実装中 / Foundation側Starter Contract完成**
+状態: **実装完了 / Windows実機確認待ち**
 
 - [x] 新規Game生成仕様
   - 担当: ChatGPT
   - `foundation-template.json` を機械可読なStarter配布Contractとして定義する
   - Starter source → target file mapping、Token、Godot baseline、Foundation versionをManifestへ持たせる
-  - 生成Gameには `.game-foundation.json` を作り、導入Version / Commit / Managed Pathを追跡する仕様にする
+  - 生成Gameには `.game-foundation.json` を作り、導入Version / Commit / Managed Pathを追跡する
   - 既存FileがあるRepositoryへ自動上書き生成しない
 - [x] Foundation導入方式決定
   - 担当: ChatGPT
   - Git submodule / subtreeをDefaultにせず、Game Dev HubによるManaged Path Copy方式を採用する
   - Foundation更新対象を `addons/game_foundation/` に限定する
   - Gameの `project.godot` / Roadmap / scenes / scripts / tests / assetsは更新時に自動上書きしない
-  - UpdateはGame Repositoryがclean + expected branchの時だけ開始し、Commit / PushはHub既存の明示保存Flowへ分離する
-- [ ] Game Dev HubへTemplate選択追加
+  - Update後のCommit / PushはHub既存の明示保存Flowへ分離する
+- [x] Game Dev HubへTemplate選択追加
   - 担当: ChatGPT
-  - 「Foundationから新しいゲームを作る」FlowをGame Dev Hubへ追加する
-  - 空のGitHub Repositoryを対象にClone → Starter生成 → Initial Commit → Push → Hub登録まで行う
-  - Rendererへ汎用File / Shell Capabilityを公開せず、専用IPCだけ追加する
-- [ ] Foundation Version表示
+  - Game Dev Hub v0.1.12へ「Foundationから新しいゲームを作る」Flowを追加した
+  - 空のGitHub RepositoryをClone → Starter生成 → Initial Commit → Push → Hub登録まで専用IPCで実行する
+  - Rendererへ汎用Filesystem / Shell Capabilityを公開しない
+- [x] Foundation Version表示
   - 担当: ChatGPT
-  - Game Dev Hubが `.game-foundation.json` を読んで導入Version / Commitを表示する
-- [ ] Foundation更新導線
+  - Hubが `.game-foundation.json` を読み、導入Version / CommitをGame詳細へ表示する
+  - 未導入Gameと不正Metadataを区別する
+- [x] Foundation更新導線
   - 担当: ChatGPT
-  - Userの明示操作でManaged Pathだけ最新版へ更新する
+  - Hubの明示「基盤を更新」から最新版を取得する
+  - expected origin / branch、clean worktree、未Push Commitなしを確認してから更新する
+  - ManifestとInstallation MetadataのManaged Path一致を検証し、`addons/game_foundation/` だけ更新する
   - 更新後は既存「GitHubに保存」でDiff確認・Commit / Pushする
-- [ ] Template生成Test
+- [x] Template生成Test
   - 担当: ChatGPT
   - Foundation側Manifest / Starter SourceをHeadless Smoke Testで検証する
-  - Game Dev Hub側でTemplate展開 / Managed Path限定更新 / Metadata生成をNode Testで検証する
-  - 両RepositoryのCI成功後にPhase 7完了へ更新する
+  - 実際にStarterを一時ProjectへMaterializeし、Godot Import / Main Scene / Foundation Integration SmokeをCIで検証する
+  - Game Dev Hub側でToken展開 / Metadata生成 / Managed Path限定更新 / 既存File保護をNode Testで検証する
+  - Foundation mainとGame Dev Hub mainのCI / Windows build成功を確認した
+- [ ] Windows実機でStarter Create / Update確認
+  - 担当: あなた
+  - Game Dev Hub v0.1.12以降へ更新する
+  - GitHubでFileのない空Repositoryを1つ用意する
+  - Hubの「Foundationから新しいゲームを作る」でゲーム名とRepository URLを入力して作成する
+  - 作成したGameが一覧へ追加され、Game Foundationに `v0.8.0-dev` と導入Commitが表示されることを確認する
+  - 「ゲームを起動」でStarter画面が開くことを確認する
+  - 「基盤を更新」を押し、最新版なら安全に「すでに最新版」と扱われることを確認する
+  - 確認結果はGame Dev Hubの共有パックまたはこの会話へまとめて返す
 
 完了条件:
-Game Dev HubからFoundationを使った新しいGodot Gameを迷わず作成でき、導入Versionを確認しながらFoundation管理領域だけ安全に更新できる。
+Game Dev HubからFoundation付きGameを作成・起動でき、導入Versionを確認しながらFoundation管理領域だけ安全に更新できることをWindows実機で確認する。
 
 ## Phase 8 — Deep Factory Pilot
 
@@ -437,3 +450,18 @@ Phase 7のFoundation側として、Game Dev Hubが直接利用できるStarter�
 - Starter Template Smoke Testを追加
 
 Game Dev Hub側の生成・Version表示・更新導線がCIまで通った時点でPhase 7を完了へ更新する。
+
+### 2026-09-25 Game Dev Hub v0.1.12 Integration
+
+Phase 7のGame Dev Hub側実装を `EliteMay/game-dev-hub` へ統合した。
+
+- Hub main merge commit: `4b5f2649`
+- Game Dev Hub v0.1.12 Release作成済み
+- Node Test成功
+- Windows Installer Build成功
+- Foundation Version / Commit表示を追加
+- Empty RepositoryからのStarter Create Flowを追加
+- Managed Path限定Foundation Updateを追加
+- 更新後のCommit / Pushは既存User確認Flowへ分離
+
+自動検証は完了している。最終完了判定にはWindows実機でCreate / Start / Update UI Flowを確認する。
