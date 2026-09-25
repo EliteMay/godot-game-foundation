@@ -1,0 +1,16 @@
+extends Control
+
+const Foundation = preload("res://addons/game_foundation/foundation.gd")
+
+@onready var title_label: Label = $Content/Title
+@onready var foundation_label: Label = $Content/Foundation
+
+
+func _ready() -> void:
+	title_label.text = String(
+		ProjectSettings.get_setting("application/config/name", "Game")
+	)
+	foundation_label.text = (
+		"Godot Game Foundation "
+		+ Foundation.FOUNDATION_VERSION
+	)

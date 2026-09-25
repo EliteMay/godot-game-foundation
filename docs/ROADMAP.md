@@ -283,15 +283,40 @@ Foundation StarterをWindows向けに再現可能な方法でBuildでき、同�
 
 ## Phase 7 — Starter Template / Game Dev Hub
 
-- [ ] 新規Game生成仕様
-- [ ] Foundation導入方式決定
+状態: **実装中 / Foundation側Starter Contract完成**
+
+- [x] 新規Game生成仕様
+  - 担当: ChatGPT
+  - `foundation-template.json` を機械可読なStarter配布Contractとして定義する
+  - Starter source → target file mapping、Token、Godot baseline、Foundation versionをManifestへ持たせる
+  - 生成Gameには `.game-foundation.json` を作り、導入Version / Commit / Managed Pathを追跡する仕様にする
+  - 既存FileがあるRepositoryへ自動上書き生成しない
+- [x] Foundation導入方式決定
+  - 担当: ChatGPT
+  - Git submodule / subtreeをDefaultにせず、Game Dev HubによるManaged Path Copy方式を採用する
+  - Foundation更新対象を `addons/game_foundation/` に限定する
+  - Gameの `project.godot` / Roadmap / scenes / scripts / tests / assetsは更新時に自動上書きしない
+  - UpdateはGame Repositoryがclean + expected branchの時だけ開始し、Commit / PushはHub既存の明示保存Flowへ分離する
 - [ ] Game Dev HubへTemplate選択追加
+  - 担当: ChatGPT
+  - 「Foundationから新しいゲームを作る」FlowをGame Dev Hubへ追加する
+  - 空のGitHub Repositoryを対象にClone → Starter生成 → Initial Commit → Push → Hub登録まで行う
+  - Rendererへ汎用File / Shell Capabilityを公開せず、専用IPCだけ追加する
 - [ ] Foundation Version表示
+  - 担当: ChatGPT
+  - Game Dev Hubが `.game-foundation.json` を読んで導入Version / Commitを表示する
 - [ ] Foundation更新導線
+  - 担当: ChatGPT
+  - Userの明示操作でManaged Pathだけ最新版へ更新する
+  - 更新後は既存「GitHubに保存」でDiff確認・Commit / Pushする
 - [ ] Template生成Test
+  - 担当: ChatGPT
+  - Foundation側Manifest / Starter SourceをHeadless Smoke Testで検証する
+  - Game Dev Hub側でTemplate展開 / Managed Path限定更新 / Metadata生成をNode Testで検証する
+  - 両RepositoryのCI成功後にPhase 7完了へ更新する
 
 完了条件:
-Game Dev HubからFoundationを使った新しいGodot Gameを迷わず作成できる。
+Game Dev HubからFoundationを使った新しいGodot Gameを迷わず作成でき、導入Versionを確認しながらFoundation管理領域だけ安全に更新できる。
 
 ## Phase 8 — Deep Factory Pilot
 
@@ -398,3 +423,17 @@ Phase 6としてWindows x86_64の再現可能なBuild経路を追加した。
 - Release手順とUnsigned / Code Signing方針を文書化
 
 Foundation HarnessはUnsignedの検証Artifactまでを共通化する。本番Gameの署名Certificateは各Gameの配布要件に応じてSecret管理する。
+
+### 2026-09-25 Starter Distribution Contract
+
+Phase 7のFoundation側として、Game Dev Hubが直接利用できるStarter配布Contractを追加した。
+
+- `foundation-template.json` を配布Manifestとして追加
+- Starter Fileは `.template` Sourceとして保持し、Foundation HarnessのGodot Import対象と混同しない
+- FoundationのManaged Pathを `addons/game_foundation/` に限定
+- 生成Game側の `.game-foundation.json` 仕様を定義
+- SubmoduleではなくManaged Path Copyを採用
+- Foundation Update時はGame固有Fileを上書きせず、Commit / PushをHub既存の明示保存Flowへ分離
+- Starter Template Smoke Testを追加
+
+Game Dev Hub側の生成・Version表示・更新導線がCIまで通った時点でPhase 7を完了へ更新する。

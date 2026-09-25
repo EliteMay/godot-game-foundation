@@ -23,6 +23,14 @@ godot-game-foundation/
 │        ├─ runtime_info.gd
 │        ├─ diagnostics_service.gd
 │        └─ diagnostics_overlay.gd
+├─ starter/
+│  ├─ project.godot.template
+│  ├─ README.md.template
+│  ├─ scenes/
+│  ├─ scripts/
+│  ├─ tests/
+│  └─ docs/
+├─ foundation-template.json
 ├─ demo/
 │  └─ demo.tscn
 ├─ tests/
@@ -39,7 +47,9 @@ godot-game-foundation/
 │  ├─ diagnostics_smoke.gd
 │  ├─ diagnostics_smoke.tscn
 │  ├─ build_config_smoke.gd
-│  └─ build_config_smoke.tscn
+│  ├─ build_config_smoke.tscn
+│  ├─ starter_template_smoke.gd
+│  └─ starter_template_smoke.tscn
 ├─ docs/
 │  ├─ ARCHITECTURE.md
 │  ├─ INTEGRATION.md
@@ -50,7 +60,8 @@ godot-game-foundation/
 │  ├─ INPUT_SYSTEM.md
 │  ├─ GAME_FLOW.md
 │  ├─ DIAGNOSTICS.md
-│  └─ WINDOWS_BUILD.md
+│  ├─ WINDOWS_BUILD.md
+│  └─ STARTER_TEMPLATE.md
 ├─ export_presets.cfg
 ├─ project.godot
 └─ README.md
@@ -104,6 +115,6 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 
 ## 今後追加する予定
 
-Core Runtime SystemとWindows Buildは実装済み。次はStarter Template / Game Dev Hub連携を進める。
+Core Runtime SystemとWindows Buildは実装済み。Starter配布Contractも実装済みで、Game Dev Hub連携を進める。
 
 Game固有CodeはこのRepositoryへ追加しない。

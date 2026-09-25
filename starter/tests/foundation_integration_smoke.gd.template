@@ -1,0 +1,30 @@
+extends Node
+
+const Foundation = preload("res://addons/game_foundation/foundation.gd")
+
+var _failed: bool = false
+
+
+func _ready() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	var info: Dictionary = Foundation.info()
+	if String(info.get("name", "")) != "Godot Game Foundation":
+		_fail("Foundation info is unavailable")
+	if String(info.get("foundation_version", "")).is_empty():
+		_fail("Foundation version is unavailable")
+	if not Foundation.capabilities().has("foundation_core"):
+		_fail("foundation_core capability is unavailable")
+
+	if _failed:
+		get_tree().quit(1)
+	else:
+		print("FOUNDATION_INTEGRATION_SMOKE: PASS")
+		get_tree().quit(0)
+
+
+func _fail(message: String) -> void:
+	_failed = true
+	push_error("FOUNDATION_INTEGRATION_SMOKE: " + message)

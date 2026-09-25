@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "foundationVersion": "0.8.0-dev",
+  "godotBaseline": "4.7.2",
+  "sourceRepository": "EliteMay/godot-game-foundation",
+  "sourceUrl": "https://github.com/EliteMay/godot-game-foundation.git",
+  "starterFiles": [
+    {"source":"starter/project.godot.template","target":"project.godot","tokens":true},
+    {"source":"starter/README.md.template","target":"README.md","tokens":true},
+    {"source":"starter/.gitignore.template","target":".gitignore","tokens":false},
+    {"source":"starter/.gitattributes.template","target":".gitattributes","tokens":false},
+    {"source":"starter/scenes/main.tscn.template","target":"scenes/main.tscn","tokens":false},
+    {"source":"starter/scripts/main.gd.template","target":"scripts/main.gd","tokens":false},
+    {"source":"starter/tests/foundation_integration_smoke.gd.template","target":"tests/foundation_integration_smoke.gd","tokens":false},
+    {"source":"starter/tests/foundation_integration_smoke.tscn.template","target":"tests/foundation_integration_smoke.tscn","tokens":false},
+    {"source":"starter/docs/ROADMAP.md.template","target":"docs/ROADMAP.md","tokens":true}
+  ],
+  "managedPaths": ["addons/game_foundation"],
+  "tokens": ["{{GAME_NAME}}","{{GAME_NAME_GODOT}}","{{GAME_SLUG}}","{{FOUNDATION_VERSION}}"]
+}

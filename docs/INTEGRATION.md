@@ -26,15 +26,17 @@ Foundation Core + Test + CIを準備
 
 ## 更新方式
 
-Foundationを各Gameへどう配布・更新するかは、以下を比較してStarter Template Phaseで決定する。
+Phase 7で **Game Dev HubによるManaged Path Copy** に決定した。
 
-- Repository Templateとしてコピー
-- `addons/game_foundation/` の同期
-- Git subtree
-- Git submodule
-- Game Dev HubによるFoundation Update
+- 新規Game生成時は `foundation-template.json` に従ってStarter Fileと `addons/game_foundation/` をCopyする
+- 生成Gameへ `.game-foundation.json` を置き、Foundation Version / Commit / Managed Pathを記録する
+- Foundation更新では `addons/game_foundation/` だけを更新する
+- Game固有のProject設定、Roadmap、Scene、Script、Assetは自動上書きしない
+- 更新後のCommit / PushはGame Dev Hub既存の明示「GitHubに保存」Flowへ任せる
 
-更新の簡単さ、初心者でも扱えること、Gameごとの改変混入を防げることを優先する。
+Git submodule / subtreeはDefaultにしない。初心者向けHubのPrimary Flowへ追加のGit概念を持ち込まず、管理領域をManifestで明示できることを優先した。
+
+詳細は `docs/STARTER_TEMPLATE.md` を参照する。
 
 ## Deep Factory Pilot
 
