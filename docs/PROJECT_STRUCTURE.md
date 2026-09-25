@@ -62,6 +62,8 @@ godot-game-foundation/
 │  ├─ DIAGNOSTICS.md
 │  ├─ WINDOWS_BUILD.md
 │  └─ STARTER_TEMPLATE.md
+├─ tools/
+│  └─ materialize_starter_fixture.py
 ├─ export_presets.cfg
 ├─ project.godot
 └─ README.md
@@ -112,6 +114,7 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 - Game Flow
 - Diagnostics
 - Windows Build Config
+- Materialized Starter Project / Foundation Integration
 
 ## 今後追加する予定
 

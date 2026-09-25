@@ -87,3 +87,17 @@ Foundation Versionは `FOUNDATION_VERSION` とManifestの `foundationVersion` �
 Breaking ChangeはManaged Pathを黙って配布せず、Foundation Version / Release Note / Migration方針で扱う。
 
 Phase 8ではDeep FactoryをPilotとして導入し、既存GameplayとSave compatibilityを壊さないことを確認する。
+
+## Generated Starter CI
+
+Manifest単体のValidationだけでなく、CIでは `tools/materialize_starter_fixture.py` で実際のStarter Projectを一時Directoryへ生成する。
+
+その生成物に対して:
+
+1. Godot 4.7.2 import
+2. Main Scene load
+3. `FOUNDATION_INTEGRATION_SMOKE: PASS`
+
+まで確認する。
+
+これにより `.template` File自体はFoundation HarnessのImport対象外に保ちながら、実際にGame Dev Hubが展開する形のGodot ProjectがCold環境で成立することを確認する。
