@@ -6,7 +6,7 @@ config_version=5
 [application]
 
 config/name="Godot Game Foundation"
-config/version="0.7.0-dev"
+config/version="0.8.0-dev"
 run/main_scene="res://demo/demo.tscn"
 config/features=PackedStringArray("4.7")
 

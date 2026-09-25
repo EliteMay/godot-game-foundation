@@ -1,0 +1,28 @@
+# {{GAME_NAME}} Roadmap
+
+このRoadmapはゲーム固有開発のSource of Truthです。Foundation自体の機能一覧ではありません。
+
+## Phase 0 — ゲーム固有要件
+
+状態: **開始待ち**
+
+- [ ] ゲームの目的・ジャンル・対象Platformを決める
+  - 担当: ChatGPT
+  - Foundationで共通化済みのSave / Settings / Input / Flow / Diagnosticsを前提に、ゲーム固有部分だけ定義する
+- [ ] Core Loopを決める
+  - 担当: ChatGPT
+  - Playerが繰り返す主要行動とProgressionを定義する
+- [ ] 最初のPlayable Sliceを決める
+  - 担当: ChatGPT
+  - 実機で確認できる最小のゲーム体験と完了条件を決める
+
+完了条件:
+ゲーム固有の目的、Core Loop、最初のPlayable Sliceが明文化され、Foundationへゲーム固有仕様を混ぜずに実装へ進める。
+
+## Foundation
+
+- Installed version: `{{FOUNDATION_VERSION}}`
+- Managed path: `addons/game_foundation/`
+- Installation metadata: `.game-foundation.json`
+
+Foundation更新はGame Dev Hubから明示的に実行し、このRoadmapやゲーム固有Codeは自動更新対象にしない。

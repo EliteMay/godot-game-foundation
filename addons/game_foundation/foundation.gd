@@ -1,6 +1,6 @@
 extends RefCounted
 
-const FOUNDATION_VERSION: String = "0.7.0-dev"
+const FOUNDATION_VERSION: String = "0.8.0-dev"
 const GODOT_BASELINE: String = "4.7.2"
 
 
@@ -45,4 +45,6 @@ static func capabilities() -> PackedStringArray:
 		"windows_export_preset",
 		"ci_export_artifact",
 		"build_metadata",
+		"starter_template",
+		"managed_foundation_distribution",
 	])

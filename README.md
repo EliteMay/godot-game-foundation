@@ -38,11 +38,13 @@ Foundationは「何を保存するか」「何をPauseするか」のような�
 
 再利用コードは `addons/game_foundation/` 配下へ置きます。
 
-Repository直下のGodot ProjectはFoundation自体を開発・検証するためのHarnessです。各ゲームは将来的にFoundationをStarter Templateとして生成するか、`addons/game_foundation/` を導入して利用します。
+Repository直下のGodot ProjectはFoundation自体を開発・検証するためのHarnessです。新しいゲームは `foundation-template.json` と `starter/` をGame Dev Hubから展開し、再利用本体 `addons/game_foundation/` をManaged Pathとして導入します。
 
 ```text
 godot-game-foundation/
 ├─ addons/game_foundation/   # 再利用する本体
+├─ starter/                  # 新規Game生成用Template Source
+├─ foundation-template.json  # Starter配布Contract
 ├─ demo/                     # 開発・目視確認用
 ├─ tests/                    # FoundationのSmoke / Regression Test
 ├─ docs/                     # Architecture / Roadmap / Integration
@@ -88,6 +90,6 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 6 — Windows Buildまで完了しています。次はPhase 7 — Starter Template / Game Dev Hub連携です。
+Phase 0 — Foundation / ArchitectureからPhase 6 — Windows Buildまで完了しています。Phase 7 — Starter Template / Game Dev Hub連携は、Foundation側Starter Contractまで実装済みです。
 
 Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。
