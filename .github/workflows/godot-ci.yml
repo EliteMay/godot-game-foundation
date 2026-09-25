@@ -121,3 +121,14 @@ jobs:
             exit 1
           fi
           grep -q "DIAGNOSTICS_SMOKE: PASS" diagnostics-smoke.log
+
+      - name: Run build configuration smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/build_config_smoke.tscn 2>&1 | tee build-config-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" build-config-smoke.log; then
+            echo "Build configuration smoke contains an error."
+            exit 1
+          fi
+          grep -q "BUILD_CONFIG_SMOKE: PASS" build-config-smoke.log

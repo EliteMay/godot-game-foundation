@@ -241,14 +241,45 @@ Game固有Scene名を固定せず、Pause・Scene切替・Main Menu・終了前�
 
 ## Phase 6 — Windows Build
 
-- [ ] Windows Export Preset
-- [ ] CI Export
-- [ ] Artifact
-- [ ] Version埋め込み
-- [ ] Release手順
+状態: **完了 / CI Windows Export確認済み**
+
+- [x] Windows Export Preset
+  - 担当: ChatGPT
+  - `export_presets.cfg` に `Windows Desktop` Presetを追加する
+  - x86_64 Release Buildを基準にする
+  - PCKをEXEへEmbedして単一Executableとして扱いやすくする
+  - Product Name / File Description等のWindows Resource Metadataを有効化する
+  - Code SigningはCertificate未設定のため無効のままにし、SecretをRepositoryへ持ち込まない
+- [x] CI Export
+  - 担当: ChatGPT
+  - Godot 4.7.2 Editorと同Version Export TemplatesをCIで取得する
+  - Project Import後に `--export-release "Windows Desktop"` でWindows EXEを生成する
+  - Export LogのScript Error / Errorと生成File有無を検証する
+  - 生成FileがPE形式であることをCIで確認する
+- [x] Artifact
+  - 担当: ChatGPT
+  - Windows EXEと `build-info.json` をGitHub Actions ArtifactへUploadする
+  - Artifact名にCommit SHAを含めてSourceを追跡できるようにする
+  - 保持期間を14日に設定する
+- [x] Version埋め込み
+  - 担当: ChatGPT
+  - Foundation Harnessの `application/config/version` をVersion Sourceとする
+  - Windows ResourceのFile / Product VersionはProject VersionへFallbackさせる
+  - Foundation HarnessではApp Versionと `FOUNDATION_VERSION` の一致をSmoke Testで保証する
+  - ArtifactへCommit / Ref / Godot Version / Architecture / Signing状態を含むBuild Metadataを追加する
+- [x] Release手順
+  - 担当: ChatGPT
+  - `docs/WINDOWS_BUILD.md` にVersion更新 → CI → Tag → Artifact → GitHub Releaseの手順を記録する
+  - `v*` TagでもWindows Build Workflowを実行する
+  - GitHub Release公開自体は誤公開防止のため明示操作に残す
+  - 本番GameのCode Signing CredentialはSecret / Environment等から渡す方針を記録する
+- [x] Build Config Smoke Test
+  - 担当: ChatGPT
+  - Project Version、Preset名、Platform、Architecture、Embed PCK、Resource Metadata、Unsigned状態をHeadlessで検証する
+  - 通常のGodot CIにも追加し、Build Workflowを走らせる前に設定崩れを検出できるようにする
 
 完了条件:
-Foundation StarterをWindows向けに再現可能な方法でBuildできる。
+Foundation StarterをWindows向けに再現可能な方法でBuildでき、同じCommitから作られたWindows ArtifactとVersion情報を追跡できる。
 
 ## Phase 7 — Starter Template / Game Dev Hub
 
@@ -351,3 +382,19 @@ Phase 5をGame固有Stateを勝手に収集しない共通診断基盤として�
 - Headless Smoke TestでLog / Summary / Overlay / Path表示を検証
 
 Game Dev Hubの共有Reportへ接続する際は、Foundation Snapshotをそのまま全送信するのではなく、Game側が共有対象を選べる形を維持する。
+
+### 2026-09-25 Windows Build
+
+Phase 6としてWindows x86_64の再現可能なBuild経路を追加した。
+
+- Windows Desktop Export Preset
+- Project VersionをWindows Resource Version Sourceとして利用
+- Build Config Smoke TestでVersion / Preset Driftを検出
+- Godot 4.7.2 Export TemplatesをCIでInstall
+- Linux RunnerからWindows Release EXEをCross Export
+- PE形式とExport Errorを検証
+- EXE + build-info.jsonをCommit SHA付きArtifactとしてUpload
+- main / PR / v* Tag / 手動実行に対応
+- Release手順とUnsigned / Code Signing方針を文書化
+
+Foundation HarnessはUnsignedの検証Artifactまでを共通化する。本番Gameの署名Certificateは各Gameの配布要件に応じてSecret管理する。
