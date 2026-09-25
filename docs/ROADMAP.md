@@ -201,12 +201,40 @@ Game固有Scene名を固定せず、Pause・Scene切替・Main Menu・終了前�
 
 ## Phase 5 — Diagnostics
 
-- [ ] Runtime Version Info
-- [ ] Log Service
-- [ ] Debug Overlay
-- [ ] Save / Settings Path表示
-- [ ] Error Summary
-- [ ] Diagnostics Smoke Test
+状態: **完了 / Headless Smoke Test済み**
+
+- [x] Runtime Version Info
+  - 担当: ChatGPT
+  - App / Foundation / Godot VersionをSnapshotへまとめる
+  - OS / OS Version / Display Server / Headless / Debug Build / Processor Countを取得する
+  - Home Directory等の実Pathは既定で収集しない
+- [x] Log Service
+  - 担当: ChatGPT
+  - Info / Warning / Errorを共通Entry形式でMemoryとDiskへ記録する
+  - Memory Entry数を上限付きにして長時間実行で増え続けないようにする
+  - Disk Logは既定1 MiBで1世代Rotationする
+  - Godot固有型を含むContextは安全な文字列へ変換する
+- [x] Debug Overlay
+  - 担当: ChatGPT
+  - App / Foundation / Godot Version、OS、FPS、Path、Error件数を暗いOverlayで表示する
+  - 最近のErrorをOverlay上で確認できる
+  - Overlayを開くKeyはFoundationへ固定せずGame側Input Contractへ残す
+- [x] Save / Settings Path表示
+  - 担当: ChatGPT
+  - Diagnostics ServiceへGame側が共有してよいVirtual Pathを登録できる
+  - `user://save.json` / `user://settings.json` / Input / Log等をSnapshotとOverlayへ表示する
+  - 実User DirectoryへGlobalizeせず共有時のPrivacyを守る
+- [x] Error Summary
+  - 担当: ChatGPT
+  - Info / Warning / Error件数を集計する
+  - 最近のError最大10件を取得できる
+  - `build_snapshot()` でRuntime / Path / Error / Recent Log / FPSを1つにまとめる
+- [x] Diagnostics Smoke Test
+  - 担当: ChatGPT
+  - Runtime Info、Log File書込、Context Sanitization、Error SummaryをHeadlessで検証する
+  - Save / Settings PathがSnapshotへ含まれることを確認する
+  - Debug OverlayのText生成と表示ToggleをHeadlessで確認する
+  - Memory / Log File Clearを確認する
 
 完了条件:
 ユーザーから共有された診断情報だけで、Version・保存先・主要Errorを追跡しやすい。
@@ -307,3 +335,19 @@ Phase 4をGame固有Scene名やUIへ依存しないServiceとして実装した�
 - Headless Smoke TestでContract / Pause / Quit Hookを検証
 
 Pause Menu、Transition Animation、Loading Screen、Quit確認DialogはGameごとのUXに依存するためFoundation Coreへ固定しない。
+
+### 2026-09-25 Diagnostics
+
+Phase 5をGame固有Stateを勝手に収集しない共通診断基盤として実装した。
+
+- App / Foundation / Godot / OS Runtime Info
+- Bounded Memory Logと `user://logs/runtime.log` Disk Log
+- 1 MiBを既定とする1世代Log Rotation
+- Info / Warning / Error件数とRecent Error Summary
+- Save / Settings / Input / Log等のVirtual Path表示
+- FPSと主要情報をまとめるDiagnostics Snapshot
+- 開発用Dark Debug Overlay
+- Home Directory / IP / Hardware ID等を既定で収集しないPrivacy方針
+- Headless Smoke TestでLog / Summary / Overlay / Path表示を検証
+
+Game Dev Hubの共有Reportへ接続する際は、Foundation Snapshotをそのまま全送信するのではなく、Game側が共有対象を選べる形を維持する。

@@ -110,3 +110,14 @@ jobs:
             exit 1
           fi
           grep -q "GAME_FLOW_SMOKE: PASS" game-flow-smoke.log
+
+      - name: Run diagnostics smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/diagnostics_smoke.tscn 2>&1 | tee diagnostics-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" diagnostics-smoke.log; then
+            echo "Diagnostics smoke contains an error."
+            exit 1
+          fi
+          grep -q "DIAGNOSTICS_SMOKE: PASS" diagnostics-smoke.log

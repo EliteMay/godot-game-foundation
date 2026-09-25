@@ -16,8 +16,12 @@ godot-game-foundation/
 │     │  └─ settings_runtime.gd
 │     ├─ input/
 │     │  └─ input_system.gd
-│     └─ flow/
-│        └─ game_flow_service.gd
+│     ├─ flow/
+│     │  └─ game_flow_service.gd
+│     └─ diagnostics/
+│        ├─ runtime_info.gd
+│        ├─ diagnostics_service.gd
+│        └─ diagnostics_overlay.gd
 ├─ demo/
 │  └─ demo.tscn
 ├─ tests/
@@ -30,7 +34,9 @@ godot-game-foundation/
 │  ├─ input_system_smoke.gd
 │  ├─ input_system_smoke.tscn
 │  ├─ game_flow_smoke.gd
-│  └─ game_flow_smoke.tscn
+│  ├─ game_flow_smoke.tscn
+│  ├─ diagnostics_smoke.gd
+│  └─ diagnostics_smoke.tscn
 ├─ docs/
 │  ├─ ARCHITECTURE.md
 │  ├─ INTEGRATION.md
@@ -39,7 +45,8 @@ godot-game-foundation/
 │  ├─ SAVE_SYSTEM.md
 │  ├─ SETTINGS_SYSTEM.md
 │  ├─ INPUT_SYSTEM.md
-│  └─ GAME_FLOW.md
+│  ├─ GAME_FLOW.md
+│  └─ DIAGNOSTICS.md
 ├─ project.godot
 └─ README.md
 ```
@@ -66,6 +73,12 @@ godot-game-foundation/
 
 - `game_flow_service.gd` — Pause / Scene Contract / Main Menu / Safe Quit
 
+### diagnostics
+
+- `runtime_info.gd` — App / Foundation / Godot / OS Runtime情報
+- `diagnostics_service.gd` — Log / Error Summary / Snapshot / Path情報
+- `diagnostics_overlay.gd` — 開発用Dark Debug Overlay
+
 ## Demo
 
 Foundationの機能を目視確認するためのHarness。実GameはDemoへ依存しない。
@@ -81,12 +94,10 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 - Settings System
 - Input System
 - Game Flow
+- Diagnostics
 
 ## 今後追加する予定
 
-```text
-addons/game_foundation/
-└─ diagnostics/
-```
+Core Runtime Systemは一通り実装済み。次はWindows BuildとStarter Template / Game Dev Hub連携を進める。
 
 Game固有CodeはこのRepositoryへ追加しない。
