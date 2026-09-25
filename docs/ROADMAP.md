@@ -283,7 +283,7 @@ Foundation StarterをWindows向けに再現可能な方法でBuildでき、同�
 
 ## Phase 7 — Starter Template / Game Dev Hub
 
-状態: **実装完了 / Windows実機確認待ち**
+状態: **完了 / Windows実機確認済み**
 
 - [x] 新規Game生成仕様
   - 担当: ChatGPT
@@ -318,7 +318,7 @@ Foundation StarterをWindows向けに再現可能な方法でBuildでき、同�
   - 実際にStarterを一時ProjectへMaterializeし、Godot Import / Main Scene / Foundation Integration SmokeをCIで検証する
   - Game Dev Hub側でToken展開 / Metadata生成 / Managed Path限定更新 / 既存File保護をNode Testで検証する
   - Foundation mainとGame Dev Hub mainのCI / Windows build成功を確認した
-- [ ] Windows実機でStarter Create / Update確認
+- [x] Windows実機でStarter Create / Update確認
   - 担当: あなた
   - Game Dev Hub v0.1.12以降へ更新する
   - GitHubでFileのない空Repositoryを1つ用意する
@@ -333,13 +333,45 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
 
 ## Phase 8 — Deep Factory Pilot
 
-- [ ] Pilot導入前Regression確認
-- [ ] Save System導入
-- [ ] Settings導入
-- [ ] Input System導入
-- [ ] Game Flow導入
+状態: **実装・CI完了 / Windows実機回帰確認待ち**
+
+- [x] Pilot導入前Regression確認
+  - 担当: ChatGPT
+  - Deep Factory Phase 1〜5の既存Windows実機Evidenceを保持し、説明変更だけを理由に再確認させない
+  - Pilot統合後も既存Input / Upgrade / Core Loop / First Automation Smoke TestをCIで実行する
+  - Deep Factory main commit `4b1060cc` のGodot CI成功を確認する
+- [x] Save System導入
+  - 担当: ChatGPT
+  - Deep Factory固有PayloadはGame側へ残し、Save envelope / Atomic write / Backup / Version guardをFoundationへ委譲する
+  - 起動時Load、主要進行変更時Auto Save、15秒Periodic Save、Safe Quit Saveを接続する
+  - Money / Inventory / Upgrade / Player位置 / Small Miner位置・Storageを復元する
+  - Primary破損時のBackup RecoveryをCIで確認する
+- [x] Settings導入
+  - 担当: ChatGPT
+  - Foundation Settings SystemへAudio / Display / Mouse Sensitivity defaultを接続する
+  - Game固有SettingはGameplay extensionとして保持する
+- [x] Input System導入
+  - 担当: ChatGPT
+  - Deep FactoryのInput Action定義をFoundation Input Contractへ接続する
+  - Game固有Action名をFoundation本体へ固定しない
+- [x] Game Flow導入
+  - 担当: ChatGPT
+  - Foundation Game Flow ServiceをRuntimeへ追加する
+  - Safe Quit Hookから最新Saveを確定して終了する
+  - Prototype 0.1に不要なMain Menu / Pause UIは無理に追加しない
 - [ ] Windows実機回帰確認
+  - 担当: あなた
+  - Game Dev HubでDeep Factoryを最新版へ同期し、Game Foundation欄に `v0.8.0-dev` が表示されることを確認する
+  - 所持金・鉱石・Upgrade・小型採掘機がある状態まで進めてゲームを終了する
+  - Game Dev Hubからもう一度起動し、Player位置と主要進行が復元されることを確認する
+  - 小型採掘機の設置位置と内部Storage数が再起動前と一致することを確認する
+  - 復元後も採掘・回収・売却・Upgrade・自動生成が通常通り続けられることを確認する
+  - 結果はGame Dev Hubの確認結果へまとめて記録する
 - [ ] FoundationへLearnings還元
+  - 担当: ChatGPT
+  - Windows実機回帰結果とDeep Factory Pilotで判明したFoundation側の改善点を整理する
+  - Game固有問題とFoundation共通問題を分け、共通問題だけFoundationへ反映する
+  - 必要ならTest / Docs / Contractを更新して再発防止する
 
 完了条件:
 Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用化の問題点がFoundationへ反映される。
@@ -465,3 +497,39 @@ Phase 7のGame Dev Hub側実装を `EliteMay/game-dev-hub` へ統合した。
 - 更新後のCommit / Pushは既存User確認Flowへ分離
 
 自動検証は完了している。最終完了判定にはWindows実機でCreate / Start / Update UI Flowを確認する。
+
+### 2026-09-25 Phase 7 Windows実機確認完了
+
+Game Dev Hub共有パックで、Foundation main commit `12a018a2` / Game Dev Hub `0.1.12` / Godot `4.7.2.stable.official.ed1daf0bf` のWindows実機確認7項目がすべてPassし、結果はstaleではなかった。
+
+確認済み:
+
+- Game Dev Hub v0.1.12以降へ更新できる
+- Fileのない空GitHub Repositoryを用意できる
+- 「Foundationから新しいゲームを作る」でStarter生成できる
+- 作成GameがHubへ追加され、Foundation `v0.8.0-dev` と導入Commitが表示される
+- 「ゲームを起動」でStarter画面が開く
+- 「基盤を更新」で最新版を安全に処理できる
+- 共有パックへ確認結果をまとめて返せる
+
+このEvidenceによりPhase 7を完了とし、次のUser実機確認はPhase 8 — Deep Factory PilotのWindows回帰確認とする。
+
+### 2026-09-25 Deep Factory Pilot自動検証
+
+Deep Factory main commit `4b1060cc` へFoundation 0.8.0-dev Pilotを統合済み。
+
+Godot CI run `36095428200` が成功し、既存Gameplay RegressionとFoundation統合の自動検証を通過した。
+
+自動確認済み:
+
+- Direct Cold Start
+- Godot Import / Main Scene
+- Gameplay Input Smoke
+- Upgrade Smoke
+- Core Loop Regression
+- First Automation Smoke
+- Save Model Smoke
+- Foundation Pilot Smoke
+- Foundation Save / Load / Backup Recovery Smoke
+
+Phase 8の残りはWindows実機での再起動復元確認と、その結果からFoundationへ必要なLearningsを還元する作業。

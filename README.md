@@ -90,6 +90,6 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 6 — Windows Buildまで完了しています。Phase 7 — Starter Template / Game Dev Hub連携も実装済みで、Game Dev Hub v0.1.12から利用できます。現在はWindows実機でのStarter Create / Update確認待ちです。
+Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Phase 8 — Deep Factory Pilotは実装・CIまで完了しており、現在はDeep FactoryのWindows実機Save / Load回帰確認待ちです。
 
 Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。

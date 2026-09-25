@@ -2,7 +2,7 @@
 
 ## 現在
 
-Foundation Core、Generic Save System、Settings System、Input System、Game Flow、Diagnostics、Windows Build、Starter Template / Game Dev Hub連携まで実装済み。Game Dev Hub v0.1.12でWindows実機のStarter Create / Updateを確認した後、Deep FactoryへのPilot導入へ進む。Game Adapterと各SystemのContractを介し、Game固有仕様をFoundationへ混ぜない。
+Foundation Core、Generic Save System、Settings System、Input System、Game Flow、Diagnostics、Windows Build、Starter Template / Game Dev Hub連携まで完成し、Game Dev Hub v0.1.12でWindows実機のStarter Create / Updateも確認済み。Deep Factory Pilotも実装・CIまで完了しており、現在はWindows実機でのSave / Load回帰確認待ち。Game Adapterと各SystemのContractを介し、Game固有仕様をFoundationへ混ぜない。
 
 Deep FactoryはPilot Gameとして後から使用する。
 
