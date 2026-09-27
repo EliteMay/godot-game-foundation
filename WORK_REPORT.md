@@ -169,6 +169,6 @@ Game Dev Hub v0.1.25で新規 `foundation-runtime-test` StarterをCurrent v0.10 
 ### Validation
 
 - Transition Layer Headless Smoke TestをCIへ追加
-- Godot CI: 確認待ち
-- Windows Build: 確認待ち
+- PR #7 Godot CI: PASS（Transition Layer Smokeを含む）
+- PR #7 Windows Build: PASS
 - Windows上のVisual Fade確認: 未確認（BehaviorはHeadless Test対象）
