@@ -386,4 +386,9 @@ Phase 11のMain / Pause MenuをMouse前提にせず、Optional Actionの表示�
 - `ui_down` / `ui_accept`をInputEventActionとして流し、MouseなしFocus移動とButton activationを検証
 - Main Menu Smokeでdisabled Continue skip / Focus snapshotを検証
 - Pause Menu SmokeでRuntime-generated neighbor / Focus snapshotを検証
+- PR #12 Godot CI: PASS（Menu Focus Navigation / Main Menu / Pause Menu Smokeを含む）
+- PR #12 Windows Build: PASS
+- main merge commit: `470051cb73146e3536b830a08b90c51317d3f568`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - 実Windows Physical Controller操作: 未確認（実Game統合時のRuntime Validation対象）
