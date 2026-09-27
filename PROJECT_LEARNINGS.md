@@ -133,3 +133,13 @@
 - Decision: Generic Option ControlsはSettings Edit SessionのDraftだけを編集する。Pathは既存Draftに存在するものだけを受け、Theme / Label / Option listはGame側が定義する。
 - Prevention: Settings UI Componentを追加する時はPersistence APIを直接呼ばずSessionへBindingする。Game固有OptionやResolution候補をFoundationへHardcodeしない。
 
+## GF-015 — Rebind UIはCaptureを共通化してもConflict Policyを先取りしない
+
+- Date: 2026-09-28
+- Type: UX / Input / Architecture
+- Status: Adopted
+- Context: Input Remap UIが「同じKeyを別Actionで使えるか」まで独自判断すると、BackendとUIでConflict policyが分裂し、GameごとのReject / Replace / Allow要件を固定してしまう。
+- Decision: Input Remap ControlはCurrent Binding表示、入力待機、InputEvent → Descriptor、既存Input SystemへのRebind、任意Persistenceだけを担当する。Conflict判定は後続の共通Policy層へ分離する。
+- Reliability: Persistence失敗時は変更前BindingsへRuntime rollbackを試みる。Gamepadは既定でdevice=-1へ正規化し、Axis driftはthreshold未満を採用しない。
+- Prevention: Capture UIへ特定物理Cancel KeyやGame固有Action名、Conflict winnerをHardcodeしない。
+

@@ -165,6 +165,87 @@ Foundationが固定しないもの:
 
 標準Godot Controlを使うためKeyboard / Gamepad Focusを利用できますが、最終Focus順とVisual qualityはGame側Options画面へ組み込んだ状態で確認します。
 
+
+## Input Remap UI
+
+`addons/game_foundation/input/input_remap_control.gd` は、既存Input Systemへ接続するTheme-neutralなAction Rowです。
+
+1 Rowは次を持ちます。
+
+- Game-facing Action Label
+- Current Binding Label
+- Rebind Button
+- Capture中だけ表示するCancel Button
+- 入力待機State
+
+### Action IDと表示名
+
+内部Action名とUser-facing表示名を分離します。
+
+```gdscript
+var row := InputRemapControl.new()
+row.configure(
+    input_contract,
+    "move_forward",
+    "Move Forward",
+    {
+        "persist": Callable(foundation_runtime, "save_input_bindings"),
+    }
+)
+```
+
+Foundationは `move_forward` を画面Labelとして強制しません。LocalizationやGame独自文言はGame側が表示名を渡します。
+
+### Capture
+
+`start_listening()` 後、次のInputEventを受け取れます。
+
+- Keyboard
+- Mouse Button
+- Joypad Button
+- Joypad Motion / Axis
+
+Key / Mouse / Joypad Buttonはpress eventだけ採用し、release / key echoは無視します。
+
+Joypad Motionは`axis_threshold`未満をdriftとして無視します。採用したAxisは方向だけを`-1.0 / 1.0`へ正規化します。
+
+Gamepad deviceは既定で`-1`へ正規化し、Controllerの接続順が変わってもBindingを特定deviceへ固定しません。特定deviceを必要とするGameだけ`preserve_gamepad_device=true`を指定できます。
+
+### Cancel
+
+FoundationはEscape等の物理KeyをCapture CancelへHardcodeしません。
+
+- Cancel Button
+- `cancel_listening()`
+
+のどちらかから終了します。これによりEscape自体をGame Actionへ割り当てる余地を残します。
+
+### Persistence / rollback
+
+Rebind自体は既存 `InputSystem.rebind_action()` を使います。
+
+`persist` Callableを設定した場合は、Runtime Rebind成功後にPersistenceを呼びます。Persistenceが失敗した場合、ControlはRebind前にCaptureしたBindingsを `InputSystem.apply_bindings()` でRuntimeへ戻すことを試み、失敗ResultとRollback Resultの両方を返します。
+
+Persistenceを指定しない場合はRuntimeだけを変更できます。
+
+### Current Binding text
+
+既定表示はGodot InputEventのtext representationを使います。
+
+Gameが独自表示を必要とする場合は`binding_formatter` Callableを渡せます。Current deviceやIcon keyを解決する正式なInput Prompt ResolverはPhase 12の後続Taskです。
+
+### Conflict boundary
+
+このControlは同じBindingが別Actionですでに使われているかを独自判断しません。
+
+Conflict Detection / Reject / Replace / Allow PolicyはPhase 12の次TaskとしてInput System上へ追加します。UIが先に暗黙Policyを持たないよう責務を分離します。
+
+### Visual / Focus boundary
+
+FoundationはGodot標準のLabel / Buttonと最小Row構造だけを生成し、Theme / Palette / Font / Options画面全体の構成はGame側へ残します。
+
+Rebind / Cancel Buttonは標準Focus対象です。最終Focus順、長い翻訳文言、Game ThemeでのSpacing / Contrast、物理Controller操作感は実Game Options画面へ組み込んだ状態で確認します。
+
 ## Boundary
 
 Foundationが所有するもの:
@@ -181,6 +262,6 @@ Game側が所有するもの:
 - Label / 説明文
 - どのSettingを画面へ出すか
 - Gameplay settingの意味
-- Input remap UI
+- Input remap UIのTheme / 画面全体構成
 
-Generic Option Controlsは実装済みです。Input Remap UI / Conflict Detection / Input Prompt ResolverはPhase 12の後続Taskです。
+Generic Option ControlsとInput Remap UIは実装済みです。Conflict Detection / Input Prompt ResolverはPhase 12の後続Taskです。
