@@ -143,3 +143,13 @@
 - Reliability: Persistence失敗時は変更前BindingsへRuntime rollbackを試みる。Gamepadは既定でdevice=-1へ正規化し、Axis driftはthreshold未満を採用しない。
 - Prevention: Capture UIへ特定物理Cancel KeyやGame固有Action名、Conflict winnerをHardcodeしない。
 
+## GF-016 — Binding ConflictはUIの都合ではなくDescriptor overlapとして共通化する
+
+- Date: 2026-09-28
+- Type: Input / UX / Architecture
+- Status: Adopted
+- Context: Conflict判定を各Rebind Rowへ埋め込むと、Keyboard / Mouse / Gamepadで比較規則が分裂し、Reject / Replace / Allowの選択とInputMap mutationがUI実装へ閉じ込められる。
+- Decision: Conflict ResolverをInput Remap UIから分離し、Current InputMapのDescriptor overlapを共通判定する。Game側はPolicyだけを選び、UIはResultを表示・継続する。
+- Semantics: device=-1はgamepad wildcard、specific device同士は同一deviceだけ競合、Axisは方向を区別する。Replaceは一致Eventだけを外して他Bindingを保持する。
+- Prevention: Foundationが特定Game向けConflict winnerやReserved KeyをHardcodeしない。Persistence失敗時は複数Actionの変更を含めて以前のBinding snapshotへ戻す。
+

@@ -171,6 +171,20 @@ Game:
 - 同じKeyを複数Actionへ割り当てるか等のConflict Policy
 - Gameplay中にどのActionをどう使うか
 
+## Conflict Detection
+
+`InputConflictResolver.find_conflicts()` でCandidate DescriptorとCurrent Bindingの競合を取得できます。
+
+`rebind_with_policy()` は次を提供します。
+
+- `reject`: 競合時は変更しない
+- `replace`: 競合Actionから一致Eventだけを外す
+- `allow`: 既存Actionを残す
+
+Joypadの`device=-1`はwildcardとしてspecific deviceと重なります。Axisは同じaxisでも正負方向を別Bindingとして扱います。
+
+Conflict policyはGame側が選択し、Foundationは特定Policyを正解として固定しません。
+
 ## Rebind UI
 
 `addons/game_foundation/input/input_remap_control.gd` は、Input Systemの既存Contract / Descriptor / Rebind APIを利用する共通Rowです。
@@ -182,4 +196,4 @@ Game:
 - Persistence failure時はRebind前BindingsへRuntime rollbackを試す
 - Theme / final layout / Conflict PolicyはGameまたは後続Componentへ残す
 
-Conflict DetectionとInput Prompt Resolverは別Taskです。
+Conflict Detectionは `input_conflict_resolver.gd` として実装済みです。Game側は `reject / replace / allow` からPolicyを選択できます。Input Prompt Resolverは後続Taskです。

@@ -11,6 +11,7 @@ const ACTION_JUMP := "foundation_remap_jump"
 const ACTION_FIRE := "foundation_remap_fire"
 const ACTION_PAD := "foundation_remap_pad"
 const ACTION_AXIS := "foundation_remap_axis"
+const ACTION_ALT := "foundation_remap_alt"
 
 var _failed: bool = false
 var _persist_calls: int = 0
@@ -38,6 +39,10 @@ func _run() -> void:
 		ACTION_AXIS: {
 			"deadzone": 0.2,
 			"events": [{"type": "joypad_motion", "axis": JOY_AXIS_LEFT_X, "axis_value": 1.0, "device": -1}],
+		},
+		ACTION_ALT: {
+			"deadzone": 0.5,
+			"events": [{"type": "key", "physical_keycode": KEY_X}],
 		},
 	}
 
@@ -164,6 +169,83 @@ func _run() -> void:
 		"cancel should preserve current binding"
 	)
 
+	var reject_control := InputRemapControl.new()
+	root.add_child(reject_control)
+	_expect_ok(
+		reject_control.configure(
+			contract,
+			ACTION_ALT,
+			"Alternate",
+			{
+				"persist": Callable(self, "_persist"),
+				"conflict_policy": "reject",
+			}
+		),
+		"reject-policy remap control should configure"
+	)
+	_expect_equal(
+		String(reject_control.state_snapshot().get("conflict_policy", "")),
+		"reject",
+		"control snapshot should expose conflict policy"
+	)
+	_expect_ok(reject_control.start_listening(), "reject-policy capture should start")
+	var conflict_key := InputEventKey.new()
+	conflict_key.physical_keycode = KEY_Z
+	conflict_key.pressed = true
+	var conflict_result: Dictionary = reject_control.handle_input_event(conflict_key)
+	_expect_code(
+		conflict_result,
+		"binding_conflict",
+		"reject policy should surface duplicate binding"
+	)
+	_expect_true(
+		reject_control.is_listening(),
+		"rejected conflict should keep capture active for another input"
+	)
+	_expect_equal(
+		int(_first_descriptor(contract, ACTION_ALT).get("physical_keycode", 0)),
+		KEY_X,
+		"rejected conflict should keep original alternate binding"
+	)
+	_expect_ok(reject_control.cancel_listening(), "reject-policy capture should cancel")
+
+	var replace_control := InputRemapControl.new()
+	root.add_child(replace_control)
+	_expect_ok(
+		replace_control.configure(
+			contract,
+			ACTION_ALT,
+			"Alternate",
+			{
+				"persist": Callable(self, "_persist"),
+				"conflict_policy": "replace",
+			}
+		),
+		"replace-policy remap control should configure"
+	)
+	_fail_persist = true
+	_expect_ok(replace_control.start_listening(), "replace-policy failure capture should start")
+	var replace_key := InputEventKey.new()
+	replace_key.physical_keycode = KEY_Z
+	replace_key.pressed = true
+	var replace_failure: Dictionary = replace_control.handle_input_event(replace_key)
+	_expect_code(
+		replace_failure,
+		"binding_persist_failed",
+		"replace policy should surface persistence failure"
+	)
+	_expect_equal(
+		int(_first_descriptor(contract, ACTION_JUMP).get("physical_keycode", 0)),
+		KEY_Z,
+		"replace persistence failure should restore displaced jump binding"
+	)
+	_expect_equal(
+		int(_first_descriptor(contract, ACTION_ALT).get("physical_keycode", 0)),
+		KEY_X,
+		"replace persistence failure should restore alternate binding"
+	)
+	_fail_persist = false
+
 	_fail_persist = true
 	_expect_ok(jump.start_listening(), "persist failure capture should start")
 	var x_key := InputEventKey.new()
@@ -207,7 +289,7 @@ func _first_descriptor(contract: Dictionary, action_name: String) -> Dictionary:
 
 
 func _cleanup() -> void:
-	for action_name in [ACTION_JUMP, ACTION_FIRE, ACTION_PAD, ACTION_AXIS]:
+	for action_name in [ACTION_JUMP, ACTION_FIRE, ACTION_PAD, ACTION_AXIS, ACTION_ALT]:
 		if InputMap.has_action(StringName(action_name)):
 			InputMap.erase_action(StringName(action_name))
 

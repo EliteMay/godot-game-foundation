@@ -246,6 +246,63 @@ FoundationはGodot標準のLabel / Buttonと最小Row構造だけを生成し、
 
 Rebind / Cancel Buttonは標準Focus対象です。最終Focus順、長い翻訳文言、Game ThemeでのSpacing / Contrast、物理Controller操作感は実Game Options画面へ組み込んだ状態で確認します。
 
+
+## Conflict Detection
+
+`addons/game_foundation/input/input_conflict_resolver.gd` は、Candidate BindingがCurrent InputMap上の別Actionと重なるかを検出し、Game側がPolicyを選べる共通層です。
+
+対応Policy:
+
+- `reject` — 競合があればRuntimeを変更せず `binding_conflict`
+- `replace` — 競合Actionから一致Eventだけを外し、Target Actionへ割り当て
+- `allow` — 競合情報を返しつつ既存Actionを残してTargetへも割り当て
+
+```gdscript
+var result := InputConflictResolver.rebind_with_policy(
+    input_contract,
+    "jump",
+    {"type": "key", "physical_keycode": KEY_SPACE},
+    InputConflictResolver.POLICY_REJECT
+)
+```
+
+### Conflict semantics
+
+同じ物理入力として扱う範囲をDescriptor種別ごとに明示します。
+
+- Keyboard: keycode / physical_keycode / unicode / Modifierが同一
+- Mouse Button: button index / Modifierが同一
+- Joypad Button: button indexが同一でdevice scopeが重なる
+- Joypad Motion: axisと方向が同一でdevice scopeが重なる
+- Joypadの`device=-1`はwildcardなのでspecific deviceと重なる
+- 同じAction自身の現在BindingはConflict対象にしない
+
+異なるspecific gamepad device同士は競合とみなしません。Axisは同じ軸でも正方向と負方向を別Bindingとして扱います。
+
+### Replace semantics
+
+Replaceは競合Action全体をResetしません。一致したEventだけを除去し、同じActionに別のKeyboard / Mouse / Gamepad Bindingが残っていれば保持します。
+
+### Input Remap UI integration
+
+`InputRemapControl.configure()` のoptionsへ`conflict_policy`を渡せます。
+
+```gdscript
+{
+    "conflict_policy": "reject"
+}
+```
+
+既定値は`allow`です。Phase 12 Input Remap UI実装前と同じBehaviorを維持しつつ、Game側が明示的にReject / Replaceへ切り替えられます。
+
+RejectされたConflictではCaptureを終了せず、別のInputをそのまま待てます。`conflict_detected` SignalとResultの`conflicts`からGame側が説明UIを出せます。
+
+Replaceは複数Actionを変更し得ますが、Persistence Callbackが失敗した場合はInput Remap UIがCapture前の全BindingsへRuntime rollbackを試みます。
+
+### Boundary
+
+FoundationはどのPolicyがそのGameに正しいかを決めません。Competitive game、Local multiplayer、Accessibility shortcut等で要求が異なるため、Policy選択はGame側です。
+
 ## Boundary
 
 Foundationが所有するもの:
@@ -264,4 +321,4 @@ Game側が所有するもの:
 - Gameplay settingの意味
 - Input remap UIのTheme / 画面全体構成
 
-Generic Option ControlsとInput Remap UIは実装済みです。Conflict Detection / Input Prompt ResolverはPhase 12の後続Taskです。
+Generic Option Controls、Input Remap UI、Conflict Detectionは実装済みです。Input Prompt ResolverはPhase 12の後続Taskです。
