@@ -434,3 +434,48 @@ Phase 12 — Settings / Input UX Componentsを開始し、Options画面で毎回
 - main Godot CI: PASS
 - main Windows Build: PASS
 
+---
+
+## v0.12.0-dev — Generic Option Controls
+
+### 目的
+
+Phase 12のOptions UIで、各GameがToggle / Slider / List / Resolutionの基本Bindingを毎回作り直さず、Settings Edit Sessionの安全なApply / Cancel contractをそのまま再利用できる共通Controlを追加する。
+
+### 実装
+
+- `addons/game_foundation/settings/settings_option_control.gd`
+  - `toggle` → CheckButton
+  - `slider` → HSlider + Value Label
+  - `list` → OptionButton
+  - `resolution` → Resolution OptionButton
+  - Dotted String / String ArrayのSetting path
+  - Session Draftへのnested write
+  - ControlごとのRuntime Preview on/off
+  - Session `draft_changed` からReset / 外部変更を自動同期
+  - Cancel後は入力をdisable
+  - Slider range / step / display multiplier / decimals / suffix
+  - Game-defined List / Resolution labels and values
+  - Path typoやrange外 / option外の値を明示Reject
+- Foundation capabilityへ `generic_option_controls` を追加
+- `docs/SETTINGS_UX.md` / Roadmap / README / Learningを更新
+
+### 設計境界
+
+- ControlはSettings Fileへ直接書かずSettings Edit Sessionへ委譲
+- FoundationはGame固有Option構成・Label・Themeを持たない
+- Godot標準Controlを使い、物理Keyboard / Controller ButtonをHardcodeしない
+- Options画面全体のTabs / Section / Scroll構成はGame側へ残す
+- 現在Resolutionが候補一覧外でも勝手に別値へ変更しない
+
+### Validation
+
+- Settings Option Control Headless SmokeをCIへ追加
+- Toggle / Slider / List / Resolution生成を検証
+- Nested path write / Runtime Previewを検証
+- Slider display formattingを検証
+- List option外 / Slider range外Rejectを検証
+- Session ResetによるControl同期を検証
+- Cancel後disableとRuntime baseline復元を検証
+- 最終Game ThemeでのVisual quality / Focus順は実Game統合時のRuntime Validation対象
+

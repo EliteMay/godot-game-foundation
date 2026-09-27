@@ -27,6 +27,7 @@ static func capabilities() -> PackedStringArray:
 		"gameplay_settings_extension",
 		"settings_persistence",
 		"settings_edit_session",
+		"generic_option_controls",
 		"input_system",
 		"input_rebind",
 		"input_persistence",
