@@ -96,3 +96,12 @@
 - Context: Loading ScreenへScene Path、Progress、Failure状態を直接持たせると、Async Scene LoaderとVisual Sceneが同じFactを二重管理し、Theme差し替えや別Gameへの再利用で同期ずれが起きやすい。
 - Decision: Loading Screen ContractはAsync Scene Loaderを観測して `idle / loading / loaded / failed` とProgressを正規化し、Visual SceneはSignal / SnapshotのConsumerに限定する。
 - Prevention: Loading UIを追加・差し替えしてもResource loading / Scene ContractのAuthorityをVisual側へ移さず、Foundation Themeや特定Control構成をCore Contractへ固定しない。
+
+## GF-011 — Main MenuはSave判定を所有せずAction slotとAvailabilityを分離する
+
+- Date: 2026-09-28
+- Type: UX / Architecture
+- Status: Adopted
+- Context: Continueを共通Menuへ入れる場合、Saveの存在条件やSlot構造までMain Menuが判断すると、Game固有Save Adapterや後続Save Profiles層と責務が重複する。
+- Decision: Main Menu ShellはNew / Continue / OptionsをGame Callableとして受け取り、Continueは`continue_action`の有無と`continue_available`を分離する。Quitのみ既存Game Flow Safe Quitへ接続する。
+- Prevention: Menuは「押された時に何を呼ぶか」と「今押せるか」だけを扱い、Save File / Slot / New Game初期Stateの正本を持たない。

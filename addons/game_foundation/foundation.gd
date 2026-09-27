@@ -54,5 +54,6 @@ static func capabilities() -> PackedStringArray:
 		"transition_layer",
 		"async_scene_loader",
 		"loading_screen_contract",
+		"main_menu_shell",
 		"pause_menu_shell",
 	])
