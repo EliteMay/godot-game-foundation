@@ -333,7 +333,7 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
 
 ## Phase 8 — Deep Factory Pilot
 
-状態: **保留 / Foundation優先**
+状態: **完了 / Windows実機回帰確認済み**
 
 - [x] Pilot導入前Regression確認
   - 担当: ChatGPT
@@ -359,7 +359,7 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
   - Foundation Game Flow ServiceをRuntimeへ追加する
   - Safe Quit Hookから最新Saveを確定して終了する
   - Prototype 0.1に不要なMain Menu / Pause UIは無理に追加しない
-- [ ] Windows実機回帰確認
+- [x] Windows実機回帰確認
   - 担当: あなた
   - Game Dev HubでDeep Factoryを最新版へ同期し、Game Foundation欄に `v0.8.0-dev` が表示されることを確認する
   - 所持金・鉱石・Upgrade・小型採掘機がある状態まで進めてゲームを終了する
@@ -367,11 +367,13 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
   - 小型採掘機の設置位置と内部Storage数が再起動前と一致することを確認する
   - 復元後も採掘・回収・売却・Upgrade・自動生成が通常通り続けられることを確認する
   - 結果はGame Dev Hubの確認結果へまとめて記録する
-- [ ] FoundationへLearnings還元
+  - 2026-09-28のGame Dev Hub v0.1.24共有パックで6項目すべてPassを確認した
+- [x] FoundationへLearnings還元
   - 担当: ChatGPT
   - Windows実機回帰結果とDeep Factory Pilotで判明したFoundation側の改善点を整理する
   - Game固有問題とFoundation共通問題を分け、共通問題だけFoundationへ反映する
-  - 必要ならTest / Docs / Contractを更新して再発防止する
+  - 今回の実機回帰では新しいFoundation共通不具合は検出されず、既存Save / Restore / Flow Contractが実Gameでも成立するEvidenceとして記録した
+  - 追加のRuntime Code変更は不要と判断し、Evidenceと再利用上のLearningだけを文書へ反映した
 
 完了条件:
 Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用化の問題点がFoundationへ反映される。
@@ -455,8 +457,10 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - PR #4でGodot CI / Windows Build成功を確認
 - [ ] Windows Starter実機確認
   - 担当: あなた
-  - Game Dev Hubからv0.10.0-dev Starterを作成または基盤更新する
-  - Starter画面にFoundation v0.10.0-dev / Runtime readyが表示されることを確認する
+  - この `godot-game-foundation` Repository本体ではなく、Game Dev Hub左側の「Foundationから新しいゲームを作る」からFileのない空Repositoryへ新規Starterを生成する
+  - 生成されたGameのGame Foundation表示が `v0.10.0-dev` になっていることを確認する
+  - そのGameで「ゲームを起動」を押し、Starter画面に `Godot Game Foundation 0.10.0-dev / Runtime ready` が表示されることを確認する
+  - v0.8等の旧Starterは「基盤を更新」だけでは `scripts/main.gd` が更新されないため、この確認には新規v0.10 Starterを使う
 
 完了条件:
 新規GameがFoundationRuntimeを入口として共通Lifecycleを利用でき、Game固有StateをFoundationへ混ぜず、Headless CIとWindows Starter実機の両方で初期化を確認できる。
