@@ -333,7 +333,7 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
 
 ## Phase 8 — Deep Factory Pilot
 
-状態: **実装・CI完了 / Windows実機回帰確認待ち**
+状態: **保留 / Foundation優先**
 
 - [x] Pilot導入前Regression確認
   - 担当: ChatGPT
@@ -375,6 +375,57 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
 
 完了条件:
 Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用化の問題点がFoundationへ反映される。
+
+## Phase 9 — Integrated Foundation Runtime
+
+状態: **実装済み / CI確認待ち**
+
+目的: Save / Settings / Input / Flow / Diagnostics / Runtime Test BridgeをGameごとに毎回手動配線せず、Game固有Contractだけ渡して安全に初期化できる共通Lifecycleを作る。
+
+- [x] FoundationRuntime
+  - 担当: ChatGPT
+  - 独立Systemを置き換えずLifecycle Coordinatorとして追加する
+  - System単位のenable / disableを許可する
+  - Game固有StateやAction名をFoundationへ固定しない
+- [x] Save Adapter Contract
+  - 担当: ChatGPT
+  - `capture_save_state` / `restore_save_state` CallableをGame側から受け取る
+  - Game Schema Migrationは既存Save SystemのCallableへ委譲する
+  - Load / Restore失敗時は既存Save保護のため以後のwriteをblockする
+  - Pending Autosave後の明示Saveが古いStateに巻き戻らないよう最新Payloadへ置換してflushする
+- [x] Settings / Input / Flow Bootstrap
+  - 担当: ChatGPT
+  - Settings load / Common runtime apply / Gameplay adapterを統合する
+  - Input ContractからBindingを復元する
+  - Scene Contract / Main MenuをGame Flowへ設定する
+- [x] Diagnostics / Safe Quit
+  - 担当: ChatGPT
+  - App / Foundation / Path情報をDiagnosticsへ接続する
+  - Save enabled時はSafe Quit hookへ最新Snapshot保存を登録する
+- [x] Runtime Test Bridge
+  - 担当: ChatGPT
+  - Game提供State Providerを既存Bridgeへ接続する
+  - Test Bridge有効中は通常Save writeを行わない
+- [x] Starter Integration
+  - 担当: ChatGPT
+  - Starter生成直後からFoundationRuntime自体を利用できる状態にする
+  - SaveはGame Adapter未定義のためStarter DefaultではOFFにする
+  - Materialized Starter CIでRuntime初期化を検証する
+- [x] Runtime Smoke Test
+  - 担当: ChatGPT
+  - New Game、Settings、Input、Flow、DiagnosticsをHeadless確認する
+  - Pending Autosave後の明示Saveが古いStateへ戻らないことを確認する
+  - Save → LoadでGame AdapterへPayloadが復元されることを確認する
+- [ ] CI / Windows Build確認
+  - 担当: ChatGPT
+  - Godot CI / Generated Starter / Windows Exportを通す
+- [ ] Windows Starter実機確認
+  - 担当: あなた
+  - Game Dev Hubからv0.10.0-dev Starterを作成または基盤更新する
+  - Starter画面にFoundation v0.10.0-dev / Runtime readyが表示されることを確認する
+
+完了条件:
+新規GameがFoundationRuntimeを入口として共通Lifecycleを利用でき、Game固有StateをFoundationへ混ぜず、Headless CIとWindows Starter実機の両方で初期化を確認できる。
 
 ### 2026-09-25 Generic Save System
 
