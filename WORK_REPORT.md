@@ -338,4 +338,6 @@ Phase 11のMain Menuで、各GameがNew / Continue / Options / Quitの基本配�
 - New / Continue / Options Action routingとLabel overrideを検証
 - Safe Quit block / successを検証
 - Optional slot表示とinactive action guardを検証
+- PR #11 Godot CI: PASS（Main Menu Shell Smokeを含む）
+- PR #11 Windows Build: PASS
 - 実Game ThemeでのVisual / Controller操作はPhase 11 Focus Baseline統合時に確認する
