@@ -340,4 +340,7 @@ Phase 11のMain Menuで、各GameがNew / Continue / Options / Quitの基本配�
 - Optional slot表示とinactive action guardを検証
 - PR #11 Godot CI: PASS（Main Menu Shell Smokeを含む）
 - PR #11 Windows Build: PASS
+- main merge commit: `91625503205c7dca5130065c24d0ed2feea32263`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - 実Game ThemeでのVisual / Controller操作はPhase 11 Focus Baseline統合時に確認する
