@@ -108,8 +108,10 @@ func _run() -> void:
 		)
 
 	var diagnostics: Dictionary = runtime.diagnostics_snapshot()
+	var runtime_info: Dictionary = diagnostics.get("runtime", {})
+	var app_info: Dictionary = runtime_info.get("app", {})
 	_expect_equal(
-		String((diagnostics.get("runtime", {}) as Dictionary).get("app_name", "")),
+		String(app_info.get("name", "")),
 		"Foundation Runtime Smoke",
 		"diagnostics should include configured app info"
 	)
