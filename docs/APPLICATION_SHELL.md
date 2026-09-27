@@ -222,6 +222,48 @@ Headless Smoke Testでは次を確認します。
 
 実Game ThemeでのVisual / Controller操作は、Controller / Keyboard Focus BaselineとPhase 11統合時にWindows実機でまとめて確認します。
 
+## Controller / Keyboard Focus Baseline
+
+`addons/game_foundation/shell/menu_focus_navigation.gd` は、MenuのAction availabilityからGodot標準Focus graphを再構築する小さな共通Utilityです。
+
+Main Menu Shell / Pause Menu ShellはDefaultでこのUtilityを使い、現在表示されていてenabledなButtonだけをVisual順に `focus_neighbor_top / bottom` と `focus_previous / next` へ接続します。
+
+### Input境界
+
+FoundationはWASD、Arrow Key、Enter、A Button等の物理入力名をMenu ShellへHardcodeしません。Godot標準UI Focus / `ui_*` semantic actionを利用し、Keyboard / Controllerの実MappingはGodot / Game側Input設定へ残します。
+
+これによりMouseなしでも同じAction ButtonへFocus移動・Activateでき、Game固有Input ContractとMenu navigationを二重管理しません。
+
+### Dynamic availability
+
+- hidden ActionはFocus graphから除外
+- disabled ActionはFocus graphから除外
+- Main MenuのContinue availability変更時はFocus graphを再構築
+- Pause Menuを開くたびにOptions / Main Menu / Quit availabilityを反映
+- Availability変更で現在Focusが無効になった場合、Main Menuは利用可能な初期Actionへ回復
+
+Default graphは端でWrapしません。Main / Pause Shell以外のGame固有Controlを追加した場合にFocusを閉じ込めないためです。
+
+Custom grid / horizontal layout等でGame側が完全にFocusを所有したい場合は `configure()` へ `manage_focus_navigation: false` を渡せます。
+
+### Runtime observation
+
+Main Menu / Pause Menuの `state_snapshot()` は `focused_action_id` と `managed_focus_navigation` を返します。Game Dev Hub等のRuntime Test ProviderはShell自体のVisualへ依存せず、現在Focus Actionを状態として公開できます。
+
+### Validation
+
+`menu_focus_navigation_smoke.tscn` では次を検証します。
+
+- hidden / disabled Controlを飛ばしたFocus neighbor生成
+- Focus端で不要なTrapを作らない
+- availability変更後のFocus graph再構築
+- `ui_down` で次ButtonへFocus移動
+- `ui_accept` でMouseなしにButton Actionが発火
+
+Main / Pause Menu各Smokeでも初期Focus、動的Focus neighbor、`focused_action_id`をRegression対象にします。
+
+物理Controllerの機種差・実Windows上の操作感はHeadless CIでは確認済みと扱わず、実Game統合時のRuntime Validation対象として残します。
+
 ## Pause Menu Shell
 
 `addons/game_foundation/shell/pause_menu_shell.tscn` は、Game固有Themeを固定しないPause MenuのFunctional Baselineです。
@@ -286,8 +328,6 @@ Headless Smoke Testでは次を確認します。
 
 ## 今後の接続
 
-Phase 11ではTransition Layer / Async Scene Loader / Loading Screen Contract / Main Menu Shell / Pause Menu Shellまで実装済みです。
+Phase 11ではTransition Layer / Async Scene Loader / Loading Screen Contract / Main Menu Shell / Pause Menu Shell / Controller・Keyboard Focus Baselineまで実装済みです。
 
-残る共通Task:
-
-- Controller / Keyboard Focus Baseline
+次の共通実装はPhase 12 — Settings / Input UX Componentsへ進みます。

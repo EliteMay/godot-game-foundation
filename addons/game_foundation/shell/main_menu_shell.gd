@@ -1,5 +1,9 @@
 extends Control
 
+const MenuFocusNavigation = preload(
+	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
+)
+
 signal menu_activated
 signal menu_deactivated
 signal action_requested(action_id: String)
@@ -30,6 +34,7 @@ var _buttons: Dictionary = {}
 var _continue_available: bool = false
 var _show_quit: bool = true
 var _active: bool = true
+var _manage_focus_navigation: bool = true
 
 
 func _ready() -> void:
@@ -98,6 +103,13 @@ func configure(options: Dictionary) -> Dictionary:
 	if typeof(show_quit_variant) != TYPE_BOOL:
 		return _error("invalid_show_quit", "show_quit must be bool")
 
+	var manage_focus_variant: Variant = options.get("manage_focus_navigation", true)
+	if typeof(manage_focus_variant) != TYPE_BOOL:
+		return _error(
+			"invalid_manage_focus_navigation",
+			"manage_focus_navigation must be bool"
+		)
+
 	_resolve_buttons()
 	for action_id in [
 		ACTION_CONTINUE,
@@ -116,6 +128,7 @@ func configure(options: Dictionary) -> Dictionary:
 	_actions = next_actions
 	_continue_available = bool(continue_variant)
 	_show_quit = bool(show_quit_variant)
+	_manage_focus_navigation = bool(manage_focus_variant)
 
 	if options.has("labels"):
 		var label_result: Dictionary = set_labels(options.get("labels"))
@@ -263,6 +276,8 @@ func state_snapshot() -> Dictionary:
 		"continue_available": _continue_action_available(),
 		"options_available": _action_callable_available(ACTION_OPTIONS),
 		"quit_available": _show_quit,
+		"focused_action_id": focused_action_id(),
+		"managed_focus_navigation": _manage_focus_navigation,
 	}
 
 
@@ -411,6 +426,47 @@ func _refresh_action_availability() -> void:
 		var quit_button: Button = _buttons[ACTION_QUIT] as Button
 		quit_button.visible = _show_quit
 		quit_button.disabled = not _show_quit
+
+	_refresh_focus_navigation()
+	_repair_focus_after_availability_change()
+
+
+func focused_action_id() -> String:
+	if not is_inside_tree():
+		return ""
+	var owner: Control = get_viewport().gui_get_focus_owner()
+	if not is_instance_valid(owner):
+		return ""
+	for action_id in _buttons.keys():
+		if owner == _buttons[action_id]:
+			return String(action_id)
+	return ""
+
+
+func _focus_controls() -> Array:
+	return [
+		action_button(ACTION_CONTINUE),
+		action_button(ACTION_NEW_GAME),
+		action_button(ACTION_OPTIONS),
+		action_button(ACTION_QUIT),
+	]
+
+
+func _refresh_focus_navigation() -> void:
+	if not _manage_focus_navigation:
+		return
+	MenuFocusNavigation.configure_vertical(_focus_controls())
+
+
+func _repair_focus_after_availability_change() -> void:
+	if not _active or not visible or not is_inside_tree():
+		return
+	var owner: Control = get_viewport().gui_get_focus_owner()
+	if not is_instance_valid(owner) or not is_ancestor_of(owner):
+		return
+	if MenuFocusNavigation.is_focusable(owner):
+		return
+	call_deferred("_focus_initial_control")
 
 
 func _resolve_buttons() -> void:

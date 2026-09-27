@@ -1,5 +1,9 @@
 extends Control
 
+const MenuFocusNavigation = preload(
+	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
+)
+
 signal menu_opened
 signal menu_closed(reason: String)
 signal action_requested(action_id: String)
@@ -29,6 +33,7 @@ var _options_action: Callable = Callable()
 var _previous_focus: Control = null
 var _is_open: bool = false
 var _show_quit: bool = true
+var _manage_focus_navigation: bool = true
 var _buttons: Dictionary = {}
 
 
@@ -76,6 +81,13 @@ func configure(options: Dictionary) -> Dictionary:
 	if typeof(show_quit_variant) != TYPE_BOOL:
 		return _error("invalid_show_quit", "show_quit must be bool")
 
+	var manage_focus_variant: Variant = options.get("manage_focus_navigation", true)
+	if typeof(manage_focus_variant) != TYPE_BOOL:
+		return _error(
+			"invalid_manage_focus_navigation",
+			"manage_focus_navigation must be bool"
+		)
+
 	_resolve_buttons()
 	for action_id in [
 		ACTION_RESUME,
@@ -93,6 +105,7 @@ func configure(options: Dictionary) -> Dictionary:
 	_flow_service = flow
 	_options_action = options_callable
 	_show_quit = bool(show_quit_variant)
+	_manage_focus_navigation = bool(manage_focus_variant)
 
 	if options.has("labels"):
 		var label_result: Dictionary = set_labels(options.get("labels"))
@@ -238,6 +251,8 @@ func state_snapshot() -> Dictionary:
 		"main_menu_available": _main_menu_available(),
 		"quit_available": _show_quit,
 		"has_previous_focus": is_instance_valid(_previous_focus),
+		"focused_action_id": focused_action_id(),
+		"managed_focus_navigation": _manage_focus_navigation,
 	}
 
 
@@ -382,6 +397,35 @@ func _refresh_action_availability() -> void:
 		var quit_button: Button = _buttons[ACTION_QUIT] as Button
 		quit_button.visible = _show_quit
 		quit_button.disabled = not _show_quit
+
+	_refresh_focus_navigation()
+
+
+func focused_action_id() -> String:
+	if not is_inside_tree():
+		return ""
+	var owner: Control = get_viewport().gui_get_focus_owner()
+	if not is_instance_valid(owner):
+		return ""
+	for action_id in _buttons.keys():
+		if owner == _buttons[action_id]:
+			return String(action_id)
+	return ""
+
+
+func _focus_controls() -> Array:
+	return [
+		action_button(ACTION_RESUME),
+		action_button(ACTION_OPTIONS),
+		action_button(ACTION_MAIN_MENU),
+		action_button(ACTION_QUIT),
+	]
+
+
+func _refresh_focus_navigation() -> void:
+	if not _manage_focus_navigation:
+		return
+	MenuFocusNavigation.configure_vertical(_focus_controls())
 
 
 func _resolve_buttons() -> void:

@@ -468,7 +468,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 11 — Application Shell / Scene UX
 
-状態: **実装中 / Transition Layer・Async Scene Loader・Loading Screen Contract・Main Menu Shell・Pause Menu Shell完了**
+状態: **実装完了 / Headless Smoke・Windows Build済み / 実Gameでの物理Controller操作は未確認**
 
 参考: `docs/REFERENCE_TEMPLATES.md`
 
@@ -511,9 +511,14 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - Options / Main Menu / Quitの利用可否をContractから表示状態へ反映できる
   - Default SceneはLayoutだけを提供し、Palette / Font / Logo等のGame Themeを固定しない
   - Headless Smoke TestでPause / Resume / Options / Safe Quit block / Main Menu / Focus restore / Label overrideを検証する
-- [ ] Controller / Keyboard Focus Baseline
+- [x] Controller / Keyboard Focus Baseline
   - 担当: ChatGPT
-  - Mouseなしでも主要Menuを操作できるFocus flowをSmoke / Runtime Test対象にする
+  - Main / Pause Menuの表示中かつenabledなActionだけをVisual順にFocus graphへ組み込み、hidden / disabled Actionを自動で飛ばす
+  - Godot標準UI Focusを使い、物理Key / Gamepad Button名をFoundationへHardcodeしない
+  - `manage_focus_navigation=false` でGame固有Focus構成へ完全に委譲できる
+  - Main / PauseのSnapshotへ`focused_action_id`を公開し、Runtime Test / Diagnosticsから現在Focusを確認できるようにする
+  - 非Modal拡張を閉じ込めないようDefaultは端でWrapせず、Game側追加ControlへのFocus拡張を妨げない
+  - Smoke Testでhidden / disabled skip、availability変更後の再構築、`ui_down` / `ui_accept`によるMouseなし操作を検証する
 
 完了条件:
 新規StarterがGame固有Themeを固定せず、Optional Shellを有効化するだけでMain Menu → Loading → Game → Pause → Menuの共通Flowを構築できる。

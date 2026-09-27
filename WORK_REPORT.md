@@ -344,3 +344,46 @@ Phase 11のMain Menuで、各GameがNew / Continue / Options / Quitの基本配�
 - main Godot CI: PASS
 - main Windows Build: PASS
 - 実Game ThemeでのVisual / Controller操作はPhase 11 Focus Baseline統合時に確認する
+
+---
+
+## v0.11.0-dev — Controller / Keyboard Focus Baseline
+
+### 目的
+
+Phase 11のMain / Pause MenuをMouse前提にせず、Optional Actionの表示状態が変わってもKeyboard / ControllerのFocusが利用不能Buttonへ残らない共通Baselineを追加する。
+
+### 実装
+
+- `addons/game_foundation/shell/menu_focus_navigation.gd`
+  - visible / enabled / focusable Controlだけを抽出
+  - Visual順に`focus_neighbor_top / bottom`と`focus_previous / next`を再構築
+  - disabled / hidden Actionを自動skip
+  - Defaultは端でWrapせず、Game固有ControlへのFocus拡張を閉じ込めない
+  - `focus_first()`で最初の利用可能ControlへFocus可能
+- Main Menu Shell
+  - Continue availability等の変更時にFocus graphを再構築
+  - 現在Focusが無効化された場合は初期Actionへ回復
+  - `focused_action_id` / `managed_focus_navigation`をSnapshotへ追加
+- Pause Menu Shell
+  - Open時のAction availabilityに合わせてFocus graphを再構築
+  - Scene固定のFocus neighborを削除
+  - `focused_action_id` / `managed_focus_navigation`をSnapshotへ追加
+- 両Shellとも`manage_focus_navigation=false`でGame固有Focus設計へ委譲可能
+- Foundation capabilityへ `menu_focus_navigation` を追加
+
+### Input境界
+
+- Foundationは物理Keyboard Key / Controller ButtonをHardcodeしない
+- Godot標準UI Focus / semantic `ui_*` Actionを利用する
+- Pauseを開くInput Action名は従来通りGame側Input Contractの責務
+- Physical Controllerの機種差や実Windows操作感をHeadless Testだけで確認済み扱いしない
+
+### Validation
+
+- `menu_focus_navigation_smoke.tscn` をCIへ追加
+- hidden / disabled skip、neighbor再構築、Focus端、availability更新を検証
+- `ui_down` / `ui_accept`をInputEventActionとして流し、MouseなしFocus移動とButton activationを検証
+- Main Menu Smokeでdisabled Continue skip / Focus snapshotを検証
+- Pause Menu SmokeでRuntime-generated neighbor / Focus snapshotを検証
+- 実Windows Physical Controller操作: 未確認（実Game統合時のRuntime Validation対象）

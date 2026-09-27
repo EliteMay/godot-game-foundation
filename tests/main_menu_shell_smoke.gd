@@ -80,6 +80,21 @@ func _run() -> void:
 		get_viewport().gui_get_focus_owner() == shell.action_button("new_game"),
 		"first-use menu should focus New Game when Continue is disabled"
 	)
+	_expect_equal(
+		shell.action_button("new_game").focus_neighbor_bottom,
+		shell.action_button("new_game").get_path_to(shell.action_button("options")),
+		"focus navigation should skip disabled Continue and follow visible order"
+	)
+	_expect_equal(
+		String(shell.action_button("new_game").focus_neighbor_top),
+		"",
+		"main menu baseline should not trap focus at the first available action"
+	)
+	_expect_equal(
+		String(shell.state_snapshot().get("focused_action_id", "")),
+		"new_game",
+		"runtime snapshot should expose the focused action"
+	)
 
 	_expect_code(
 		shell.request_action("continue"),
@@ -108,6 +123,11 @@ func _run() -> void:
 	_expect_true(
 		get_viewport().gui_get_focus_owner() == shell.action_button("continue"),
 		"returning-user menu should prefer available Continue"
+	)
+	_expect_equal(
+		shell.action_button("continue").focus_neighbor_bottom,
+		shell.action_button("continue").get_path_to(shell.action_button("new_game")),
+		"enabling Continue should rebuild the focus graph"
 	)
 
 	_expect_code(
