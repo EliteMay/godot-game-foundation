@@ -249,4 +249,7 @@ Phase 11のPause UIで、各GameがResume / Options / Main Menu / Quitの配線�
 - Pause / Resume / Options / Safe Quit block / Main Menu / Focus restore / Label overrideを検証
 - PR #9 Godot CI: PASS（Pause Menu Shell Smokeを含む）
 - PR #9 Windows Build: PASS
+- main merge commit: `5ff2e0bce51eb0f614348256f03af6d22d546803`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - Game ThemeでのVisual / Controller実機確認: Phase 11統合時に実施
