@@ -26,7 +26,6 @@ func _run() -> void:
 	var contract := {
 		"menu": "res://demo/demo.tscn",
 		"gameplay": "res://tests/foundation_smoke.tscn",
-		"missing": "res://tests/does_not_exist.tscn",
 	}
 	_expect_ok(
 		flow.configure_scene_contract(contract, "menu"),
@@ -108,23 +107,18 @@ func _run() -> void:
 		"take_loaded_scene should clear retained resource"
 	)
 
-	var missing_result: Dictionary = loader.request_scene("missing")
-	if bool(missing_result.get("ok", false)):
-		await _wait_until_idle(loader, "missing")
-		_expect_true(
-			not bool(loader.last_result().get("ok", true)),
-			"missing scene should eventually fail"
-		)
-	else:
-		_expect_code(
-			missing_result,
-			"threaded_request_failed",
-			"missing scene may fail immediately at request time"
-		)
-
+	_expect_ok(
+		loader.configure(Callable(self, "_invalid_path_resolver")),
+		"resolver should be replaceable while idle"
+	)
+	_expect_code(
+		loader.request_scene("bad"),
+		"invalid_scene_path",
+		"resolver path outside the scene contract shape should be rejected"
+	)
 	_expect_true(
 		not loader.is_loading(),
-		"loader should be idle after failure"
+		"invalid request should leave loader idle"
 	)
 	_expect_true(
 		not _progress_events.is_empty(),
@@ -144,6 +138,14 @@ func _wait_until_idle(loader: Node, label: String) -> void:
 
 	if bool(loader.call("is_loading")):
 		_fail(label + " background load did not finish within frame budget")
+
+
+func _invalid_path_resolver(_scene_id: String) -> Dictionary:
+	return {
+		"ok": true,
+		"code": "scene_resolved",
+		"path": "user://bad.tscn",
+	}
 
 
 func _on_load_progress(_scene_id: String, value: float) -> void:
