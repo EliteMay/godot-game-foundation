@@ -291,4 +291,7 @@ Phase 11のAsync Scene Loaderが持つProgress / FailureをGame固有Visualか�
 - load中のbusy rejectionがactive Loading Stateを壊さないことを検証
 - PR #10 Godot CI: PASS（Loading Screen Contract Smokeを含む）
 - PR #10 Windows Build: PASS
+- main merge commit: `1e697a8badaeb5b4e5d79767100e8d24089fb382`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - Visual Scene自体はGame側差し替え前提のため、このTaskではFoundation固有Visualの実機確認対象なし
