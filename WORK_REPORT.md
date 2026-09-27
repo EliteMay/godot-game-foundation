@@ -247,6 +247,6 @@ Phase 11のPause UIで、各GameがResume / Options / Main Menu / Quitの配線�
 
 - Pause Menu Shell Headless Smoke Testを追加
 - Pause / Resume / Options / Safe Quit block / Main Menu / Focus restore / Label overrideを検証
-- Godot CI: 確認待ち
-- Windows Build: 確認待ち
+- PR #9 Godot CI: PASS（Pause Menu Shell Smokeを含む）
+- PR #9 Windows Build: PASS
 - Game ThemeでのVisual / Controller実機確認: Phase 11統合時に実施
