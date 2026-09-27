@@ -378,7 +378,7 @@ Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用�
 
 ## Phase 9 — Integrated Foundation Runtime
 
-状態: **実装済み / CI確認待ち**
+状態: **CI完了 / Windows Starter実機確認待ち**
 
 目的: Save / Settings / Input / Flow / Diagnostics / Runtime Test BridgeをGameごとに毎回手動配線せず、Game固有Contractだけ渡して安全に初期化できる共通Lifecycleを作る。
 
@@ -416,9 +416,10 @@ Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用�
   - New Game、Settings、Input、Flow、DiagnosticsをHeadless確認する
   - Pending Autosave後の明示Saveが古いStateへ戻らないことを確認する
   - Save → LoadでGame AdapterへPayloadが復元されることを確認する
-- [ ] CI / Windows Build確認
+- [x] CI / Windows Build確認
   - 担当: ChatGPT
   - Godot CI / Generated Starter / Windows Exportを通す
+  - PR #4でGodot CI / Windows Build成功を確認
 - [ ] Windows Starter実機確認
   - 担当: あなた
   - Game Dev Hubからv0.10.0-dev Starterを作成または基盤更新する
