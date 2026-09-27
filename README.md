@@ -80,23 +80,41 @@ godot-game-foundation/
 
 大枠:
 
-1. Foundation / Architecture
-2. Save System
-3. Settings System
-4. Input System
-5. Game Flow
-6. Diagnostics
-7. Windows Build
-8. Starter Template / Game Dev Hub連携
-9. Integrated Foundation Runtime
-10. Pilot Gameで必要時だけ実利用検証
+- Phase 0 — Foundation / Architecture
+- Phase 1 — Generic Save System
+- Phase 2 — Settings System
+- Phase 3 — Input System
+- Phase 4 — Game Flow
+- Phase 5 — Diagnostics
+- Phase 6 — Windows Build
+- Phase 7 — Starter Template / Game Dev Hub
+- Phase 8 — Pilot Game（保留）
+- Phase 9 — Runtime Test Bridge
+- Phase 10 — Integrated Foundation Runtime
+- Phase 11〜16 — Application Shell / Settings & Input UX / Audio / Save Slots / Localization / Recovery
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Deep Factory Pilotは保留し、現在はPhase 9 — Integrated Foundation Runtimeを優先しています。
+Phase 0〜7は完了、Phase 8 — Deep Factory Pilotは保留、Phase 9 — Runtime Test BridgeはWindows実機E2Eまで確認済みです。Phase 10 — Integrated Foundation RuntimeはCI / Windows Buildまで完了し、StarterのWindows実機確認待ちです。
 
 v0.10.0-devでは、個別SystemをGameごとに手動配線する負担を減らす **FoundationRuntime** を追加しました。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
 Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定へ依存させず、Game側が公開を許可したJSON互換Runtime StateだけをHub指定Local FileへTest Run中だけ出力します。
 
 当面はDeep Factoryの機能追加よりFoundation自体の完成度を優先します。Pilot GameはFoundationの共通Contractを検証する時だけ利用します。
+
+
+## Public Template Research
+
+2026-09-28に、次の公開Godot Templateを実装構成まで比較しました。
+
+- Maaack/Godot-Game-Template
+- ChristianWSmith/godot4-template
+- LucasMcClean/godot-game-template
+- bitbrain/godot-gamejam
+
+結論として、Current FoundationはSave / Settings / Input / Lifecycle / Diagnostics等のBackend Coreは十分強く、次に不足しているのはGame-readyな共通Shellです。
+
+Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
+
+次の共通Phaseは、Application Shell / Async Scene Loading、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。
