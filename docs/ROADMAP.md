@@ -376,7 +376,40 @@ Game Dev HubからFoundation付きGameを作成・起動でき、導入Version�
 完了条件:
 Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用化の問題点がFoundationへ反映される。
 
-## Phase 9 — Integrated Foundation Runtime
+## Phase 9 — Runtime Test Bridge
+
+状態: **完了 / CI・Windows実機E2E確認済み**
+
+目的: 固定テストをVision AIのScreenshot判定から分離し、Game内部StateをPrimary Evidenceとして高速・安定に検証できる共通Bridgeを提供する。
+
+- [x] Local State Bridge
+  - 担当: ChatGPT
+  - Hubが指定したAbsolute JSON PathへRuntime State Snapshotを書き出す
+  - Network Listenerや任意Command Channelは追加しない
+- [x] Game Provider Contract
+  - 担当: ChatGPT
+  - Game固有FieldをFoundationへ固定せず、Callableが返すJSON互換Dictionaryを受け取る
+  - Secretや個人Pathを自動収集しない
+- [x] Explicit Test Activation
+  - 担当: ChatGPT
+  - `--foundation-test-state` / `--foundation-test-session` があるRunだけ有効にする
+  - 通常起動ではFile出力しない
+- [x] Snapshot Envelope
+  - 担当: ChatGPT
+  - Schema / Session / Sequence / Timestamp / Process / Game Versionを付加する
+  - Hubが別Runの古いSnapshotを誤採用しないようSession IDを照合可能にする
+- [x] Smoke Test
+  - 担当: ChatGPT
+  - Provider State保存、Envelope、JSON Contract、不正Provider拒否をHeadlessで検証する
+- [x] Windows実機E2E
+  - 担当: ChatGPT / あなた
+  - Game Dev Hub v0.1.24からDeep Factoryを固定テストし、Game起動 / WASD / Mouseを3/3 PASS
+  - Session一致、Player position差分、Camera yaw差分をRuntime Stateから直接確認する
+
+完了条件:
+Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常RunへNetwork/Command capabilityを追加せずGame Dev HubからDeterministic Testへ利用でき、Windows実機でState-based fixed testが成立する。
+
+## Phase 10 — Integrated Foundation Runtime
 
 状態: **CI完了 / Windows Starter実機確認待ち**
 
@@ -427,6 +460,169 @@ Deep Factoryの既存Gameplayを壊さずFoundationを実利用でき、汎用�
 
 完了条件:
 新規GameがFoundationRuntimeを入口として共通Lifecycleを利用でき、Game固有StateをFoundationへ混ぜず、Headless CIとWindows Starter実機の両方で初期化を確認できる。
+
+## Phase 11 — Application Shell / Scene UX
+
+状態: **調査完了 / 未実装**
+
+参考: `docs/REFERENCE_TEMPLATES.md`
+
+目的: Foundation Starterを「Runtimeが起動するだけ」から、Game固有Visualを固定せずMain / Pause / Options / Loadingの共通外枠を選択利用できる状態へ進める。
+
+- [ ] Async Scene Loader
+  - 担当: ChatGPT
+  - `ResourceLoader.load_threaded_request()` を使い、Progress / Failure / duplicate requestを扱う
+  - 現在のScene ContractをSource of Truthにし、Game固有PathをFoundationへ固定しない
+- [ ] Transition Layer
+  - 担当: ChatGPT
+  - Fade in / outをOptional共通Layerとして提供する
+  - Transition duration / colorはGame側で差し替え可能にする
+  - Reduced motion等でAnimationを短縮・無効化できるExtension Pointを持つ
+- [ ] Loading Screen Contract
+  - 担当: ChatGPT
+  - Progress表示を共通Signal / Stateとして公開する
+  - Visual Sceneは差し替え可能にし、Foundation Themeを強制しない
+- [ ] Main Menu Shell
+  - 担当: ChatGPT
+  - New / Continue / Options / Quit等のAction slotを持つ再利用SceneをOptionalで提供する
+  - Game固有Logo / Background / Button構成は差し替え可能にする
+- [ ] Pause Menu Shell
+  - 担当: ChatGPT
+  - Resume / Options / Main Menu / Quit等をContractで接続する
+  - Pause前Focusを保存し、閉じた時に戻す
+- [ ] Controller / Keyboard Focus Baseline
+  - 担当: ChatGPT
+  - Mouseなしでも主要Menuを操作できるFocus flowをSmoke / Runtime Test対象にする
+
+完了条件:
+新規StarterがGame固有Themeを固定せず、Optional Shellを有効化するだけでMain Menu → Loading → Game → Pause → Menuの共通Flowを構築できる。
+
+## Phase 12 — Settings / Input UX Components
+
+状態: **調査完了 / 未実装**
+
+目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
+
+- [ ] Settings Edit Session
+  - 担当: ChatGPT
+  - Apply / Cancel / Resetを扱う一時編集Sessionを追加する
+  - Cancel時にRuntime適用値も開始時点へ戻せる
+- [ ] Generic Option Controls
+  - 担当: ChatGPT
+  - Toggle / Slider / List / Resolution等のCommon Controlを提供する
+  - Theme / Label文言 / Option構成はGame側から指定する
+- [ ] Input Remap UI
+  - 担当: ChatGPT
+  - Current Binding表示、入力待機、Keyboard / Mouse / Gamepad再割当を既存Input Systemへ接続する
+  - Game Action名と表示名を分離する
+- [ ] Conflict Detection
+  - 担当: ChatGPT
+  - 同一Binding競合を検出し、Reject / Replace / AllowのPolicyをGame側で選べるようにする
+- [ ] Input Prompt Resolver
+  - 担当: ChatGPT
+  - Current device / bindingから表示用TextまたはIcon keyを解決する
+  - Third-party Icon Pack本体はFoundation必須Assetにしない
+
+完了条件:
+Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UIのCommon Behaviorを再利用できる。
+
+## Phase 13 — Audio Service
+
+状態: **調査完了 / 未実装**
+
+目的: Settingsの音量適用だけでなく、複数Gameで共通するAudio再生Lifecycleを提供する。
+
+- [ ] Global Music
+  - 担当: ChatGPT
+  - Sceneを跨ぐBGM再生、Stop、Fade / Crossfadeを扱う
+- [ ] One-shot Audio
+  - 担当: ChatGPT
+  - Global SFX / UI / Voiceと2D / 3D One-shot helperを提供する
+- [ ] Bus Contract
+  - 担当: ChatGPT
+  - 既存Settings audio bus mappingと同じGame-defined Bus名を利用する
+- [ ] Lifetime / Cleanup
+  - 担当: ChatGPT
+  - Finished playerを自動Cleanupし、Scene切替でOrphanを残さない
+- [ ] Audio Smoke Test
+  - 担当: ChatGPT
+  - Headlessで可能なContractと、Runtimeで必要なPlayback確認を分ける
+
+完了条件:
+Game固有Audio AssetをFoundationへ入れず、BGM / SFX / UI / Voiceの共通再生処理を再利用できる。
+
+## Phase 14 — Save Profiles / Slots
+
+状態: **調査完了 / 未実装**
+
+目的: Current Generic Save Systemの安全性を維持したまま、複数SlotやContinue/New Gameに必要な共通管理層を追加する。
+
+- [ ] Slot Metadata
+  - 担当: ChatGPT
+  - Slot ID / display name / updated time / Game schema / optional summaryをGame Payloadと分離する
+- [ ] Slot Lifecycle
+  - 担当: ChatGPT
+  - list / create / load / save / deleteを安全なID検証付きで提供する
+- [ ] Continue Latest
+  - 担当: ChatGPT
+  - 最新の正常Slotを決定するHelperを提供する
+- [ ] New Game Helper
+  - 担当: ChatGPT
+  - 既存Slotを暗黙破壊せず、新規Slot作成を明示する
+- [ ] Existing Save Compatibility
+  - 担当: ChatGPT
+  - 既存Single Save利用Gameを壊さずOptional layerとして追加する
+- [ ] Cloud Extension Boundary
+  - 担当: ChatGPT
+  - Steam / Cloud providerはCoreへ依存させず将来Adapterを追加できる境界だけ定義する
+
+完了条件:
+Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / New Gameを共通機能として利用できる。
+
+## Phase 15 — Localization / Accessibility Shell
+
+状態: **調査完了 / 未実装**
+
+目的: Menu Shellで繰り返すLocale適用と基本操作Accessibilityを共通化する。
+
+- [ ] Locale Setting Adapter
+  - 担当: ChatGPT
+  - SettingsからLocaleを読み、`TranslationServer`へ適用する
+- [ ] Translation Contract
+  - 担当: ChatGPT
+  - Foundation ShellのText keyをGame側Translationへ差し替え可能にする
+- [ ] Focus / Navigation Baseline
+  - 担当: ChatGPT
+  - Keyboard / Gamepadで主要Menuを操作できることを共通Contractにする
+- [ ] Motion / Feedback Hooks
+  - 担当: ChatGPT
+  - Reduced motion、UI sound等をGame要件に応じて無効化できるHookを用意する
+
+完了条件:
+Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定LanguageやInput Deviceを固定しない。
+
+## Phase 16 — Controlled Failure / Recovery UX
+
+状態: **調査完了 / 未実装**
+
+目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
+
+- [ ] Runtime Failure State
+  - 担当: ChatGPT
+  - FoundationRuntime initialize failureを構造化Stateとして公開する
+- [ ] Recovery Screen Contract
+  - 担当: ChatGPT
+  - Error summary / retry / safe quit / main menu return等をOptional Sceneから実行できる
+- [ ] Diagnostics Export Hook
+  - 担当: ChatGPT
+  - Game Dev Hub共有へ接続しやすいSanitized snapshotを生成する
+- [ ] Crash Marker
+  - 担当: ChatGPT
+  - 前回Sessionが正常終了しなかった可能性を次回起動時に判定できるLightweight markerを検討する
+  - OS-level hard crashを完全捕捉できると誤認しない
+
+完了条件:
+RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次Actionを確認できる。
 
 ### 2026-09-25 Generic Save System
 
@@ -585,33 +781,3 @@ Godot CI run `36095428200` が成功し、既存Gameplay RegressionとFoundation
 - Foundation Save / Load / Backup Recovery Smoke
 
 Phase 8の残りはWindows実機での再起動復元確認と、その結果からFoundationへ必要なLearningsを還元する作業。
-
-
-## Phase 9 — Runtime Test Bridge
-
-状態: **実装済み / CI確認待ち**
-
-目的: 固定テストをVision AIのScreenshot判定から分離し、Game内部StateをPrimary Evidenceとして高速・安定に検証できる共通Bridgeを提供する。
-
-- [x] Local State Bridge
-  - 担当: ChatGPT
-  - Hubが指定したAbsolute JSON PathへRuntime State Snapshotを書き出す
-  - Network Listenerや任意Command Channelは追加しない
-- [x] Game Provider Contract
-  - 担当: ChatGPT
-  - Game固有FieldをFoundationへ固定せず、Callableが返すJSON互換Dictionaryを受け取る
-  - Secretや個人Pathを自動収集しない
-- [x] Explicit Test Activation
-  - 担当: ChatGPT
-  - `--foundation-test-state` / `--foundation-test-session` があるRunだけ有効にする
-  - 通常起動ではFile出力しない
-- [x] Snapshot Envelope
-  - 担当: ChatGPT
-  - Schema / Session / Sequence / Timestamp / Process / Game Versionを付加する
-  - Hubが別Runの古いSnapshotを誤採用しないようSession IDを照合可能にする
-- [x] Smoke Test
-  - 担当: ChatGPT
-  - Provider State保存、Envelope、JSON Contract、不正Provider拒否をHeadlessで検証する
-
-完了条件:
-Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常RunへNetwork/Command capabilityを追加せずGame Dev HubからDeterministic Testへ利用できる。
