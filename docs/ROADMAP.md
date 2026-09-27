@@ -533,3 +533,33 @@ Godot CI run `36095428200` が成功し、既存Gameplay RegressionとFoundation
 - Foundation Save / Load / Backup Recovery Smoke
 
 Phase 8の残りはWindows実機での再起動復元確認と、その結果からFoundationへ必要なLearningsを還元する作業。
+
+
+## Phase 9 — Runtime Test Bridge
+
+状態: **実装済み / CI確認待ち**
+
+目的: 固定テストをVision AIのScreenshot判定から分離し、Game内部StateをPrimary Evidenceとして高速・安定に検証できる共通Bridgeを提供する。
+
+- [x] Local State Bridge
+  - 担当: ChatGPT
+  - Hubが指定したAbsolute JSON PathへRuntime State Snapshotを書き出す
+  - Network Listenerや任意Command Channelは追加しない
+- [x] Game Provider Contract
+  - 担当: ChatGPT
+  - Game固有FieldをFoundationへ固定せず、Callableが返すJSON互換Dictionaryを受け取る
+  - Secretや個人Pathを自動収集しない
+- [x] Explicit Test Activation
+  - 担当: ChatGPT
+  - `--foundation-test-state` / `--foundation-test-session` があるRunだけ有効にする
+  - 通常起動ではFile出力しない
+- [x] Snapshot Envelope
+  - 担当: ChatGPT
+  - Schema / Session / Sequence / Timestamp / Process / Game Versionを付加する
+  - Hubが別Runの古いSnapshotを誤採用しないようSession IDを照合可能にする
+- [x] Smoke Test
+  - 担当: ChatGPT
+  - Provider State保存、Envelope、JSON Contract、不正Provider拒否をHeadlessで検証する
+
+完了条件:
+Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常RunへNetwork/Command capabilityを追加せずGame Dev HubからDeterministic Testへ利用できる。

@@ -13,7 +13,7 @@ Game Dev Hub
   └─ 開発・Repository・実機確認・共有を管理
 
 Godot Game Foundation
-  └─ Save / Settings / Input / Flow / Diagnostics / Test / Build
+  └─ Save / Settings / Input / Flow / Diagnostics / Runtime Test Bridge / Build
 
 Game Repository
   └─ Gameplay / Content / Balance / Game-specific UI
@@ -68,7 +68,8 @@ addons/game_foundation/
 ├─ settings/
 ├─ input/
 ├─ flow/
-└─ diagnostics/
+├─ diagnostics/
+└─ testing/
 ```
 
 System同士を強く結合させず、ゲーム側が必要なSystemだけ利用できる形を目指す。
@@ -98,3 +99,22 @@ Load時は逆方向にPayloadをゲーム側へ返す。
 最初はGodot 4.7.2 stableをBaselineとする。
 
 Godot Versionを上げる場合は、Foundation CIとPilot Gameの両方で確認してからBaselineを変更する。
+
+
+## Runtime Test Bridge
+
+固定テストでScreenshot VisionをPrimary verifierにせず、Game内部StateをDeterministicに比較するための開発用Adapterです。
+
+```text
+Game Runtime State
+      ↓ JSON-compatible provider
+Runtime Test Bridge
+      ↓ local state.json
+Game Dev Hub
+      ↓ deterministic input + before/after compare
+PASS / FAIL / UNKNOWN
+```
+
+BridgeはNetwork Listenerや任意Command実行を提供しません。Hubが明示的なTest起動Argumentを付けた時だけ有効になり、通常Playでは無効です。
+
+Game固有のPosition / Inventory / Camera / Machine State等を何まで公開するかは各Game Repositoryが決めます。FoundationはField名を固定しません。

@@ -2,7 +2,7 @@
 
 **Godot Game Foundation** は、複数のGodotゲームで繰り返し使う基盤機能を共通化するためのRepositoryです。
 
-特定ジャンルのゲームを作るRepositoryではありません。採掘・戦闘・敵・武器・工場・クエストなどのゲーム固有機能は各ゲーム側へ残し、Save / Settings / Input / Game Flow / Diagnostics / Testing / Windows Buildなど、ジャンルに依存しない部分をここで育てます。
+特定ジャンルのゲームを作るRepositoryではありません。採掘・戦闘・敵・武器・工場・クエストなどのゲーム固有機能は各ゲーム側へ残し、Save / Settings / Input / Game Flow / Diagnostics / Testing / Runtime Test Bridge / Windows Buildなど、ジャンルに依存しない部分をここで育てます。
 
 ## 目的
 
@@ -15,6 +15,7 @@
 - Pause / Scene Flow
 - Logging / Diagnostics
 - Test基盤
+- Game Dev Hub向けRuntime Test Bridge
 - Windows Export / CI
 - Game Dev Hubから使えるStarter Template
 
@@ -90,6 +91,8 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Phase 8 — Deep Factory Pilotは実装・CIまで完了しており、現在はDeep FactoryのWindows実機Save / Load回帰確認待ちです。
+Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Phase 8 — Deep Factory Pilotは実装・CIまで完了しています。
+
+v0.9.0-devでは、固定テストをVision AIのScreenshot判定へ依存させないための **Runtime Test Bridge** を追加しました。Game側が公開を許可したJSON互換Runtime Stateだけを、Hub指定のLocal FileへTest Run中だけ出力します。
 
 Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。
