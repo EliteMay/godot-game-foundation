@@ -206,6 +206,6 @@ Phase 11のLoading / Scene UXで、Scene切替前のResource loadがMain Thread�
 ### Validation
 
 - Async Scene Loader Headless Smoke Testを追加
-- Godot CI: 確認待ち
-- Windows Build: 確認待ち
+- PR #8 Godot CI: PASS（Async Scene Loader Smokeを含む）
+- PR #8 Windows Build: PASS
 - Loading Screen / 実Windows Visual Flow: 未実装のため未確認
