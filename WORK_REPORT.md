@@ -586,3 +586,51 @@ Phase 12のInput Remapで同一Bindingを割り当てた時、各Gameが独自�
 - main Godot CI: PASS
 - main Windows Build: PASS
 
+---
+
+## v0.12.0-dev — Input Prompt Resolver
+
+### 目的
+
+Phase 12の最後として、HUD / Tutorial / OptionsがCurrent deviceとCurrent Bindingから毎回Prompt表示ロジックを作り直さず、TextまたはIcon keyを再利用できる共通Resolverを追加する。
+
+### 実装
+
+- `addons/game_foundation/input/input_prompt_resolver.gd`
+  - Current device family: keyboard_mouse / gamepad
+  - Current gamepad device id
+  - Key press / Mouse Button / meaningful Mouse Motion / Joypad Button / meaningful Axis Motionからdevice更新
+  - release / echo / Stick drift / Mouse jitterを無視
+  - Current device向けAction Binding選択
+  - optional cross-device fallback
+  - unbound / no-binding-for-deviceを非Crash Result化
+  - Keyboard / Mouse / Joypad Button / Joypad AxisのText生成
+  - Modifierを複数Icon keyへ分離
+  - stable canonical semantic Icon key
+  - Game-defined text / icon key override
+  - Input Remap UIのbinding_formatterへ渡せるFormatter helper
+- Foundation capabilityへ `input_prompt_resolver` を追加
+- Phase 12 Roadmapを実装完了へ更新
+
+### 設計境界
+
+- Gamepad face buttonはXbox等へ固定せずSouth / East / West / North semantic
+- Controller model名からLayoutを自動断定しない
+- Third-party Icon Pack / Glyph AssetをFoundationへ同梱しない
+- LocalizationとIcon key mappingはGame側override
+- Prompt device stateはPresentation用で、InputMap / Saved BindingのSource of Truthではない
+
+### Validation
+
+- Input Prompt Resolver Headless SmokeをCIへ追加
+- Keyboard prompt / stable icon keyを検証
+- Gamepad inputでCurrent device / device id切替を検証
+- Stick drift / Mouse jitter無視を検証
+- Current device向けBinding選択とcross-device fallbackを検証
+- unbound / device-specific missing Bindingを検証
+- Modifier Text / multi-icon keysを検証
+- Gamepad Axis direction semanticを検証
+- Text / external Icon Pack key overrideを検証
+- Input Remap formatter helperを検証
+- Game Theme / real icon asset / physical controller glyph feelは実Game統合時のRuntime Validation対象
+

@@ -525,7 +525,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 12 — Settings / Input UX Components
 
-状態: **実装中 / Settings Edit Session・Generic Option Controls・Input Remap UI・Conflict Detection完了**
+状態: **実装完了 / Headless Smoke・Windows Build済み / 実Game統合でVisual・Controller確認待ち**
 
 目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
 
@@ -566,10 +566,16 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - Allowは競合をResultへ残しつつ既存Actionを変更しない
   - Input Remap UIはconflict_policyをGame側Optionとして受け、既定Allowで既存Behaviorを維持する
   - Replace後のPersistence失敗時もInput Remap UIの既存Rollbackで全Actionを変更前へ戻す
-- [ ] Input Prompt Resolver
+- [x] Input Prompt Resolver
   - 担当: ChatGPT
-  - Current device / bindingから表示用TextまたはIcon keyを解決する
-  - Third-party Icon Pack本体はFoundation必須Assetにしない
+  - Keyboard / Mouseを1つのdevice family、Gamepadを別familyとしてCurrent deviceを追跡する
+  - Key release / echo、Mouse release、Gamepad release、Threshold未満のStick drift / Mouse jitterはdevice切替に使わない
+  - Current deviceに一致するAction Bindingを優先し、必要なら別device Bindingへ明示Fallbackできる
+  - Keyboard / Mouse / Gamepad Button / Gamepad Axisを表示用Textとstableなsemantic Icon keyへ解決する
+  - ModifierはTextとIcon keyを分割して返し、複数Glyphを組み合わせられる
+  - Gamepad face buttonは特定Controller製品名へ固定せずSouth / East / West / Northのsemantic keyを返す
+  - Game側がText / Icon key overrideを渡せるためLocalizationやThird-party Icon Packへ接続できる
+  - Third-party Icon Pack本体やController固有AssetはFoundation必須Dependencyにしない
 
 完了条件:
 Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UIのCommon Behaviorを再利用できる。

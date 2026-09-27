@@ -133,6 +133,17 @@ jobs:
           fi
           grep -q "INPUT_CONFLICT_RESOLVER_SMOKE: PASS" input-conflict-resolver-smoke.log
 
+      - name: Run input prompt resolver smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/input_prompt_resolver_smoke.tscn 2>&1 | tee input-prompt-resolver-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" input-prompt-resolver-smoke.log; then
+            echo "Input prompt resolver smoke contains an error."
+            exit 1
+          fi
+          grep -q "INPUT_PROMPT_RESOLVER_SMOKE: PASS" input-prompt-resolver-smoke.log
+
       - name: Run input remap control smoke test
         shell: bash
         run: |

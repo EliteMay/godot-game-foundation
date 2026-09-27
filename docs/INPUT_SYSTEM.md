@@ -185,6 +185,21 @@ Joypadの`device=-1`はwildcardとしてspecific deviceと重なります。Axis
 
 Conflict policyはGame側が選択し、Foundationは特定Policyを正解として固定しません。
 
+## Input Prompt Resolver
+
+`InputPromptResolver` はCurrent deviceとCurrent Bindingから、HUD / Tutorial / Optionsで再利用できるTextとsemantic Icon keyを解決する。
+
+- keyboard/mouseとgamepadのCurrent device familyを追跡
+- drift / jitter / release / key echoをdevice切替から除外
+- Current device向けBindingを優先
+- 必要なら別device BindingへFallback
+- Modifierは複数`icon_keys`へ分離
+- Gamepad face buttonは`gamepad_south/east/west/north`として製品非依存化
+- `text_overrides` / `icon_key_overrides`でLocalizationや外部Icon PackへAdapter可能
+- Icon画像自体はFoundationへ含めない
+
+Current deviceはPrompt presentation用Stateであり、InputMapや保存BindingのSource of Truthではない。
+
 ## Rebind UI
 
 `addons/game_foundation/input/input_remap_control.gd` は、Input Systemの既存Contract / Descriptor / Rebind APIを利用する共通Rowです。
@@ -196,4 +211,4 @@ Conflict policyはGame側が選択し、Foundationは特定Policyを正解とし
 - Persistence failure時はRebind前BindingsへRuntime rollbackを試す
 - Theme / final layout / Conflict PolicyはGameまたは後続Componentへ残す
 
-Conflict Detectionは `input_conflict_resolver.gd` として実装済みです。Game側は `reject / replace / allow` からPolicyを選択できます。Input Prompt Resolverは後続Taskです。
+Conflict Detectionは `input_conflict_resolver.gd`、Input Prompt Resolverは `input_prompt_resolver.gd` として実装済みです。Game側はConflict Policy、表示Text、Icon Pack mappingを選択できます。
