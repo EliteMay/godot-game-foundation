@@ -64,6 +64,7 @@ Runtime EntryからFoundation Scriptを参照する場合は、必要に応じ�
 ```text
 addons/game_foundation/
 ├─ foundation.gd
+├─ runtime/
 ├─ save/
 ├─ settings/
 ├─ input/
@@ -118,3 +119,26 @@ PASS / FAIL / UNKNOWN
 BridgeはNetwork Listenerや任意Command実行を提供しません。Hubが明示的なTest起動Argumentを付けた時だけ有効になり、通常Playでは無効です。
 
 Game固有のPosition / Inventory / Camera / Machine State等を何まで公開するかは各Game Repositoryが決めます。FoundationはField名を固定しません。
+
+
+## Integrated Foundation Runtime
+
+`runtime/foundation_runtime.gd` は各Systemを置き換える巨大Frameworkではなく、既存の独立Serviceを安全な順序で初期化するLifecycle Coordinatorです。
+
+```text
+Game Adapter / Contract
+        ↓
+FoundationRuntime
+        ├─ Diagnostics
+        ├─ Settings load / runtime apply
+        ├─ Input binding restore
+        ├─ Game Flow setup
+        ├─ Save load / autosave / safe quit
+        └─ Runtime Test Bridge
+```
+
+Game固有DataはRuntimeへ埋め込みません。Saveでは `capture_save_state` / `restore_save_state`、Game固有Settingでは `apply_gameplay_settings`、Runtime Testでは `runtime_test_state` のCallableをGame側が渡します。
+
+Save Load/Restore失敗時は既存Canonical Saveを守るため、Runtimeは以後のSave writeをblockします。明示Test RunでRuntime Test Bridgeが有効な間も通常Saveへのwriteを行いません。
+
+各Systemは従来どおり単独利用可能です。FoundationRuntimeは「全部使うこと」を強制せず、ConfigでSystem単位に有効/無効を選べます。

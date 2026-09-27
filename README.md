@@ -8,6 +8,7 @@
 
 新しいゲームを作るたびに、次の機能をゼロから作り直さない状態を目指します。
 
+- Integrated Foundation Runtime / Lifecycle Bootstrap
 - Save / Load
 - Save Version / Migration / Backup
 - Settings
@@ -87,12 +88,15 @@ godot-game-foundation/
 6. Diagnostics
 7. Windows Build
 8. Starter Template / Game Dev Hub連携
-9. Deep Factoryで実利用検証
+9. Integrated Foundation Runtime
+10. Pilot Gameで必要時だけ実利用検証
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Phase 8 — Deep Factory Pilotは実装・CIまで完了しています。
+Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Deep Factory Pilotは保留し、現在はPhase 9 — Integrated Foundation Runtimeを優先しています。
 
-v0.9.0-devでは、固定テストをVision AIのScreenshot判定へ依存させないための **Runtime Test Bridge** を追加しました。Game側が公開を許可したJSON互換Runtime Stateだけを、Hub指定のLocal FileへTest Run中だけ出力します。
+v0.10.0-devでは、個別SystemをGameごとに手動配線する負担を減らす **FoundationRuntime** を追加しました。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
-Deep Factory側はPhase 5までを実機確認済みの基準Projectとして残し、Foundationが必要な機能を持った段階でPilot導入します。
+Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定へ依存させず、Game側が公開を許可したJSON互換Runtime StateだけをHub指定Local FileへTest Run中だけ出力します。
+
+当面はDeep Factoryの機能追加よりFoundation自体の完成度を優先します。Pilot GameはFoundationの共通Contractを検証する時だけ利用します。
