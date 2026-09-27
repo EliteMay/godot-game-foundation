@@ -289,4 +289,6 @@ Phase 11のAsync Scene Loaderが持つProgress / FailureをGame固有Visualか�
 - Idle → immediate Failure → Reset → Loading → Loadedを検証
 - Progress Signal / final progress 1.0を検証
 - load中のbusy rejectionがactive Loading Stateを壊さないことを検証
+- PR #10 Godot CI: PASS（Loading Screen Contract Smokeを含む）
+- PR #10 Windows Build: PASS
 - Visual Scene自体はGame側差し替え前提のため、このTaskではFoundation固有Visualの実機確認対象なし
