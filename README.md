@@ -90,14 +90,16 @@ godot-game-foundation/
 - Phase 7 — Starter Template / Game Dev Hub
 - Phase 8 — Deep Factory Pilot（完了）
 - Phase 9 — Runtime Test Bridge
-- Phase 10 — Integrated Foundation Runtime
+- Phase 10 — Integrated Foundation Runtime（完了）
 - Phase 11〜16 — Application Shell / Settings & Input UX / Audio / Save Slots / Localization / Recovery
 
 ## 現在の状態
 
-Phase 0〜9は完了しています。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Passまで確認済みです。Phase 10 — Integrated Foundation RuntimeはCI / Windows Buildまで完了し、Current v0.10 Templateから新規生成したStarterのWindows実機確認だけが残っています。
+Phase 0〜10は完了しています。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。現在はPhase 11 — Application Shell / Scene UXを実装中です。
 
-v0.10.0-devでは、個別SystemをGameごとに手動配線する負担を減らす **FoundationRuntime** を追加しました。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
+v0.11.0-devでは、Game固有Themeを固定しないOptional Application Shellの実装を開始しました。最初のModuleとして、Fade in / out、Game側からのduration / color差し替え、Reduced motion向けmotion scaleを持つ **Transition Layer** を追加しています。
+
+FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
 Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定へ依存させず、Game側が公開を許可したJSON互換Runtime StateだけをHub指定Local FileへTest Run中だけ出力します。
 
@@ -117,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通Phaseは、Application Shell / Async Scene Loading、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。
+次の共通Phaseは、Application Shell / Async Scene Loading、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Application Shellの最初の実装としてTransition Layerが入り、次はAsync Scene Loader / Loading Screen Contractへ進みます。
