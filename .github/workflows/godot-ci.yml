@@ -133,6 +133,17 @@ jobs:
           fi
           grep -q "ASYNC_SCENE_LOADER_SMOKE: PASS" async-scene-loader-smoke.log
 
+      - name: Run pause menu shell smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/pause_menu_shell_smoke.tscn 2>&1 | tee pause-menu-shell-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" pause-menu-shell-smoke.log; then
+            echo "Pause menu shell smoke contains an error."
+            exit 1
+          fi
+          grep -q "PAUSE_MENU_SHELL_SMOKE: PASS" pause-menu-shell-smoke.log
+
       - name: Run diagnostics smoke test
         shell: bash
         run: |
