@@ -236,6 +236,30 @@ Runtime Test BridgeがCommand Lineから有効になった場合:
 
 Test操作を通常Player Saveへ混ぜないための境界です。
 
+## Settings Edit Session
+
+Phase 12では `begin_settings_edit_session()` から一時Settings編集Sessionを開始できます。
+
+```gdscript
+var start := foundation_runtime.begin_settings_edit_session()
+if start.ok:
+    var session = start.session
+
+    var draft := session.draft_settings()
+    draft.gameplay.mouse_sensitivity = 0.003
+    session.set_draft(draft) # Runtime preview only
+
+    # 保存する
+    session.apply()
+
+    # または未保存変更を破棄してRuntimeも戻す
+    # session.cancel()
+```
+
+Preview / ResetだけではSettings Fileと `current_settings()` のCommitted値を変更しません。Apply成功時だけCommitted値を更新し、CancelはSession開始時または直近Apply時点へRuntimeを戻します。
+
+詳細Contractは `docs/SETTINGS_UX.md` を参照します。
+
 ## Safe Quit
 
 Saveが有効でGame Flowも有効な場合、FoundationRuntimeはSafe Quit Hookへ最新Stateの `save_now()` を登録します。

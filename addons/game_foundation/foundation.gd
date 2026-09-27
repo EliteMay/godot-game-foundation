@@ -1,6 +1,6 @@
 extends RefCounted
 
-const FOUNDATION_VERSION: String = "0.11.0-dev"
+const FOUNDATION_VERSION: String = "0.12.0-dev"
 const GODOT_BASELINE: String = "4.7.2"
 
 
@@ -26,6 +26,7 @@ static func capabilities() -> PackedStringArray:
 		"display_settings",
 		"gameplay_settings_extension",
 		"settings_persistence",
+		"settings_edit_session",
 		"input_system",
 		"input_rebind",
 		"input_persistence",

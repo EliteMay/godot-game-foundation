@@ -525,14 +525,18 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 12 — Settings / Input UX Components
 
-状態: **調査完了 / 未実装**
+状態: **実装中 / Settings Edit Session完了**
 
 目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
 
-- [ ] Settings Edit Session
+- [x] Settings Edit Session
   - 担当: ChatGPT
-  - Apply / Cancel / Resetを扱う一時編集Sessionを追加する
-  - Cancel時にRuntime適用値も開始時点へ戻せる
+  - Persisted Settingsと一時Draftを分離し、Preview中はDiskへ書き込まない
+  - Applyは現在DraftをRuntimeへ適用できることを確認してからPersistし、その値を新しいCancel baselineへ進める
+  - CancelはSession開始時または直近Apply時点の値をRuntimeへ戻し、未保存Draftを破棄する
+  - ResetはGameのGameplay defaultsを含むDefaultをDraftへ読み込み、ApplyするまではSettings Fileを削除・上書きしない
+  - Preview apply失敗時は直前Runtime previewへRollbackを試み、失敗Draftを採用しない
+  - FoundationRuntimeから現在のSettings / Adapter / Pathを使ってSessionを開始できる
 - [ ] Generic Option Controls
   - 担当: ChatGPT
   - Toggle / Slider / List / Resolution等のCommon Controlを提供する

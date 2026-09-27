@@ -392,3 +392,40 @@ Phase 11のMain / Pause MenuをMouse前提にせず、Optional Actionの表示�
 - main Godot CI: PASS
 - main Windows Build: PASS
 - 実Windows Physical Controller操作: 未確認（実Game統合時のRuntime Validation対象）
+
+---
+
+## v0.12.0-dev — Settings Edit Session
+
+### 目的
+
+Phase 12 — Settings / Input UX Componentsを開始し、Options画面で毎回実装していた一時Settings編集、Preview、Apply、Cancel、Resetを共通化する。
+
+### 実装
+
+- `addons/game_foundation/settings/settings_edit_session.gd`
+  - Committed Baseline / Draft / Runtime Previewを分離
+  - `set_draft()` でNormalize後に任意Runtime Preview
+  - `apply()` はRuntime Preview成功を確認してからPersistence Callbackを実行
+  - Apply成功時はその値を新Baselineへ更新
+  - `cancel()` はBaselineへRuntimeを戻してSession終了
+  - `reset_to_defaults()` はGameのGameplay defaults込みDefaultをDraftへ設定
+  - Reset / PreviewだけではDiskを変更しない
+  - Preview失敗時は直前Runtime PreviewへRollbackを試行
+  - Persist失敗時はSessionを維持し、CancelでBaselineへ戻せる
+- `FoundationRuntime.begin_settings_edit_session()`
+  - 現在のCommitted SettingsからSessionを開始
+  - 既存Settings Runtime / Gameplay AdapterをPreviewに再利用
+  - Apply成功時だけSettings Fileと `current_settings()` を更新
+- Foundation capabilityへ `settings_edit_session` を追加
+- Foundation Versionを `0.12.0-dev` へ更新
+- `docs/SETTINGS_UX.md` を追加
+
+### Validation
+
+- Settings Edit Session SmokeでPreview / Cancel / Reset / Apply / post-Apply Cancelを検証
+- Preview failure時のRuntime rollbackを検証
+- Persistence failure時にBaselineが進まずCancel可能なことを検証
+- Foundation Runtime SmokeでPreview中はCommitted Settingsが変わらず、CancelでGameplay Adapterが元値へ戻ることを検証
+- Foundation Runtime SmokeでApply後のCommitted Settings更新と、後続Cancelが直近Apply値へ戻ることを検証
+

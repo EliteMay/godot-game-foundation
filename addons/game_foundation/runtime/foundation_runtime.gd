@@ -10,6 +10,9 @@ const SaveSystem = preload("res://addons/game_foundation/save/save_system.gd")
 const AutoSaveService = preload("res://addons/game_foundation/save/auto_save_service.gd")
 const SettingsSystem = preload("res://addons/game_foundation/settings/settings_system.gd")
 const SettingsRuntime = preload("res://addons/game_foundation/settings/settings_runtime.gd")
+const SettingsEditSession = preload(
+	"res://addons/game_foundation/settings/settings_edit_session.gd"
+)
 const InputSystem = preload("res://addons/game_foundation/input/input_system.gd")
 const GameFlowService = preload("res://addons/game_foundation/flow/game_flow_service.gd")
 const DiagnosticsService = preload("res://addons/game_foundation/diagnostics/diagnostics_service.gd")
@@ -261,6 +264,38 @@ func save_settings(settings: Dictionary) -> Dictionary:
 	return result
 
 
+func begin_settings_edit_session() -> Dictionary:
+	if not _initialized:
+		return _error(
+			"runtime_not_initialized",
+			"FoundationRuntime must be initialized before editing settings"
+		)
+	if not _settings_enabled():
+		return _error("settings_disabled", "settings are disabled for this runtime")
+
+	var settings_config: Dictionary = _section(
+		"settings",
+		DEFAULT_SETTINGS_CONFIG
+	)
+	var session := SettingsEditSession.new()
+	var configured: Dictionary = session.configure(
+		_settings,
+		settings_config.get("gameplay_defaults", {}),
+		Callable(self, "_apply_settings_preview"),
+		Callable(self, "_persist_settings_from_edit_session")
+	)
+	if not bool(configured.get("ok", false)):
+		return configured
+
+	return _success(
+		"settings_edit_session_started",
+		{
+			"session": session,
+			"settings": session.draft_settings(),
+		}
+	)
+
+
 func restore_input_bindings() -> Dictionary:
 	if not _input_enabled():
 		return _success("input_disabled")
@@ -404,11 +439,32 @@ func _initialize_settings() -> Dictionary:
 
 
 func _apply_loaded_settings() -> Dictionary:
+	return _apply_settings_value(_settings)
+
+
+func _apply_settings_preview(settings: Dictionary) -> Dictionary:
+	var settings_config: Dictionary = _section(
+		"settings",
+		DEFAULT_SETTINGS_CONFIG
+	)
+	var normalized_result: Dictionary = SettingsSystem.normalize_settings(
+		settings,
+		settings_config.get("gameplay_defaults", {})
+	)
+	if not bool(normalized_result.get("ok", false)):
+		return normalized_result
+
+	return _apply_settings_value(
+		normalized_result.get("settings", {}) as Dictionary
+	)
+
+
+func _apply_settings_value(settings: Dictionary) -> Dictionary:
 	var settings_config: Dictionary = _section("settings", DEFAULT_SETTINGS_CONFIG)
 	var runtime_result: Dictionary = _success("runtime_apply_disabled")
 	if bool(settings_config.get("apply_runtime", true)):
 		runtime_result = SettingsRuntime.apply_settings(
-			_settings,
+			settings,
 			settings_config.get("audio_bus_map", {})
 		)
 		if not bool(runtime_result.get("ok", false)):
@@ -417,7 +473,7 @@ func _apply_loaded_settings() -> Dictionary:
 	var gameplay_apply: Callable = _adapter_callable("apply_gameplay_settings")
 	var gameplay_result: Dictionary = _success("gameplay_settings_not_used")
 	if gameplay_apply.is_valid():
-		var gameplay_variant: Variant = _settings.get("gameplay", {})
+		var gameplay_variant: Variant = settings.get("gameplay", {})
 		var value: Variant = gameplay_apply.call(
 			gameplay_variant if gameplay_variant is Dictionary else {}
 		)
@@ -435,6 +491,32 @@ func _apply_loaded_settings() -> Dictionary:
 		"common": runtime_result,
 		"gameplay": gameplay_result,
 	}
+
+
+func _persist_settings_from_edit_session(settings: Dictionary) -> Dictionary:
+	var settings_config: Dictionary = _section(
+		"settings",
+		DEFAULT_SETTINGS_CONFIG
+	)
+	var result: Dictionary = SettingsSystem.save_settings(
+		settings,
+		settings_config.get("gameplay_defaults", {}),
+		String(
+			settings_config.get(
+				"path",
+				SettingsSystem.DEFAULT_SETTINGS_PATH
+			)
+		)
+	)
+	if not bool(result.get("ok", false)):
+		_log_error("settings edit session persistence failed", result)
+		return result
+
+	_settings = (result.get("settings", {}) as Dictionary).duplicate(true)
+	result["runtime_apply"] = _success("settings_session_preview_committed")
+	_last_settings_result = result.duplicate(true)
+	settings_applied.emit(_last_settings_result.duplicate(true))
+	return result
 
 
 func _initialize_input() -> Dictionary:

@@ -114,3 +114,13 @@
 - Context: Optional Actionをhide / disableするMenuでScene固定のFocus neighborを持つと、利用不能ButtonへFocusが向いたり、Game固有Controller MappingとFoundation側Input処理が二重管理になりやすい。
 - Decision: Focus graphは現在のvisible / enabled ControlからRuntimeで再構築し、FoundationはGodot標準UI Focusを使う。物理Key / Gamepad ButtonはHardcodeせず、Custom layoutは`manage_focus_navigation=false`でGame側へ委譲できる。
 - Prevention: Menu Action availabilityを変更する時はFocus graphも同時に更新し、Focused ActionをRuntime Snapshotから観測可能にする。Headless Testではsemantic UI actionでMouseなし操作をRegression Guardする。
+
+## GF-013 — Settings PreviewとCommitted Stateを分離する
+
+- Date: 2026-09-28
+- Type: UX / Data / Reliability
+- Status: Adopted
+- Context: Options画面でSlider等を即時Previewすると、Runtime値だけ先に変わる。一方でCancel / Resetが直接Settings Fileを更新すると、Userが「戻る」を選んでもSession開始時点へ復元できない。
+- Decision: Settings Edit SessionはBaseline / Draft / Runtime Preview / Persisted Settingsを分離する。PreviewとResetはDiskを書き換えず、Apply成功時だけPersistする。Cancelは直近Apply時点のBaselineへRuntimeを戻す。
+- Prevention: Options UI ComponentはSettings Fileへ直接書かずSession Draftを編集する。Preview失敗時は直前Runtime PreviewへRollbackを試み、復元失敗を成功扱いしない。
+
