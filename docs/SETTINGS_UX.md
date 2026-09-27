@@ -303,6 +303,106 @@ Replaceは複数Actionを変更し得ますが、Persistence Callbackが失敗�
 
 FoundationはどのPolicyがそのGameに正しいかを決めません。Competitive game、Local multiplayer、Accessibility shortcut等で要求が異なるため、Policy選択はGame側です。
 
+
+## Input Prompt Resolver
+
+`addons/game_foundation/input/input_prompt_resolver.gd` は、現在使っているInput deviceとAction Bindingから、表示用TextとAsset非依存のIcon keyを解決します。
+
+```gdscript
+var prompts := InputPromptResolver.new()
+prompts.configure(input_contract)
+
+# Gameの_input等から渡す
+prompts.observe_event(event)
+
+var prompt := prompts.resolve_action("interact")
+# prompt.text
+# prompt.icon_key
+# prompt.icon_keys
+```
+
+### Current device
+
+Foundationでは次の2 familyを共通化します。
+
+- `keyboard_mouse`
+- `gamepad`
+
+Key press / Mouse Button / 有意なMouse Motionはkeyboard/mouse、Joypad Button / 有意なAxis Motionはgamepadへ切り替えます。
+
+誤切替を避けるため、Key echo / release、Button release、設定Threshold未満のStick driftとMouse jitterは無視します。
+
+Gamepadでは最後に操作した`device_id`も保持します。Actionにspecific-device Bindingがある場合は現在deviceとの一致を優先し、次にdevice=-1のwildcardを選びます。
+
+### Action resolution
+
+`resolve_action()` はCurrent deviceに合うBindingを優先します。
+
+現在device向けBindingが無い場合は既定で他deviceのBindingへFallbackし、`fallback_used=true`を返します。GameがCurrent deviceだけを表示したい場合は`allow_fallback=false`を指定できます。
+
+未割当ActionはErrorではなく`action_unbound` + `available=false`として扱います。
+
+### Text / Icon keys
+
+Resolverは次のようなPresentation dataを返します。
+
+- `text`: `W`, `Ctrl + Mouse Left`, `Left Stick Right` 等
+- `icon_key`: 単一文字列として組み合わせたkey
+- `icon_keys`: Modifierを含む複数Glyph用key配列
+- `canonical_icon_key(s)`: Game override前のFoundation semantic key
+
+代表例:
+
+- `key_w`
+- `key_space`
+- `mouse_left`
+- `gamepad_south`
+- `gamepad_dpad_up`
+- `gamepad_left_stick_right`
+
+Face ButtonはXbox / PlayStation / Nintendo等の製品固有GlyphをFoundationが推測せず、South / East / West / Northの位置semanticを使います。
+
+### Icon pack / Localization adapter
+
+FoundationはIcon画像を同梱しません。
+
+Game側はconfigure時にoverrideできます。
+
+```gdscript
+prompts.configure(
+    input_contract,
+    {
+        "text_overrides": {
+            "gamepad_south": "決定",
+        },
+        "icon_key_overrides": {
+            "gamepad_south": "xbox_a",
+        },
+    }
+)
+```
+
+これによりThird-party Icon Pack、Game独自Sprite Atlas、Localizationへ接続できます。Canonical keyはResultへ残るため、override後も元semanticを追跡できます。
+
+### Input Remap UI integration
+
+`InputRemapControl` の`binding_formatter`へResolverのFormatterをそのまま渡せます。
+
+```gdscript
+{
+    "binding_formatter": Callable(prompts, "format_descriptor_text")
+}
+```
+
+Input Remap UI自体は特定Icon PackやController familyへ依存しません。
+
+### Boundary
+
+- Controller製品名からXbox / PlayStation / Nintendo Glyphを自動断定しない
+- Third-party Icon Pack AssetをFoundationへ必須同梱しない
+- Game固有LocalizationをFoundationへ固定しない
+- Current device追跡はPrompt presentation用であり、Input SystemのBinding source of truthを置き換えない
+
 ## Boundary
 
 Foundationが所有するもの:
@@ -321,4 +421,4 @@ Game側が所有するもの:
 - Gameplay settingの意味
 - Input remap UIのTheme / 画面全体構成
 
-Generic Option Controls、Input Remap UI、Conflict Detectionは実装済みです。Input Prompt ResolverはPhase 12の後続Taskです。
+Generic Option Controls、Input Remap UI、Conflict Detection、Input Prompt Resolverまで実装済みです。Phase 12の共通Behaviorは完了し、実Game Theme / Focus / 物理Controller操作感は統合時のRuntime Validationへ残します。

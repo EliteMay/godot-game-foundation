@@ -153,3 +153,13 @@
 - Semantics: device=-1はgamepad wildcard、specific device同士は同一deviceだけ競合、Axisは方向を区別する。Replaceは一致Eventだけを外して他Bindingを保持する。
 - Prevention: Foundationが特定Game向けConflict winnerやReserved KeyをHardcodeしない。Persistence失敗時は複数Actionの変更を含めて以前のBinding snapshotへ戻す。
 
+## GF-017 — Input PromptはController製品名ではなくsemantic keyをFoundation境界にする
+
+- Date: 2026-09-28
+- Type: Input / UX / Accessibility
+- Status: Adopted
+- Context: Gamepad ButtonをA / Cross等の製品固有GlyphとしてFoundationが固定すると、Xbox / PlayStation / NintendoやThird-party Controllerで表示が誤る。Icon Pack本体をCoreへ入れるとAsset dependencyも増える。
+- Decision: Prompt Resolverはkeyboard/mouse/gamepadのCurrent deviceを追跡し、BindingからTextとstable semantic Icon keyを返す。Gamepad face buttonはSouth / East / West / Northをcanonical keyにし、Game側overrideで実GlyphやLocalized textへ接続する。
+- Reliability: Stick drift、Mouse jitter、release、key echoはCurrent device切替に使わない。Current device向けBindingが無い場合のFallback有無はCallerが選べる。
+- Prevention: Controller名文字列から製品Layoutを推測してHardcodeせず、Third-party Icon AssetをFoundation必須Dependencyにしない。
+
