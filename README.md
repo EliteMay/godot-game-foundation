@@ -97,7 +97,7 @@ godot-game-foundation/
 
 Phase 0〜10は完了しています。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。現在はPhase 11 — Application Shell / Scene UXを実装中です。
 
-v0.11.0-devでは、Game固有Themeを固定しないOptional Application Shellの実装を開始しました。最初のModuleとして、Fade in / out、Game側からのduration / color差し替え、Reduced motion向けmotion scaleを持つ **Transition Layer** を追加しています。
+v0.11.0-devでは、Game固有Themeを固定しないOptional Application Shellの実装を進めています。**Transition Layer** に加え、既存Scene ContractをSource of TruthとしてBackground ThreadでPackedSceneを読み込む **Async Scene Loader** を追加しました。Progress / Failure / Duplicate requestを構造化して扱い、Game固有PathをFoundationへ固定しません。
 
 FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通Phaseは、Application Shell / Async Scene Loading、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Application Shellの最初の実装としてTransition Layerが入り、次はAsync Scene Loader / Loading Screen Contractへ進みます。
+次の共通Phaseは、Application Shell、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Application ShellではTransition LayerとAsync Scene Loaderまで実装済みで、次はLoading Screen Contractへ進みます。
