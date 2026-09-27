@@ -428,4 +428,9 @@ Phase 12 — Settings / Input UX Componentsを開始し、Options画面で毎回
 - Persistence failure時にBaselineが進まずCancel可能なことを検証
 - Foundation Runtime SmokeでPreview中はCommitted Settingsが変わらず、CancelでGameplay Adapterが元値へ戻ることを検証
 - Foundation Runtime SmokeでApply後のCommitted Settings更新と、後続Cancelが直近Apply値へ戻ることを検証
+- PR #13 Godot CI: PASS（Settings Edit Session / Foundation Runtime Smokeを含む）
+- PR #13 Windows Build: PASS
+- main merge commit: `131fa76dcf2990416559840288703c3bf46d22e9`
+- main Godot CI: PASS
+- main Windows Build: PASS
 
