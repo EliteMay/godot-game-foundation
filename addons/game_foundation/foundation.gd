@@ -30,6 +30,7 @@ static func capabilities() -> PackedStringArray:
 		"generic_option_controls",
 		"input_system",
 		"input_rebind",
+		"input_remap_ui",
 		"input_persistence",
 		"keyboard_mouse_bindings",
 		"gamepad_binding_model",

@@ -484,3 +484,48 @@ Phase 12のOptions UIで、各GameがToggle / Slider / List / Resolutionの基�
 - main Windows Build: PASS
 - 最終Game ThemeでのVisual quality / Focus順は実Game統合時のRuntime Validation対象
 
+---
+
+## v0.12.0-dev — Input Remap UI
+
+### 目的
+
+Phase 12で、各GameがCurrent Binding表示・入力待機・Keyboard / Mouse / GamepadのCapture / Rebindを毎回作り直さず、既存Input Systemへ安全に接続できる共通Rowを追加する。
+
+### 実装
+
+- `addons/game_foundation/input/input_remap_control.gd`
+  - Internal Action IDとGame-facing display nameを分離
+  - Current Binding表示
+  - Rebind / Cancel Button
+  - Listening state
+  - Keyboard press / Mouse Button / Joypad Button / Joypad Motion Capture
+  - Key release / echo、Button release、Axis threshold未満を無視
+  - Joypad Motion方向を±1へ正規化
+  - Gamepad deviceは既定-1、必要Gameだけpreserve可能
+  - Optional `binding_formatter`
+  - Optional Persistence Callback
+  - Persistence failure時にRebind前BindingsへRuntime rollback
+  - Pause中も操作できるPROCESS_MODE_ALWAYS
+- Foundation capabilityへ `input_remap_ui` を追加
+- Input / Settings UX Docs、Roadmap、README、Learningを更新
+
+### 設計境界
+
+- Capture CancelへEscape等の物理KeyをHardcodeしない
+- Game Action内部名をUser-facing Labelへ流用しない
+- Theme / Font / Palette / final Options compositionはGame側
+- 同一Binding Conflict policyは先取りせず次Taskへ分離
+- Input Prompt icon / current-device解決は後続Input Prompt Resolverへ分離
+
+### Validation
+
+- Input Remap Control Headless SmokeをCIへ追加
+- Keyboard / Mouse / Joypad Button / Joypad Motion Captureを検証
+- Current Binding表示とInternal ID / display name分離を検証
+- release / axis drift無視を検証
+- default gamepad device=-1とAxis方向正規化を検証
+- Cancelで既存Bindingを保持することを検証
+- Persistence成功とPersistence失敗時Runtime rollbackを検証
+- Game ThemeでのVisual quality / Focus順 / 物理Controller操作感は実Game統合時のRuntime Validation対象
+

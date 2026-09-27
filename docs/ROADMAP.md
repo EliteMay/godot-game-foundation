@@ -525,7 +525,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 12 — Settings / Input UX Components
 
-状態: **実装中 / Settings Edit Session・Generic Option Controls完了**
+状態: **実装中 / Settings Edit Session・Generic Option Controls・Input Remap UI完了**
 
 目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
 
@@ -546,10 +546,16 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - Sliderのmin / max / step /表示倍率 / suffix、List / ResolutionのLabel / Option構成はGame側から指定する
   - Game Themeを上書きせず親Themeを継承し、物理Inputや最終Options画面構成を固定しない
   - Headless SmokeでToggle / Slider / List / Resolution、nested path、Reset同期、Cancel後disable、範囲外Rejectを検証する
-- [ ] Input Remap UI
+- [x] Input Remap UI
   - 担当: ChatGPT
-  - Current Binding表示、入力待機、Keyboard / Mouse / Gamepad再割当を既存Input Systemへ接続する
-  - Game Action名と表示名を分離する
+  - Current Binding / Action表示、Rebind / Cancel、入力待機Stateを持つTheme-neutralなRow Controlを提供する
+  - Keyboard / Mouse Button / Joypad Button / Joypad Motionを既存Input SystemのDescriptor / rebind APIへ接続する
+  - Joypad Motionは設定可能Threshold未満をdriftとして無視し、採用時は方向を±1へ正規化する
+  - Gamepad deviceは既定で-1へ正規化し、特定Controller固定を避ける。必要Gameはpreserve optionで変更できる
+  - Internal Action名とGame-facing display nameを別引数として扱う
+  - Optional Persistence Callback失敗時はRebind前BindingsへRuntime rollbackを試みる
+  - Capture Cancel用の物理KeyをFoundationへHardcodeせず、Button / public APIから停止できる
+  - Conflict policyはこのTaskで暗黙実装せず次Taskへ分離する
 - [ ] Conflict Detection
   - 担当: ChatGPT
   - 同一Binding競合を検出し、Reject / Replace / AllowのPolicyをGame側で選べるようにする

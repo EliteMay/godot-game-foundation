@@ -44,7 +44,7 @@ FoundationはContractに書かれているActionだけを管理する。
 - Joypad Button
 - Joypad Motion / Axis
 
-GamepadはPrototype段階でUIまで固定しないが、保存形式とRuntime適用は最初から対応する。
+保存形式とRuntime適用に加えて、Phase 12ではTheme-neutralなInput Remap UIからKeyboard / Mouse / GamepadをCaptureできる。
 
 ## Default適用
 
@@ -73,7 +73,7 @@ InputSystem.rebind_action(
 
 既定ではAction内の既存Eventを置き換える。
 
-Game固有のInput UIは、ユーザーが押したInputEventを `descriptor_from_event()` で保存用Descriptorへ変換できる。
+Game固有UIから直接 `descriptor_from_event()` を使えるほか、Phase 12の `input_remap_control.gd` でCurrent Binding表示・入力待機・Rebindを共通化できる。
 
 ## Persistence
 
@@ -152,7 +152,7 @@ Mouse Motion自体はAction Bindingではないため、このPhaseではRebind�
 
 Deviceは `-1` を使えば特定Controllerへ固定しないBindingとして定義できる。
 
-今後Gamepad UIを追加してもFile Schemaを作り直さなくてよい構造にする。
+Input Remap UIではGamepad ButtonとAxisをCaptureできる。既定ではdeviceを`-1`へ正規化し、Axis driftは設定Threshold未満を無視する。
 
 ## 責務分担
 
@@ -167,6 +167,19 @@ Foundation:
 Game:
 - Action名
 - Default Binding
-- Rebind UI
+- Actionの表示名 / Theme / Options画面構成
 - 同じKeyを複数Actionへ割り当てるか等のConflict Policy
 - Gameplay中にどのActionをどう使うか
+
+## Rebind UI
+
+`addons/game_foundation/input/input_remap_control.gd` は、Input Systemの既存Contract / Descriptor / Rebind APIを利用する共通Rowです。
+
+- Internal Action IDと表示名を分離
+- Keyboard / Mouse Button / Joypad Button / Joypad MotionをCapture
+- Capture Cancelの物理Keyを固定しない
+- Optional persistence callback
+- Persistence failure時はRebind前BindingsへRuntime rollbackを試す
+- Theme / final layout / Conflict PolicyはGameまたは後続Componentへ残す
+
+Conflict DetectionとInput Prompt Resolverは別Taskです。
