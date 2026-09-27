@@ -525,7 +525,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 12 — Settings / Input UX Components
 
-状態: **実装中 / Settings Edit Session完了**
+状態: **実装中 / Settings Edit Session・Generic Option Controls完了**
 
 目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
 
@@ -537,10 +537,15 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - ResetはGameのGameplay defaultsを含むDefaultをDraftへ読み込み、ApplyするまではSettings Fileを削除・上書きしない
   - Preview apply失敗時は直前Runtime previewへRollbackを試み、失敗Draftを採用しない
   - FoundationRuntimeから現在のSettings / Adapter / Pathを使ってSessionを開始できる
-- [ ] Generic Option Controls
+- [x] Generic Option Controls
   - 担当: ChatGPT
-  - Toggle / Slider / List / Resolution等のCommon Controlを提供する
-  - Theme / Label文言 / Option構成はGame側から指定する
+  - Toggle / Slider / List / Resolutionを1つのTheme-neutralな共通Row Componentから構築できる
+  - Dotted path / String ArrayでSettings Edit SessionのDraftへ安全にBindingする
+  - UI変更はSession Draftへだけ書き込み、Preview可否はControlごとに指定できる
+  - SessionのReset / Cancel等でDraftが変わった場合はControl表示を自動同期する
+  - Sliderのmin / max / step /表示倍率 / suffix、List / ResolutionのLabel / Option構成はGame側から指定する
+  - Game Themeを上書きせず親Themeを継承し、物理Inputや最終Options画面構成を固定しない
+  - Headless SmokeでToggle / Slider / List / Resolution、nested path、Reset同期、Cancel後disable、範囲外Rejectを検証する
 - [ ] Input Remap UI
   - 担当: ChatGPT
   - Current Binding表示、入力待機、Keyboard / Mouse / Gamepad再割当を既存Input Systemへ接続する

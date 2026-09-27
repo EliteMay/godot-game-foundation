@@ -124,3 +124,12 @@
 - Decision: Settings Edit SessionはBaseline / Draft / Runtime Preview / Persisted Settingsを分離する。PreviewとResetはDiskを書き換えず、Apply成功時だけPersistする。Cancelは直近Apply時点のBaselineへRuntimeを戻す。
 - Prevention: Options UI ComponentはSettings Fileへ直接書かずSession Draftを編集する。Preview失敗時は直前Runtime PreviewへRollbackを試み、復元失敗を成功扱いしない。
 
+## GF-014 — Option ControlはDraftへBindingし、Settings Fileを所有しない
+
+- Date: 2026-09-28
+- Type: UX / Architecture / Reliability
+- Status: Adopted
+- Context: Toggle / Slider等が各自Settings Fileへ直接保存すると、Apply / Cancel / ResetのSession Contractを迂回し、複数Control間でCommitted StateとPreview Stateが分裂する。
+- Decision: Generic Option ControlsはSettings Edit SessionのDraftだけを編集する。Pathは既存Draftに存在するものだけを受け、Theme / Label / Option listはGame側が定義する。
+- Prevention: Settings UI Componentを追加する時はPersistence APIを直接呼ばずSessionへBindingする。Game固有OptionやResolution候補をFoundationへHardcodeしない。
+

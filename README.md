@@ -97,7 +97,7 @@ godot-game-foundation/
 
 Phase 0〜11は実装済みです。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。Phase 11はHeadless Smoke / Windows Buildまで完了し、物理Controllerの実Game操作感だけを後続Runtime Validationへ残しています。現在はPhase 12 — Settings / Input UX Componentsを実装中です。
 
-v0.12.0-devではPhase 12へ進み、最初の共通機能として **Settings Edit Session** を追加しました。SettingsのCommitted値と一時Draftを分離し、Preview → Apply / Cancel / Resetを共通化します。CancelはSession開始時または直近Apply時点へRuntime設定を戻し、ResetもApply前はDiskを変更しません。FoundationRuntimeから現在のSettings / Gameplay Adapter / Settings Pathを使ってSessionを開始できます。Phase 11のOptional Application Shell一式も引き続き利用できます。
+v0.12.0-devではPhase 12へ進み、**Settings Edit Session** と **Generic Option Controls** を追加しました。SettingsのCommitted値と一時Draftを分離し、Preview → Apply / Cancel / Resetを共通化したうえで、Toggle / Slider / List / ResolutionをSession DraftへBindingできます。ControlはTheme / Label / Option構成をGame側へ残し、Preview中にSettings Fileへ直接書きません。FoundationRuntimeから現在のSettings / Gameplay Adapter / Settings Pathを使ってSessionを開始できます。Phase 11のOptional Application Shell一式も引き続き利用できます。
 
 FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通Phaseは、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12ではSettings Edit Sessionまで実装済みで、Roadmap上の次TaskはGeneric Option Controlsです。物理Controllerを使ったPhase 11のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
+次の共通Phaseは、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12ではSettings Edit SessionとGeneric Option Controlsまで実装済みで、Roadmap上の次TaskはInput Remap UIです。物理Controllerを使ったPhase 11のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
