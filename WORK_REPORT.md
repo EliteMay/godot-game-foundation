@@ -30,13 +30,17 @@ Deep Factory固有開発をいったん保留し、新しいGodot Gameで使い�
 
 ### Automated Validation
 
+- PR #4 Godot CI: PASS
 - Direct cold start: PASS
 - Godot import: PASS
 - Existing Foundation smoke tests: PASS
 - Integrated Foundation Runtime smoke: PASS
-- Windows Build: PASS
-- Generated Starter validation: PR CIで再確認対象
-- Corrupt Save preservation regression: final PR CIで確認対象
+- Corrupt Save preservation regression: PASS
+- Generated Starter materialize / import / main / integration smoke: PASS
+- PR #4 Windows Build: PASS
+- main Godot CI: PASS
+- main Windows Build: PASS
+- main merge commit: `a804b0cbb9f2331211e0f9fe51f34d8b9a16a299`
 
 ### 未確認
 
