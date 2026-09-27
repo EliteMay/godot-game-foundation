@@ -178,6 +178,66 @@ func _run() -> void:
 
 	runtime.queue_free()
 	await get_tree().process_frame
+
+	for path in [SAVE_PATH + ".bak", SAVE_PATH + ".tmp", SAVE_PATH + ".bak.tmp"]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
+	var broken_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if broken_file == null:
+		_fail("could not create corrupt save fixture")
+	else:
+		broken_file.store_string("{ broken json")
+		broken_file.close()
+
+	var protected_runtime := FoundationRuntime.new()
+	add_child(protected_runtime)
+	var protected_config: Dictionary = protected_runtime.configure(
+		{
+			"save": {
+				"enabled": true,
+				"path": SAVE_PATH,
+				"game_schema_version": 1,
+			},
+			"settings": {"enabled": false},
+			"input": {"enabled": false},
+			"flow": {"enabled": false},
+			"diagnostics": {"enabled": false},
+			"runtime_test": {"enabled": false},
+		},
+		{
+			"capture_save_state": Callable(self, "_capture_save_state"),
+			"restore_save_state": Callable(self, "_restore_save_state"),
+		}
+	)
+	_expect_ok(protected_config, "protected runtime configure")
+	var protected_initialized: Dictionary = protected_runtime.initialize()
+	_expect_ok(protected_initialized, "protected runtime initialize")
+	_expect_true(
+		protected_runtime.is_save_write_blocked(),
+		"corrupt unrecoverable save should block future writes"
+	)
+
+	_game_state = {"score": 999}
+	var blocked_save: Dictionary = protected_runtime.save_now()
+	_expect_ok(blocked_save, "blocked save should preserve the existing file without crashing")
+	_expect_equal(
+		String(blocked_save.get("code", "")),
+		"save_preserved_after_load_failure",
+		"blocked save should report preservation instead of overwriting"
+	)
+	var preserved_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if preserved_file == null:
+		_fail("corrupt primary should remain available for recovery")
+	else:
+		_expect_equal(
+			preserved_file.get_as_text(),
+			"{ broken json",
+			"blocked runtime must not overwrite the corrupt primary"
+		)
+		preserved_file.close()
+
+	protected_runtime.queue_free()
+	await get_tree().process_frame
 	_cleanup()
 	_finish()
 
