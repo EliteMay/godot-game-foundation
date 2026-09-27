@@ -527,5 +527,10 @@ Phase 12で、各GameがCurrent Binding表示・入力待機・Keyboard / Mouse 
 - default gamepad device=-1とAxis方向正規化を検証
 - Cancelで既存Bindingを保持することを検証
 - Persistence成功とPersistence失敗時Runtime rollbackを検証
+- PR #15 Godot CI: PASS（Input Remap Control Smokeを含む）
+- PR #15 Windows Build: PASS
+- main merge commit: `35dfa3595a73e1905ef9be29167316a4f63d57ca`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - Game ThemeでのVisual quality / Focus順 / 物理Controller操作感は実Game統合時のRuntime Validation対象
 
