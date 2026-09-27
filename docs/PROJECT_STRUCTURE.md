@@ -62,6 +62,7 @@ godot-game-foundation/
 │  ├─ ARCHITECTURE.md
 │  ├─ INTEGRATION.md
 │  ├─ PROJECT_STRUCTURE.md
+│  ├─ REFERENCE_TEMPLATES.md
 │  ├─ ROADMAP.md
 │  ├─ RUNTIME.md
 │  ├─ SAVE_SYSTEM.md
@@ -138,6 +139,8 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 
 ## 今後追加する予定
 
-Core Runtime System、Integrated Foundation Runtime、Windows Build、Starter配布Contract、Game Dev Hub連携まで実装済み。今後はGame固有機能を増やす前にFoundationの共通Lifecycle・Save互換性・Starter品質を優先して検証する。
+Core Runtime System、Integrated Foundation Runtime、Windows Build、Starter配布Contract、Game Dev Hub連携まで実装済み。
+
+公開Godot Template比較の結果、次はGame固有機能ではなくApplication Shell / Async Scene Loading、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled RecoveryをOptional Moduleとして追加する。詳細は `REFERENCE_TEMPLATES.md` と `ROADMAP.md` を参照する。
 
 Game固有CodeはこのRepositoryへ追加しない。
