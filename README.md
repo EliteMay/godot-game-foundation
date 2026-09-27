@@ -88,14 +88,14 @@ godot-game-foundation/
 - Phase 5 — Diagnostics
 - Phase 6 — Windows Build
 - Phase 7 — Starter Template / Game Dev Hub
-- Phase 8 — Pilot Game（保留）
+- Phase 8 — Deep Factory Pilot（完了）
 - Phase 9 — Runtime Test Bridge
 - Phase 10 — Integrated Foundation Runtime
 - Phase 11〜16 — Application Shell / Settings & Input UX / Audio / Save Slots / Localization / Recovery
 
 ## 現在の状態
 
-Phase 0〜7は完了、Phase 8 — Deep Factory Pilotは保留、Phase 9 — Runtime Test BridgeはWindows実機E2Eまで確認済みです。Phase 10 — Integrated Foundation RuntimeはCI / Windows Buildまで完了し、StarterのWindows実機確認待ちです。
+Phase 0〜9は完了しています。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Passまで確認済みです。Phase 10 — Integrated Foundation RuntimeはCI / Windows Buildまで完了し、Current v0.10 Templateから新規生成したStarterのWindows実機確認だけが残っています。
 
 v0.10.0-devでは、個別SystemをGameごとに手動配線する負担を減らす **FoundationRuntime** を追加しました。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
