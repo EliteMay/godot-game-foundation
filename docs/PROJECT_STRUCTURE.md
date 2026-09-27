@@ -9,6 +9,8 @@ godot-game-foundation/
 ├─ addons/
 │  └─ game_foundation/
 │     ├─ foundation.gd
+│     ├─ runtime/
+│     │  └─ foundation_runtime.gd
 │     ├─ save/
 │     │  ├─ save_system.gd
 │     │  └─ auto_save_service.gd
@@ -38,6 +40,8 @@ godot-game-foundation/
 ├─ tests/
 │  ├─ foundation_smoke.gd
 │  ├─ foundation_smoke.tscn
+│  ├─ foundation_runtime_smoke.gd
+│  ├─ foundation_runtime_smoke.tscn
 │  ├─ save_system_smoke.gd
 │  ├─ save_system_smoke.tscn
 │  ├─ settings_system_smoke.gd
@@ -78,6 +82,10 @@ godot-game-foundation/
 
 `addons/game_foundation/` だけを他Gameへ導入しても動作することを目標にする。
 
+### runtime
+
+- `foundation_runtime.gd` — Settings / Input / Flow / Save / Diagnostics / Runtime Test Bridgeをまとめて初期化するLifecycle Coordinator。Game固有StateはCallable Adapterで受け取る
+
 ### save
 
 - `save_system.gd` — Payload Validation / Version / Atomic Save / Load / Backup / Migration
@@ -117,6 +125,7 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 現在:
 
 - Foundation metadata / capability
+- Integrated Foundation Runtime / lifecycle
 - Generic Save System
 - Settings System
 - Input System
@@ -128,6 +137,6 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 
 ## 今後追加する予定
 
-Core Runtime SystemとWindows Buildは実装済み。Starter配布Contractも実装済みで、Game Dev Hub連携を進める。
+Core Runtime System、Integrated Foundation Runtime、Windows Build、Starter配布Contract、Game Dev Hub連携まで実装済み。今後はGame固有機能を増やす前にFoundationの共通Lifecycle・Save互換性・Starter品質を優先して検証する。
 
 Game固有CodeはこのRepositoryへ追加しない。
