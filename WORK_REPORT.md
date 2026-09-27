@@ -632,5 +632,10 @@ Phase 12の最後として、HUD / Tutorial / OptionsがCurrent deviceとCurrent
 - Gamepad Axis direction semanticを検証
 - Text / external Icon Pack key overrideを検証
 - Input Remap formatter helperを検証
+- PR #17 Godot CI: PASS（Input Prompt Resolver Smokeを含む）
+- PR #17 Windows Build: PASS
+- main merge commit: `f2c94cb184ea7497fa681a2e590c5ee6d511369b`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - Game Theme / real icon asset / physical controller glyph feelは実Game統合時のRuntime Validation対象
 
