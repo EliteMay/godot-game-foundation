@@ -413,7 +413,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 10 — Integrated Foundation Runtime
 
-状態: **CI完了 / Windows Starter実機確認待ち**
+状態: **完了 / CI・Windows Starter実機確認済み**
 
 目的: Save / Settings / Input / Flow / Diagnostics / Runtime Test BridgeをGameごとに毎回手動配線せず、Game固有Contractだけ渡して安全に初期化できる共通Lifecycleを作る。
 
@@ -455,19 +455,20 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - 担当: ChatGPT
   - Godot CI / Generated Starter / Windows Exportを通す
   - PR #4でGodot CI / Windows Build成功を確認
-- [ ] Windows Starter実機確認
+- [x] Windows Starter実機確認
   - 担当: あなた
   - この `godot-game-foundation` Repository本体ではなく、Game Dev Hub左側の「Foundationから新しいゲームを作る」からFileのない空Repositoryへ新規Starterを生成する
   - 生成されたGameのGame Foundation表示が `v0.10.0-dev` になっていることを確認する
   - そのGameで「ゲームを起動」を押し、Starter画面に `Godot Game Foundation 0.10.0-dev / Runtime ready` が表示されることを確認する
   - v0.8等の旧Starterは「基盤を更新」だけでは `scripts/main.gd` が更新されないため、この確認には新規v0.10 Starterを使う
+  - 2026-09-28にGame Dev Hub v0.1.25から新規 `foundation-runtime-test` Starterを生成し、2項目ともPassを確認した
 
 完了条件:
 新規GameがFoundationRuntimeを入口として共通Lifecycleを利用でき、Game固有StateをFoundationへ混ぜず、Headless CIとWindows Starter実機の両方で初期化を確認できる。
 
 ## Phase 11 — Application Shell / Scene UX
 
-状態: **調査完了 / 未実装**
+状態: **実装中 / Transition Layer完了**
 
 参考: `docs/REFERENCE_TEMPLATES.md`
 
@@ -477,11 +478,13 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - 担当: ChatGPT
   - `ResourceLoader.load_threaded_request()` を使い、Progress / Failure / duplicate requestを扱う
   - 現在のScene ContractをSource of Truthにし、Game固有PathをFoundationへ固定しない
-- [ ] Transition Layer
+- [x] Transition Layer
   - 担当: ChatGPT
   - Fade in / outをOptional共通Layerとして提供する
-  - Transition duration / colorはGame側で差し替え可能にする
-  - Reduced motion等でAnimationを短縮・無効化できるExtension Pointを持つ
+  - Transition duration / color / CanvasLayerをGame側で差し替え可能にする
+  - `motion_scale` と `set_reduced_motion()` でAnimationを短縮・無効化できるExtension Pointを持つ
+  - Transition中の重複Requestを拒否し、Mouse入力を奪わない
+  - Headless Smoke TestでFade out / in、重複拒否、Reduced motion、Motion scaleを検証する
 - [ ] Loading Screen Contract
   - 担当: ChatGPT
   - Progress表示を共通Signal / Stateとして公開する
