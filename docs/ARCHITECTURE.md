@@ -13,7 +13,7 @@ Game Dev Hub
   └─ 開発・Repository・実機確認・共有を管理
 
 Godot Game Foundation
-  └─ Save / Settings / Input / Flow / Diagnostics / Runtime Test Bridge / Build
+  └─ Save / Settings / Input / Flow / Diagnostics / Runtime Test Bridge / Optional Shell / Build
 
 Game Repository
   └─ Gameplay / Content / Balance / Game-specific UI
@@ -70,7 +70,8 @@ addons/game_foundation/
 ├─ input/
 ├─ flow/
 ├─ diagnostics/
-└─ testing/
+├─ testing/
+└─ shell/
 ```
 
 System同士を強く結合させず、ゲーム側が必要なSystemだけ利用できる形を目指す。
@@ -142,3 +143,12 @@ Game固有DataはRuntimeへ埋め込みません。Saveでは `capture_save_stat
 Save Load/Restore失敗時は既存Canonical Saveを守るため、Runtimeは以後のSave writeをblockします。明示Test RunでRuntime Test Bridgeが有効な間も通常Saveへのwriteを行いません。
 
 各Systemは従来どおり単独利用可能です。FoundationRuntimeは「全部使うこと」を強制せず、ConfigでSystem単位に有効/無効を選べます。
+
+
+## Optional Application Shell
+
+`shell/` はMain / Pause / Loading等のGame-ready UXを構成するためのOptional Moduleを置く領域です。
+
+Core RuntimeへGame固有Visual Themeを埋め込まず、必要なGameだけが明示的にNode / Sceneを利用します。
+
+最初のModuleである `shell/transition_layer.gd` は全画面Fadeを提供し、duration / color / motion scale / CanvasLayerをGame側から設定できます。Reduced motion preferenceそのものはFoundationで固定せず、Game側または後続Accessibility Shellから値を渡します。
