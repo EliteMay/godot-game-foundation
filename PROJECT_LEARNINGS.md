@@ -77,3 +77,13 @@
 - Context: Background Loading用ServiceへGame固有Path一覧をもう一度持たせると、既存GameFlow Scene Contractと二重管理になり、片方だけ更新される可能性がある。
 - Decision: Async Scene LoaderはScene IDだけを受け取り、既存 `GameFlowService.resolve_scene_path()` 等のResolver CallableからPathを解決する。
 - Prevention: Scene loading / transition / loading UIを追加してもGame固有Path mappingはGameFlow Scene Contractへ集約し、Shell側へ複製しない。
+
+
+## GF-009 — Pause MenuはInput名ではなくFlowとFocusを共通化する
+
+- Date: 2026-09-28
+- Type: UX / Architecture
+- Status: Adopted
+- Evidence: 公開Godot TemplateではPause Menuを開く前のFocusを保持し、Menuを閉じた後に元Controlへ戻すPatternが確認できる。一方、Pause Key / Action名やMenu ThemeはGameごとに異なる。
+- Decision: Foundation Pause Menu ShellはPause / Main Menu / Safe QuitをGame Flow Contractへ接続し、OptionsをGame Callableで差し込む。Pause入力Action名・Visual Theme・Game固有Options構成は所有しない。
+- Prevention: 共通Menuへ `ui_cancel` 等のInput名をHardcodeせず、Overlayを閉じる時は可能な限り操作開始前のFocusへ戻す。
