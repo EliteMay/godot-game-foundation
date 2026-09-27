@@ -111,6 +111,17 @@ jobs:
           fi
           grep -q "GAME_FLOW_SMOKE: PASS" game-flow-smoke.log
 
+      - name: Run transition layer smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/transition_layer_smoke.tscn 2>&1 | tee transition-layer-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" transition-layer-smoke.log; then
+            echo "Transition layer smoke contains an error."
+            exit 1
+          fi
+          grep -q "TRANSITION_LAYER_SMOKE: PASS" transition-layer-smoke.log
+
       - name: Run diagnostics smoke test
         shell: bash
         run: |
