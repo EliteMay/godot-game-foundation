@@ -114,8 +114,8 @@ func _run() -> void:
 
 	_expect_code(
 		shell.request_action("options"),
-		"action_completed",
-		"options action should call the game-provided contract"
+		"options_opened",
+		"options action should preserve the game-provided result"
 	)
 	_expect_equal(
 		_options_calls,
