@@ -105,3 +105,35 @@ Current decision summary: `docs/REFERENCE_TEMPLATES.md`
 - main Godot CI: PASS
 - main Windows Build: PASS
 - Deep Factory Repositoryは変更していない
+
+
+---
+
+## 2026-09-28 Phase 8 Windows Evidence / Phase 10確認手順修正
+
+### Phase 8 — Deep Factory Pilot
+
+Game Dev Hub v0.1.24のUser実機確認共有パックで、Windows実機回帰6項目がすべてPassした。
+
+確認された内容:
+
+- Foundation v0.8.0-dev導入状態
+- 進行済み状態で終了
+- 再起動後のPlayer位置と主要進行復元
+- Small Minerの設置位置と内部Storage復元
+- 復元後の採掘 / 回収 / 売却 / Upgrade / 自動生成継続
+- Hubへの結果記録
+
+既存の自動RegressionとUser実機Evidenceを合わせ、Phase 8を完了とした。今回のEvidenceから新しいFoundation共通不具合は見つからず、追加Runtime修正は不要。
+
+### Phase 10 — Windows Starter確認の修正
+
+UserがFoundation Repository本体を開いた状態で「v0.10 Starterを作成または基盤更新する」と表示され、操作対象が不明瞭だった。
+
+調査結果:
+
+- Current Templateは `starter/scripts/main.gd.template` で `FoundationRuntime` を初期化する
+- Managed Pathは `addons/game_foundation` のみ
+- したがって旧Starterを「基盤を更新」してもStarter側の `scripts/main.gd` は自動更新されない
+
+Roadmapを修正し、Windows実機確認は **Current v0.10 Templateから新規Starterを生成して行う** と明記した。Foundation Repository本体の「Game Foundation 未導入」はこの確認では異常扱いしない。
