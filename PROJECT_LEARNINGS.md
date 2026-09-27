@@ -57,3 +57,13 @@
 - Risk: v0.8等で生成済みのStarterへManaged Path更新だけを行い、「v0.10 Starterと同じBootstrapになった」と誤認すると、Runtime実機確認やMigration判断を誤る。
 - Decision: Starter生成FileのBehavior変更を検証する場合は、Current Templateから新規Starterを生成する。既存Gameへ同じ変更が必要な場合はManaged Path更新とは別の明示Migrationとして扱う。
 - Prevention: Roadmap / Test手順では「新規Starter生成」と「Foundation Managed Path更新」を別操作として明記する。
+
+
+## GF-007 — Accessibility PreferenceをVisual Componentへ固定しない
+
+- Date: 2026-09-28
+- Type: UX / Architecture
+- Status: Adopted
+- Context: Transition LayerはFade Animationを提供するが、Reduced motionをどの設定名・UI・Profileで有効にするかはGameごとに異なる。
+- Decision: Transition LayerはPreference自体を所有せず、`motion_scale`（0.0〜1.0）と `set_reduced_motion()` をExtension Pointとして公開する。
+- Prevention: Optional ShellのVisual behaviorはGame側Preferenceを受け取れるようにし、Foundation Coreが特定のAccessibility UIやGame Themeを強制しない。
