@@ -87,3 +87,12 @@
 - Evidence: 公開Godot TemplateではPause Menuを開く前のFocusを保持し、Menuを閉じた後に元Controlへ戻すPatternが確認できる。一方、Pause Key / Action名やMenu ThemeはGameごとに異なる。
 - Decision: Foundation Pause Menu ShellはPause / Main Menu / Safe QuitをGame Flow Contractへ接続し、OptionsをGame Callableで差し込む。Pause入力Action名・Visual Theme・Game固有Options構成は所有しない。
 - Prevention: 共通Menuへ `ui_cancel` 等のInput名をHardcodeせず、Overlayを閉じる時は可能な限り操作開始前のFocusへ戻す。
+
+## GF-010 — Loading VisualをLoader Stateの正本にしない
+
+- Date: 2026-09-28
+- Type: UX / Architecture
+- Status: Adopted
+- Context: Loading ScreenへScene Path、Progress、Failure状態を直接持たせると、Async Scene LoaderとVisual Sceneが同じFactを二重管理し、Theme差し替えや別Gameへの再利用で同期ずれが起きやすい。
+- Decision: Loading Screen ContractはAsync Scene Loaderを観測して `idle / loading / loaded / failed` とProgressを正規化し、Visual SceneはSignal / SnapshotのConsumerに限定する。
+- Prevention: Loading UIを追加・差し替えしてもResource loading / Scene ContractのAuthorityをVisual側へ移さず、Foundation Themeや特定Control構成をCore Contractへ固定しない。

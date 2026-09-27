@@ -101,6 +101,56 @@ Progressは0.0〜1.0です。
 - PackedScene以外は成功扱いしない
 - Pause中でもLoadingを進められる `PROCESS_MODE_ALWAYS`
 
+## Loading Screen Contract
+
+`addons/game_foundation/shell/loading_screen_contract.gd` は、Async Scene LoaderのRuntime StateをLoading UI向けの共通Presentation Contractへ変換するOptional Nodeです。
+
+### State / Signal
+
+- `state_changed(state)`
+- `progress_changed(scene_id, progress, state)`
+- `status_snapshot()`
+- Phase: `idle / loading / loaded / failed`
+- Progress: 0.0〜1.0
+- Failure時は `last_code / last_message` を保持
+
+`request_scene(scene_id)` は既存Async Scene LoaderへRequestを委譲します。Resolver / Scene PathのSource of Truthは引き続きGame Flow Scene Contract側です。
+
+```gdscript
+const LoadingScreenContract = preload(
+    "res://addons/game_foundation/shell/loading_screen_contract.gd"
+)
+
+var loading_contract := LoadingScreenContract.new()
+add_child(loading_contract)
+loading_contract.configure(async_loader)
+
+loading_contract.state_changed.connect(
+    Callable(loading_view, "apply_loading_state")
+)
+loading_contract.progress_changed.connect(
+    Callable(loading_view, "apply_loading_progress")
+)
+
+loading_contract.request_scene("gameplay")
+```
+
+### Visual境界
+
+Loading Screen Contract自身は`Control`、ProgressBar、Logo、Background、Font、Paletteを生成しません。
+
+Visual SceneはGame側の任意Sceneを利用でき、`state_changed` / `progress_changed` を購読するだけで差し替えられます。これによりFoundation Themeを作らず、Game固有VisualとLoading Stateの正本を分離します。
+
+### Failure / State integrity
+
+- Async Loaderを未設定のRequestは`loader_not_configured`
+- Scene Resolver等がRequest開始前に拒否した場合も`failed` Stateへ反映
+- Load中の`duplicate_request` / `loader_busy`は、進行中の`loading` Stateを`failed`へ上書きしない
+- Loader切替はCurrent LoaderがLoading中なら拒否
+- `reset_state()` はLoaderがIdleの時だけ許可
+
+Visual Sceneは表示だけを担当し、Scene Path、PackedScene、ResourceLoader JobのOwnerにはしません。
+
 ## Pause Menu Shell
 
 `addons/game_foundation/shell/pause_menu_shell.tscn` は、Game固有Themeを固定しないPause MenuのFunctional Baselineです。
