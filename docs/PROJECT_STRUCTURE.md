@@ -19,10 +19,12 @@ godot-game-foundation/
 │     │  └─ input_system.gd
 │     ├─ flow/
 │     │  └─ game_flow_service.gd
-│     └─ diagnostics/
-│        ├─ runtime_info.gd
-│        ├─ diagnostics_service.gd
-│        └─ diagnostics_overlay.gd
+│     ├─ diagnostics/
+│     │  ├─ runtime_info.gd
+│     │  ├─ diagnostics_service.gd
+│     │  └─ diagnostics_overlay.gd
+│     └─ testing/
+│        └─ runtime_test_bridge.gd
 ├─ starter/
 │  ├─ project.godot.template
 │  ├─ README.md.template
@@ -49,7 +51,9 @@ godot-game-foundation/
 │  ├─ build_config_smoke.gd
 │  ├─ build_config_smoke.tscn
 │  ├─ starter_template_smoke.gd
-│  └─ starter_template_smoke.tscn
+│  ├─ starter_template_smoke.tscn
+│  ├─ runtime_test_bridge_smoke.gd
+│  └─ runtime_test_bridge_smoke.tscn
 ├─ docs/
 │  ├─ ARCHITECTURE.md
 │  ├─ INTEGRATION.md
@@ -60,6 +64,7 @@ godot-game-foundation/
 │  ├─ INPUT_SYSTEM.md
 │  ├─ GAME_FLOW.md
 │  ├─ DIAGNOSTICS.md
+│  ├─ RUNTIME_TEST_BRIDGE.md
 │  ├─ WINDOWS_BUILD.md
 │  └─ STARTER_TEMPLATE.md
 ├─ tools/
@@ -97,6 +102,10 @@ godot-game-foundation/
 - `diagnostics_service.gd` — Log / Error Summary / Snapshot / Path情報
 - `diagnostics_overlay.gd` — 開発用Dark Debug Overlay
 
+### testing
+
+- `runtime_test_bridge.gd` — Hub指定のLocal JSONへGame提供Stateを定期Snapshotする開発用Bridge
+
 ## Demo
 
 Foundationの機能を目視確認するためのHarness。実GameはDemoへ依存しない。
@@ -113,6 +122,7 @@ Foundation SystemはMain Scene LoadだけでなくBehavior Smoke Testで守る�
 - Input System
 - Game Flow
 - Diagnostics
+- Runtime Test Bridge
 - Windows Build Config
 - Materialized Starter Project / Foundation Integration
 
