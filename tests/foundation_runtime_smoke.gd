@@ -164,6 +164,70 @@ func _run() -> void:
 		"gameplay settings adapter should receive updated values"
 	)
 
+	var edit_start: Dictionary = runtime.begin_settings_edit_session()
+	_expect_ok(edit_start, "begin_settings_edit_session")
+	var edit_session: RefCounted = edit_start.get("session") as RefCounted
+	_expect_true(edit_session != null, "settings edit session should be returned")
+	if edit_session != null:
+		var preview_settings: Dictionary = runtime.current_settings()
+		(preview_settings.get("gameplay", {}) as Dictionary)["look_sensitivity"] = 2.0
+		_expect_ok(
+			edit_session.call("set_draft", preview_settings),
+			"settings edit preview"
+		)
+		_expect_equal(
+			float(_applied_gameplay_settings.get("look_sensitivity", 0.0)),
+			2.0,
+			"settings edit preview should apply runtime gameplay values"
+		)
+		_expect_equal(
+			float(
+				(runtime.current_settings().get("gameplay", {}) as Dictionary)
+				.get("look_sensitivity", 0.0)
+			),
+			1.5,
+			"preview should not replace committed runtime settings"
+		)
+		_expect_ok(edit_session.call("cancel"), "settings edit cancel")
+		_expect_equal(
+			float(_applied_gameplay_settings.get("look_sensitivity", 0.0)),
+			1.5,
+			"cancel should restore runtime gameplay values"
+		)
+
+	var apply_start: Dictionary = runtime.begin_settings_edit_session()
+	_expect_ok(apply_start, "begin apply settings edit session")
+	var apply_session: RefCounted = apply_start.get("session") as RefCounted
+	_expect_true(apply_session != null, "apply settings edit session should be returned")
+	if apply_session != null:
+		var apply_settings: Dictionary = runtime.current_settings()
+		(apply_settings.get("gameplay", {}) as Dictionary)["look_sensitivity"] = 1.75
+		_expect_ok(
+			apply_session.call("set_draft", apply_settings),
+			"settings edit apply preview"
+		)
+		_expect_ok(apply_session.call("apply"), "settings edit apply")
+		_expect_equal(
+			float(
+				(runtime.current_settings().get("gameplay", {}) as Dictionary)
+				.get("look_sensitivity", 0.0)
+			),
+			1.75,
+			"Apply should advance committed runtime settings"
+		)
+		var post_apply: Dictionary = apply_session.call("draft_settings")
+		(post_apply.get("gameplay", {}) as Dictionary)["look_sensitivity"] = 2.5
+		_expect_ok(
+			apply_session.call("set_draft", post_apply),
+			"post-apply preview"
+		)
+		_expect_ok(apply_session.call("cancel"), "post-apply cancel")
+		_expect_equal(
+			float(_applied_gameplay_settings.get("look_sensitivity", 0.0)),
+			1.75,
+			"Cancel after Apply should restore the latest committed baseline"
+		)
+
 	var input_saved: Dictionary = runtime.save_input_bindings()
 	_expect_ok(input_saved, "save_input_bindings")
 	_expect_true(
