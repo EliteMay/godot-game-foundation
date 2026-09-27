@@ -468,7 +468,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 11 — Application Shell / Scene UX
 
-状態: **実装中 / Transition Layer・Async Scene Loader・Pause Menu Shell完了**
+状態: **実装中 / Transition Layer・Async Scene Loader・Loading Screen Contract・Pause Menu Shell完了**
 
 参考: `docs/REFERENCE_TEMPLATES.md`
 
@@ -488,10 +488,12 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - `motion_scale` と `set_reduced_motion()` でAnimationを短縮・無効化できるExtension Pointを持つ
   - Transition中の重複Requestを拒否し、Mouse入力を奪わない
   - Headless Smoke TestでFade out / in、重複拒否、Reduced motion、Motion scaleを検証する
-- [ ] Loading Screen Contract
+- [x] Loading Screen Contract
   - 担当: ChatGPT
-  - Progress表示を共通Signal / Stateとして公開する
-  - Visual Sceneは差し替え可能にし、Foundation Themeを強制しない
+  - Async Scene LoaderのProgress / Loaded / Failureを `state_changed` / `progress_changed` とSnapshotへ正規化して公開する
+  - 即時Request失敗もPresentation Stateへ反映し、active load中のduplicate / busy拒否では現在Loading Stateを壊さない
+  - Contract自身はVisual Sceneを所有せず、Game側の任意Control / SceneがSignalを購読できる構造にしてFoundation Themeを強制しない
+  - Headless Smoke TestでIdle → Failure → Reset → Loading → Loaded、Progress、busy rejection時のState保持を検証する
 - [ ] Main Menu Shell
   - 担当: ChatGPT
   - New / Continue / Options / Quit等のAction slotを持つ再利用SceneをOptionalで提供する

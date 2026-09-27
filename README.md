@@ -97,7 +97,7 @@ godot-game-foundation/
 
 Phase 0〜10は完了しています。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。現在はPhase 11 — Application Shell / Scene UXを実装中です。
 
-v0.11.0-devでは、Game固有Themeを固定しないOptional Application Shellの実装を進めています。**Transition Layer**、既存Scene Contractを使う **Async Scene Loader** に加え、Game FlowのPause / Main Menu / Safe Quitへ接続しPause前Focusを復元する **Pause Menu Shell** を追加しました。Pause入力Action名やGame固有Palette / Font / LogoはFoundationへ固定しません。
+v0.11.0-devでは、Game固有Themeを固定しないOptional Application Shellの実装を進めています。**Transition Layer**、既存Scene Contractを使う **Async Scene Loader**、LoaderのProgress / FailureをVisualから分離して公開する **Loading Screen Contract** に加え、Game FlowのPause / Main Menu / Safe Quitへ接続しPause前Focusを復元する **Pause Menu Shell** を追加しました。Loading VisualやPause入力Action名、Game固有Palette / Font / LogoはFoundationへ固定しません。
 
 FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通Phaseは、Application Shell、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Application ShellではTransition Layer / Async Scene Loader / Pause Menu Shellまで実装済みです。Roadmap上の次TaskはLoading Screen Contractで、Main Menu ShellとFocus Baselineも残っています。
+次の共通Phaseは、Application Shell、Settings・Input UX、Audio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Application ShellではTransition Layer / Async Scene Loader / Loading Screen Contract / Pause Menu Shellまで実装済みです。Roadmap上の次TaskはMain Menu Shellで、Controller / Keyboard Focus Baselineも残っています。

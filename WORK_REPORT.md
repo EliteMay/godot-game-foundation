@@ -253,3 +253,42 @@ Phase 11のPause UIで、各GameがResume / Options / Main Menu / Quitの配線�
 - main Godot CI: PASS
 - main Windows Build: PASS
 - Game ThemeでのVisual / Controller実機確認: Phase 11統合時に実施
+
+---
+
+## v0.11.0-dev — Loading Screen Contract
+
+### 目的
+
+Phase 11のAsync Scene Loaderが持つProgress / FailureをGame固有Visualから分離し、任意のLoading Sceneへ接続できる共通Presentation Stateを追加する。
+
+### 実装
+
+- `addons/game_foundation/shell/loading_screen_contract.gd`
+  - `idle / loading / loaded / failed` State
+  - `state_changed` / `progress_changed` Signal
+  - `status_snapshot()` / `last_result()`
+  - Async Scene Loaderへの`request_scene()`委譲
+  - Request開始前のFailureもPresentation Stateへ反映
+  - active load中のduplicate / busy拒否で現在Stateを壊さない
+  - Loader実行中の差し替えとState resetを拒否
+- Foundation capabilityへ `loading_screen_contract` を追加
+- Visual Sceneは一切生成せず、Game側Control / SceneをSignal Consumerとして差し替え可能にした
+- Application Shell Docs / Roadmap / READMEを更新
+
+### 設計境界
+
+- Game Flow Scene Contract / Async Scene LoaderをLoading FactのSource of Truthとして維持
+- ProgressBar / Logo / Background / Font / PaletteをFoundationへ固定しない
+- PackedSceneやResourceLoader JobのOwnershipをVisual Sceneへ移さない
+- FoundationRuntime必須機能にはしない
+
+### Validation
+
+- Loading Screen Contract Headless Smoke TestをCIへ追加
+- Idle → immediate Failure → Reset → Loading → Loadedを検証
+- Progress Signal / final progress 1.0を検証
+- load中のbusy rejectionがactive Loading Stateを壊さないことを検証
+- PR #10 Godot CI: PASS（Loading Screen Contract Smokeを含む）
+- PR #10 Windows Build: PASS
+- Visual Scene自体はGame側差し替え前提のため、このTaskではFoundation固有Visualの実機確認対象なし
