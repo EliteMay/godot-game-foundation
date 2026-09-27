@@ -82,6 +82,8 @@ Starter生成後の `project.godot`、README、Roadmap、scenes、scripts、test
 
 Foundation Versionは `FOUNDATION_VERSION` とManifestの `foundationVersion` を一致させる。Game Versionとは別物。
 
+v0.10.0-dev以降のStarterは `FoundationRuntime` を生成して、Diagnosticsを含む安全な最小Lifecycleが動く状態から開始する。SaveはGame固有Adapterが必要なためStarterでは既定OFFとし、Game側がPayload Contractを決めてから有効化する。
+
 ## Compatibility
 
 Breaking ChangeはManaged Pathを黙って配布せず、Foundation Version / Release Note / Migration方針で扱う。
