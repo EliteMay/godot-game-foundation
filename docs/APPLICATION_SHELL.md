@@ -151,6 +151,77 @@ Visual SceneはGame側の任意Sceneを利用でき、`state_changed` / `progres
 
 Visual Sceneは表示だけを担当し、Scene Path、PackedScene、ResourceLoader JobのOwnerにはしません。
 
+## Main Menu Shell
+
+`addons/game_foundation/shell/main_menu_shell.tscn` は、Game固有Themeを固定せずNew / Continue / Options / Quitの共通Action slotを提供するOptional Main Menuです。
+
+### 接続するContract
+
+`configure()` でGame側Actionと既存Game Flow Serviceを渡します。
+
+```gdscript
+var main_menu := preload(
+    "res://addons/game_foundation/shell/main_menu_shell.tscn"
+).instantiate()
+
+add_child(main_menu)
+
+main_menu.configure({
+    "flow_service": flow_service,
+    "new_game_action": Callable(self, "start_new_game"),
+    "continue_action": Callable(self, "continue_game"),
+    "options_action": Callable(self, "open_options"),
+    "continue_available": has_resumable_save,
+    "labels": {
+        "new_game": "New Game",
+        "continue": "Continue",
+        "options": "Options",
+        "quit": "Quit",
+    },
+})
+```
+
+共通Action:
+
+- `new_game` → Game側Callable
+- `continue` → Game側Callable
+- `options` → Game側Callable
+- `quit` → Game Flow `request_quit()`
+
+New / Continue / OptionsはGame固有FlowをFoundationへ固定しないためCallableとして差し込みます。Quitだけは既存Safe Quit Hookを通す必要があるためGame Flow Contractを再利用します。
+
+### Continue availability
+
+`continue_action` が設定されていても、再開可能なSaveが無い間は `continue_available: false` にできます。この場合Buttonは表示したまま無効化されます。
+
+Saveが作成・削除・切替された後は `set_continue_available(bool)` で状態を更新できます。FoundationはSaveの存在条件やSlot選択を判断しません。Phase 14のSave Profiles / Slots等が導入されても、Main Menu Shellはその結果を受け取るConsumerに留まります。
+
+### Focus
+
+初期Focusは、利用可能なContinue → New Game → Options → Quitの順に最初の有効Actionへ移します。これによりReturning UserはContinueへ、初回UserはNew Gameへ入りやすくします。
+
+`focus_initial_action()` はOptions等の別UIからMain Menuへ戻った時にも再利用できます。Controller / Keyboardの詳細なNavigation BaselineはPhase 11の次Taskで共通化します。
+
+### Visual境界
+
+Default Sceneは中央配置、Panel、ButtonのMinimum SizeとSpacingだけを持ちます。Game固有Logo、Background、Font、Palette、装飾、Button compositionの最終VisualはGame側Theme / Sceneで差し替えます。
+
+未設定のNew / Continue / Options slotは非表示にできます。Quitも`show_quit: false`で外せます。
+
+### Validation
+
+Headless Smoke Testでは次を確認します。
+
+- First-useでContinueが無効、New GameへFocusされる
+- Continue availability更新後はContinueへFocusされる
+- New / Continue / Options CallableがGame側Resultを保持する
+- Safe Quit blockがMenuへ返る
+- Label override
+- Optional action slotの表示制御
+- deactivate中のAction拒否
+
+実Game ThemeでのVisual / Controller操作は、Controller / Keyboard Focus BaselineとPhase 11統合時にWindows実機でまとめて確認します。
+
 ## Pause Menu Shell
 
 `addons/game_foundation/shell/pause_menu_shell.tscn` は、Game固有Themeを固定しないPause MenuのFunctional Baselineです。
@@ -215,8 +286,8 @@ Headless Smoke Testでは次を確認します。
 
 ## 今後の接続
 
-Phase 11ではTransition LayerとAsync Scene Loaderを土台に、次を追加します。
+Phase 11ではTransition Layer / Async Scene Loader / Loading Screen Contract / Main Menu Shell / Pause Menu Shellまで実装済みです。
 
-- Loading Screen Contract
-- Main Menu Shell
+残る共通Task:
+
 - Controller / Keyboard Focus Baseline

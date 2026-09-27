@@ -295,3 +295,49 @@ Phase 11のAsync Scene Loaderが持つProgress / FailureをGame固有Visualか�
 - main Godot CI: PASS
 - main Windows Build: PASS
 - Visual Scene自体はGame側差し替え前提のため、このTaskではFoundation固有Visualの実機確認対象なし
+
+---
+
+## v0.11.0-dev — Main Menu Shell
+
+### 目的
+
+Phase 11のMain Menuで、各GameがNew / Continue / Options / Quitの基本配線、Action availability、初期Focusを毎回作り直さなくてよいOptional Shellを追加する。
+
+### 実装
+
+- `addons/game_foundation/shell/main_menu_shell.gd`
+- `addons/game_foundation/shell/main_menu_shell.tscn`
+  - New Game → Game側Callable
+  - Continue → Game側Callable
+  - Options → Game側Callable
+  - Quit → Game Flow `request_quit()`
+  - `continue_action`の設定有無と`continue_available`を分離
+  - `set_continue_available()`でRuntime更新
+  - 未設定Action slotは非表示
+  - 設定済みContinueが利用不能な場合は表示したままdisabled
+  - Returning UserはContinue、First-useはNew Gameを初期Focus候補にする
+  - `activate_menu()` / `deactivate_menu()` / `focus_initial_action()`
+  - Label override
+- Default SceneはLayout / Minimum Size / Spacingだけを持ち、Game固有Visualを固定しない
+- Foundation capabilityへ `main_menu_shell` を追加
+- Application Shell Docs / Roadmap / READMEを更新
+
+### 設計境界
+
+- Save存在・Slot構造・New Game初期StateはGame側または後続Save Profiles層へ残す
+- Main Menu ShellはGame固有Scene IDやResource Pathを所有しない
+- Quitは既存Safe Quit Hookを迂回せずGame Flowへ委譲する
+- Logo / Background / Palette / Font / final Button compositionはGame側へ残す
+- FoundationRuntime必須機能にはしない
+
+### Validation
+
+- Main Menu Shell Headless Smoke TestをCIへ追加
+- First-use / Returning UserのContinue availabilityと初期Focusを検証
+- New / Continue / Options Action routingとLabel overrideを検証
+- Safe Quit block / successを検証
+- Optional slot表示とinactive action guardを検証
+- PR #11 Godot CI: PASS（Main Menu Shell Smokeを含む）
+- PR #11 Windows Build: PASS
+- 実Game ThemeでのVisual / Controller操作はPhase 11 Focus Baseline統合時に確認する
