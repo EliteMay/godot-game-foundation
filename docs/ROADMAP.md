@@ -468,16 +468,19 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 11 — Application Shell / Scene UX
 
-状態: **実装中 / Transition Layer完了**
+状態: **実装中 / Transition Layer・Async Scene Loader完了**
 
 参考: `docs/REFERENCE_TEMPLATES.md`
 
 目的: Foundation Starterを「Runtimeが起動するだけ」から、Game固有Visualを固定せずMain / Pause / Options / Loadingの共通外枠を選択利用できる状態へ進める。
 
-- [ ] Async Scene Loader
+- [x] Async Scene Loader
   - 担当: ChatGPT
-  - `ResourceLoader.load_threaded_request()` を使い、Progress / Failure / duplicate requestを扱う
-  - 現在のScene ContractをSource of Truthにし、Game固有PathをFoundationへ固定しない
+  - `ResourceLoader.load_threaded_request()` / `load_threaded_get_status()` / `load_threaded_get()` を使い、Background Load / Progress / Failureを扱う
+  - 現在のScene ContractをSource of Truthにし、`GameFlowService.resolve_scene_path()` をResolver Callableとして利用する
+  - 同一Sceneの二重Requestを `duplicate_request`、別Sceneの同時Requestを `loader_busy` として拒否する
+  - Loaded PackedSceneをSignal / `take_loaded_scene()` からConsumerへ渡せる
+  - Headless Smoke TestでScene Contract解決、Background Load、Progress、Duplicate / Busy Guard、Invalid Pathを検証する
 - [x] Transition Layer
   - 担当: ChatGPT
   - Fade in / outをOptional共通Layerとして提供する

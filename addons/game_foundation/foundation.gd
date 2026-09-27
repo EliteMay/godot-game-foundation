@@ -52,4 +52,5 @@ static func capabilities() -> PackedStringArray:
 		"runtime_test_bridge",
 		"application_shell",
 		"transition_layer",
+		"async_scene_loader",
 	])

@@ -67,3 +67,13 @@
 - Context: Transition LayerはFade Animationを提供するが、Reduced motionをどの設定名・UI・Profileで有効にするかはGameごとに異なる。
 - Decision: Transition LayerはPreference自体を所有せず、`motion_scale`（0.0〜1.0）と `set_reduced_motion()` をExtension Pointとして公開する。
 - Prevention: Optional ShellのVisual behaviorはGame側Preferenceを受け取れるようにし、Foundation Coreが特定のAccessibility UIやGame Themeを強制しない。
+
+
+## GF-008 — Async LoaderはScene Pathの第二Source of Truthを作らない
+
+- Date: 2026-09-28
+- Type: Architecture / Reliability
+- Status: Adopted
+- Context: Background Loading用ServiceへGame固有Path一覧をもう一度持たせると、既存GameFlow Scene Contractと二重管理になり、片方だけ更新される可能性がある。
+- Decision: Async Scene LoaderはScene IDだけを受け取り、既存 `GameFlowService.resolve_scene_path()` 等のResolver CallableからPathを解決する。
+- Prevention: Scene loading / transition / loading UIを追加してもGame固有Path mappingはGameFlow Scene Contractへ集約し、Shell側へ複製しない。

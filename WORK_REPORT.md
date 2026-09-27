@@ -172,3 +172,40 @@ Game Dev Hub v0.1.25で新規 `foundation-runtime-test` StarterをCurrent v0.10 
 - PR #7 Godot CI: PASS（Transition Layer Smokeを含む）
 - PR #7 Windows Build: PASS
 - Windows上のVisual Fade確認: 未確認（BehaviorはHeadless Test対象）
+
+
+---
+
+## v0.11.0-dev — Async Scene Loader
+
+### 目的
+
+Phase 11のLoading / Scene UXで、Scene切替前のResource loadがMain ThreadをBlockingしない共通経路を追加する。
+
+### 実装
+
+- `addons/game_foundation/shell/async_scene_loader.gd`
+  - `ResourceLoader.load_threaded_request()` でBackground Loadを開始
+  - `load_threaded_get_status()` でProgress / Failureを監視
+  - `load_threaded_get()` はLoaded確認後だけ呼ぶ
+  - `GameFlowService.resolve_scene_path()` をResolverとして利用
+  - `load_started / load_progress / load_completed / load_failed` Signal
+  - 同一Scene二重Requestと別Scene同時Requestを区別して拒否
+  - `status_snapshot()` / `take_loaded_scene()`
+  - Pause中も進行する `PROCESS_MODE_ALWAYS`
+- Foundation capabilityへ `async_scene_loader` を追加
+- Application Shell Docs / Roadmap / READMEを更新
+
+### 設計境界
+
+- Game固有Scene Path mappingをAsync Loaderへ複製しない
+- FoundationRuntime必須機能にしない
+- Cancellationを実装したように見せるFake APIは追加せず、1 request at a timeを明示
+- Loading ScreenのVisualは次Taskへ分離
+
+### Validation
+
+- Async Scene Loader Headless Smoke Testを追加
+- PR #8 Godot CI: PASS（Async Scene Loader Smokeを含む）
+- PR #8 Windows Build: PASS
+- Loading Screen / 実Windows Visual Flow: 未実装のため未確認
