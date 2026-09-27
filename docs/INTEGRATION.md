@@ -2,9 +2,9 @@
 
 ## 現在
 
-Foundation Core、Generic Save System、Settings System、Input System、Game Flow、Diagnostics、Windows Build、Starter Template / Game Dev Hub連携まで完成し、Game Dev Hub v0.1.12でWindows実機のStarter Create / Updateも確認済み。Deep Factory Pilotも実装・CIまで完了しており、現在はWindows実機でのSave / Load回帰確認待ち。Game Adapterと各SystemのContractを介し、Game固有仕様をFoundationへ混ぜない。
+Foundation Core、Generic Save System、Settings System、Input System、Game Flow、Diagnostics、Runtime Test Bridge、Windows Build、Starter Template / Game Dev Hub連携まで実装済み。v0.10.0-devでは、それらをGameごとに毎回手配線しなくてよいようFoundationRuntimeを追加した。Game Adapterと各SystemのContractを介し、Game固有仕様をFoundationへ混ぜない。
 
-Deep FactoryはPilot Gameとして後から使用する。
+Deep FactoryはPilot Gameとして後から使用する。現在はFoundation自体の完成度を優先し、Deep Factory固有開発は保留する。
 
 ## 将来の導入形
 
@@ -43,3 +43,48 @@ Git submodule / subtreeはDefaultにしない。初心者向けHubのPrimary Flo
 Foundation側でSave / Settings / Input / Flowの主要基盤が揃った後、Deep FactoryへPilot導入する。
 
 その際、Deep Factoryで既に確認済みのGameplay Loopを壊していないことをRegression TestとWindows実機で確認する。
+
+
+## FoundationRuntimeを使う新規Game
+
+新規GameではFoundationRuntimeをLifecycle Coordinatorとして使い、必要なSystemだけ有効化する。
+
+```gdscript
+const FoundationRuntime = preload(
+    "res://addons/game_foundation/runtime/foundation_runtime.gd"
+)
+
+var foundation_runtime := FoundationRuntime.new()
+add_child(foundation_runtime)
+
+foundation_runtime.configure(
+    {
+        "save": {
+            "enabled": true,
+            "game_schema_version": 1,
+        },
+        "settings": {
+            "gameplay_defaults": {
+                "mouse_sensitivity": 0.0025,
+            },
+        },
+        "input": {
+            "contract": INPUT_CONTRACT,
+        },
+        "flow": {
+            "scenes": SCENE_CONTRACT,
+            "main_menu_id": "menu",
+        },
+    },
+    {
+        "capture_save_state": Callable(self, "build_save_payload"),
+        "restore_save_state": Callable(self, "restore_save_payload"),
+        "apply_gameplay_settings": Callable(self, "apply_gameplay_settings"),
+        "runtime_test_state": Callable(self, "build_runtime_test_state"),
+    }
+)
+
+var result := foundation_runtime.initialize()
+```
+
+Save PayloadのField、Gameplay Settingの意味、Input Action名、Scene ID、Runtime Testへ公開するStateはGame側が所有する。
