@@ -88,11 +88,12 @@ godot-game-foundation/
 6. Diagnostics
 7. Windows Build
 8. Starter Template / Game Dev Hub連携
-9. Deep Factoryで実利用検証
+9. Integrated Foundation Runtime
+10. Pilot Gameで必要時だけ実利用検証
 
 ## 現在の状態
 
-Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Phase 8 — Deep Factory Pilotは実装・CIまで完了しています。
+Phase 0 — Foundation / ArchitectureからPhase 7 — Starter Template / Game Dev Hub連携まで完了し、Game Dev Hub v0.1.12でWindows実機確認済みです。Deep Factory Pilotは保留し、現在はPhase 9 — Integrated Foundation Runtimeを優先しています。
 
 v0.10.0-devでは、個別SystemをGameごとに手動配線する負担を減らす **FoundationRuntime** を追加しました。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
