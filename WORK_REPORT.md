@@ -534,3 +534,50 @@ Phase 12で、各GameがCurrent Binding表示・入力待機・Keyboard / Mouse 
 - main Windows Build: PASS
 - Game ThemeでのVisual quality / Focus順 / 物理Controller操作感は実Game統合時のRuntime Validation対象
 
+---
+
+## v0.12.0-dev — Conflict Detection
+
+### 目的
+
+Phase 12のInput Remapで同一Bindingを割り当てた時、各Gameが独自比較とInputMap mutationを作り直さず、Reject / Replace / Allowを明示的に選べる共通Policy層を追加する。
+
+### 実装
+
+- `addons/game_foundation/input/input_conflict_resolver.gd`
+  - `find_conflicts()`
+  - `descriptors_conflict()`
+  - `rebind_with_policy()`
+  - `reject / replace / allow`
+  - Keyboard / Mouse Modifier込み比較
+  - Joypad device wildcard overlap
+  - Joypad Axis direction-aware conflict
+  - Replace時は一致Eventだけ除去し、他Bindingを保持
+- `input_remap_control.gd`
+  - `conflict_policy` optionを追加
+  - 既定はallowで既存Behaviorを維持
+  - Reject時はListeningを継続
+  - `conflict_detected` Signal
+  - Replaceで複数Actionが変わってもPersistence failure時はCapture前snapshotへrollback
+- Foundation capabilityへ `input_conflict_detection` を追加
+- Input / Settings UX Docs、Roadmap、README、Learningを更新
+
+### 設計境界
+
+- FoundationはGameごとの正しいPolicyを決めない
+- Reserved Key listを持たない
+- Same-action current bindingはConflict扱いしない
+- specific gamepad deviceが異なる場合はConflict扱いしない
+- Input Prompt表示は次Taskへ分離
+
+### Validation
+
+- Input Conflict Resolver Headless SmokeをCIへ追加
+- RejectがInputMapを変更しないことを検証
+- Allowが競合を残してTargetへ割り当てることを検証
+- Replaceが一致Eventだけを外して他Bindingを保持することを検証
+- device=-1 wildcard / specific device分離を検証
+- Axis正負方向の分離を検証
+- Input Remap SmokeでReject時Listening継続を検証
+- Input Remap SmokeでReplace + Persistence failure時に複数Actionがrollbackされることを検証
+

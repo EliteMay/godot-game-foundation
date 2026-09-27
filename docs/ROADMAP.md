@@ -525,7 +525,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 12 — Settings / Input UX Components
 
-状態: **実装中 / Settings Edit Session・Generic Option Controls・Input Remap UI完了**
+状態: **実装中 / Settings Edit Session・Generic Option Controls・Input Remap UI・Conflict Detection完了**
 
 目的: 既存Settings / Input Backendを、各GameでゼロからUIを作らず利用できる再利用Controlへ接続する。
 
@@ -556,9 +556,16 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - Optional Persistence Callback失敗時はRebind前BindingsへRuntime rollbackを試みる
   - Capture Cancel用の物理KeyをFoundationへHardcodeせず、Button / public APIから停止できる
   - Conflict policyはこのTaskで暗黙実装せず次Taskへ分離する
-- [ ] Conflict Detection
+- [x] Conflict Detection
   - 担当: ChatGPT
-  - 同一Binding競合を検出し、Reject / Replace / AllowのPolicyをGame側で選べるようにする
+  - Current InputMap上の別ActionとCandidate Descriptorを比較し、競合Action / Event index / Descriptorを返す
+  - Keyboard / Mouseは同一Descriptor + Modifier、Gamepad ButtonはButton + device overlap、AxisはAxis + direction + device overlapで判定する
+  - Gamepad device=-1はwildcardとしてspecific deviceと競合する
+  - RejectはRuntimeを変更せずbinding_conflictを返し、Input Remap UIはListeningを継続できる
+  - Replaceは競合Actionから一致Eventだけを外し、他のBindingを保持したままTarget Actionへ割り当てる
+  - Allowは競合をResultへ残しつつ既存Actionを変更しない
+  - Input Remap UIはconflict_policyをGame側Optionとして受け、既定Allowで既存Behaviorを維持する
+  - Replace後のPersistence失敗時もInput Remap UIの既存Rollbackで全Actionを変更前へ戻す
 - [ ] Input Prompt Resolver
   - 担当: ChatGPT
   - Current device / bindingから表示用TextまたはIcon keyを解決する

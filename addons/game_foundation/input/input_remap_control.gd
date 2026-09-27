@@ -4,9 +4,18 @@ signal listening_started(action_name: String)
 signal listening_canceled(action_name: String)
 signal binding_changed(action_name: String, descriptor: Dictionary, result: Dictionary)
 signal rebind_failed(action_name: String, descriptor: Dictionary, result: Dictionary)
+signal conflict_detected(
+	action_name: String,
+	descriptor: Dictionary,
+	conflicts: Array,
+	result: Dictionary
+)
 
 const InputSystem = preload(
 	"res://addons/game_foundation/input/input_system.gd"
+)
+const InputConflictResolver = preload(
+	"res://addons/game_foundation/input/input_conflict_resolver.gd"
 )
 
 var _contract: Dictionary = {}
@@ -16,6 +25,7 @@ var _configured: bool = false
 var _listening: bool = false
 var _enabled: bool = true
 var _replace_all: bool = true
+var _conflict_policy: String = InputConflictResolver.POLICY_ALLOW
 var _preserve_gamepad_device: bool = false
 var _axis_threshold: float = 0.5
 var _persist: Callable = Callable()
@@ -74,6 +84,13 @@ func configure(
 	if formatter_callable != Callable() and not formatter_callable.is_valid():
 		return _error("invalid_binding_formatter", "binding_formatter Callable is not valid")
 
+	var conflict_policy: String = String(
+		options.get("conflict_policy", InputConflictResolver.POLICY_ALLOW)
+	)
+	var policy_result: Dictionary = InputConflictResolver.validate_policy(conflict_policy)
+	if not bool(policy_result.get("ok", false)):
+		return policy_result
+
 	var threshold: float = float(options.get("axis_threshold", 0.5))
 	if threshold <= 0.0 or threshold > 1.0:
 		return _error(
@@ -85,6 +102,7 @@ func configure(
 	_action_name = action_name
 	_display_name = display_name
 	_replace_all = bool(options.get("replace_all", true))
+	_conflict_policy = conflict_policy
 	_preserve_gamepad_device = bool(options.get("preserve_gamepad_device", false))
 	_axis_threshold = threshold
 	_persist = persist_callable
@@ -175,6 +193,7 @@ func state_snapshot() -> Dictionary:
 		"listening": _listening,
 		"enabled": _enabled,
 		"replace_all": _replace_all,
+		"conflict_policy": _conflict_policy,
 		"preserve_gamepad_device": _preserve_gamepad_device,
 		"axis_threshold": _axis_threshold,
 		"binding_text": binding_text(),
@@ -263,15 +282,27 @@ func handle_input_event(event: InputEvent) -> Dictionary:
 		(descriptor_result.get("descriptor", {}) as Dictionary).duplicate(true)
 	)
 	var previous_bindings: Dictionary = InputSystem.capture_bindings(_contract)
-	var rebind_result: Dictionary = InputSystem.rebind_action(
+	var rebind_result: Dictionary = InputConflictResolver.rebind_with_policy(
 		_contract,
 		_action_name,
 		descriptor,
+		_conflict_policy,
 		_replace_all
 	)
 	if not bool(rebind_result.get("ok", false)):
-		_end_listening()
-		refresh_binding()
+		var conflicts: Array = (
+			(rebind_result.get("conflicts", []) as Array).duplicate(true)
+		)
+		if String(rebind_result.get("code", "")) == "binding_conflict":
+			conflict_detected.emit(
+				_action_name,
+				descriptor.duplicate(true),
+				conflicts,
+				rebind_result.duplicate(true)
+			)
+		else:
+			_end_listening()
+			refresh_binding()
 		rebind_failed.emit(
 			_action_name,
 			descriptor.duplicate(true),
