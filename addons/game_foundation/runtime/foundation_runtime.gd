@@ -175,12 +175,18 @@ func save_now() -> Dictionary:
 		save_completed.emit(_last_save_result.duplicate(true))
 		return payload_result
 
-	var save_config: Dictionary = _section("save", DEFAULT_SAVE_CONFIG)
-	var result: Dictionary = SaveSystem.save_game(
+	if _auto_save_service == null:
+		return _error("autosave_unavailable", "AutoSaveService is not initialized")
+
+	var request_result: Dictionary = _auto_save_service.call(
+		"request_save",
 		payload_result.get("payload", {}),
-		_save_schema_version(),
-		String(save_config.get("path", SaveSystem.DEFAULT_SAVE_PATH))
+		_save_schema_version()
 	)
+	var result: Dictionary = request_result
+	if bool(request_result.get("ok", false)) and String(request_result.get("code", "")) == "autosave_queued":
+		result = _auto_save_service.call("flush_pending")
+
 	_last_save_result = result.duplicate(true)
 	save_completed.emit(_last_save_result.duplicate(true))
 
@@ -485,7 +491,7 @@ func _initialize_runtime_test() -> Dictionary:
 		provider
 	)
 	if not bool(result.get("ok", false)):
-		_runtime_test_bridge.queue_free()
+		_runtime_test_bridge.free()
 		_runtime_test_bridge = null
 		return result
 
@@ -493,7 +499,7 @@ func _initialize_runtime_test() -> Dictionary:
 		_runtime_test_mode = true
 		add_child(_runtime_test_bridge)
 	else:
-		_runtime_test_bridge.queue_free()
+		_runtime_test_bridge.free()
 		_runtime_test_bridge = null
 
 	return result
@@ -661,7 +667,9 @@ func _adapter_callable(name: String) -> Callable:
 
 func _callable_from(source: Dictionary, name: String) -> Callable:
 	var value: Variant = source.get(name, Callable())
-	return value as Callable if value is Callable else Callable()
+	if typeof(value) == TYPE_CALLABLE:
+		return value
+	return Callable()
 
 
 func _save_schema_version() -> int:
