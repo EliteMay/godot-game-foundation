@@ -580,4 +580,9 @@ Phase 12のInput Remapで同一Bindingを割り当てた時、各Gameが独自�
 - Axis正負方向の分離を検証
 - Input Remap SmokeでReject時Listening継続を検証
 - Input Remap SmokeでReplace + Persistence failure時に複数Actionがrollbackされることを検証
+- PR #16 Godot CI: PASS（Input Conflict Resolver / Input Remap Smokeを含む）
+- PR #16 Windows Build: PASS
+- main merge commit: `d155dd40ef1a1779bf9c3bb208f0b919048533cc`
+- main Godot CI: PASS
+- main Windows Build: PASS
 
