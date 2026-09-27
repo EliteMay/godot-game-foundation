@@ -209,3 +209,44 @@ Phase 11のLoading / Scene UXで、Scene切替前のResource loadがMain Thread�
 - PR #8 Godot CI: PASS（Async Scene Loader Smokeを含む）
 - PR #8 Windows Build: PASS
 - Loading Screen / 実Windows Visual Flow: 未実装のため未確認
+
+
+---
+
+## v0.11.0-dev — Pause Menu Shell
+
+### 目的
+
+Phase 11のPause UIで、各GameがResume / Options / Main Menu / Quitの配線とFocus復元を毎回作り直さなくてよい共通Shellを追加する。
+
+### 実装
+
+- `addons/game_foundation/shell/pause_menu_shell.gd`
+- `addons/game_foundation/shell/pause_menu_shell.tscn`
+  - Resume → Game Flow `set_paused(false)`
+  - Options → Game側Callable
+  - Main Menu → Game Flow `go_to_main_menu()`
+  - Quit → Game Flow `request_quit()`
+  - Open時に現在Focusを保存
+  - Resume後に有効なPrevious Focusへ復元
+  - Main Menu遷移時は旧Scene Focusを復元しない
+  - Options / Main Menu / Quit availabilityをButton表示へ反映
+  - Label override
+  - Pause中も動作する `PROCESS_MODE_ALWAYS`
+- Default SceneはPanel / Button Layoutのみ持ち、Game固有Palette / Font / Logoを固定しない
+- Foundation capabilityへ `pause_menu_shell` を追加
+
+### 設計境界
+
+- Pause入力Action名をFoundationへ固定しない
+- Options内部UIはGame側またはPhase 12 Settings UIへ委譲する
+- Main Menu / Quitは既存Game Flow Contractを再利用する
+- Visual ThemeはGame側で差し替える
+
+### Validation
+
+- Pause Menu Shell Headless Smoke Testを追加
+- Pause / Resume / Options / Safe Quit block / Main Menu / Focus restore / Label overrideを検証
+- PR #9 Godot CI: PASS（Pause Menu Shell Smokeを含む）
+- PR #9 Windows Build: PASS
+- Game ThemeでのVisual / Controller実機確認: Phase 11統合時に実施

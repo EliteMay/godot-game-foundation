@@ -468,7 +468,7 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
 
 ## Phase 11 — Application Shell / Scene UX
 
-状態: **実装中 / Transition Layer・Async Scene Loader完了**
+状態: **実装中 / Transition Layer・Async Scene Loader・Pause Menu Shell完了**
 
 参考: `docs/REFERENCE_TEMPLATES.md`
 
@@ -496,10 +496,15 @@ Foundation単体CIでRuntime Test BridgeのState出力Contractが通り、通常
   - 担当: ChatGPT
   - New / Continue / Options / Quit等のAction slotを持つ再利用SceneをOptionalで提供する
   - Game固有Logo / Background / Button構成は差し替え可能にする
-- [ ] Pause Menu Shell
+- [x] Pause Menu Shell
   - 担当: ChatGPT
-  - Resume / Options / Main Menu / Quit等をContractで接続する
-  - Pause前Focusを保存し、閉じた時に戻す
+  - Resume / Options / Main Menu / Quitを既存Game Flow + Game側Options Callableへ接続する
+  - Pause入力Action名はGame側Input Contractへ残し、Foundationへ固定しない
+  - Pause前のGUI Focus Ownerを保存し、Resume後に有効ならFocusを戻す
+  - Main Menu遷移では古いSceneのFocusを復元しない
+  - Options / Main Menu / Quitの利用可否をContractから表示状態へ反映できる
+  - Default SceneはLayoutだけを提供し、Palette / Font / Logo等のGame Themeを固定しない
+  - Headless Smoke TestでPause / Resume / Options / Safe Quit block / Main Menu / Focus restore / Label overrideを検証する
 - [ ] Controller / Keyboard Focus Baseline
   - 担当: ChatGPT
   - Mouseなしでも主要Menuを操作できるFocus flowをSmoke / Runtime Test対象にする

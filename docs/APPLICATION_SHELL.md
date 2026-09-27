@@ -101,11 +101,72 @@ Progressは0.0〜1.0です。
 - PackedScene以外は成功扱いしない
 - Pause中でもLoadingを進められる `PROCESS_MODE_ALWAYS`
 
+## Pause Menu Shell
+
+`addons/game_foundation/shell/pause_menu_shell.tscn` は、Game固有Themeを固定しないPause MenuのFunctional Baselineです。
+
+### 接続するContract
+
+`configure()` で既存Game Flow ServiceとGame側Options Actionを渡します。
+
+```gdscript
+var pause_menu := preload(
+    "res://addons/game_foundation/shell/pause_menu_shell.tscn"
+).instantiate()
+
+add_child(pause_menu)
+
+pause_menu.configure({
+    "flow_service": flow_service,
+    "options_action": Callable(self, "open_options"),
+    "labels": {
+        "resume": "Resume",
+        "options": "Options",
+        "main_menu": "Main Menu",
+        "quit": "Quit",
+    },
+})
+```
+
+共通Action:
+
+- `resume` → Game Flowの `set_paused(false)`
+- `options` → Game側Callable
+- `main_menu` → Game Flowの `go_to_main_menu()`
+- `quit` → Game Flowの `request_quit()`
+
+Pause入力Action名そのものはFoundationへ固定しません。Game側Input Contractから `open_menu()` / `toggle_menu()` を呼びます。
+
+### Focus
+
+`open_menu()` の直前に現在のGUI Focus Ownerを保存し、Resumeで閉じた後に有効なControlならFocusを戻します。
+
+Main MenuへのScene遷移では古いSceneのFocusを復元しません。
+
+### Visual境界
+
+Default SceneはButtonの配置とMinimum Sizeだけを提供し、Palette / Font / Background image / Game Logo等は持ちません。Project ThemeやGame側SceneでVisualを差し替えられます。
+
+Options / Main Menuが未設定の場合は該当Actionを表示しません。QuitもGame側Configで非表示にできます。
+
+### Validation
+
+Headless Smoke Testでは次を確認します。
+
+- Open時にPauseされる
+- ResumeでUnpauseする
+- Pause前Focusが復元される
+- Options Callableが呼ばれる
+- Safe Quit blockをMenuが保持する
+- Main Menu ActionがGame Flow Contractへ接続される
+- Label差し替え
+
+実際のGame ThemeでのVisual / Controller操作は、Phase 11のShell統合時にWindows実機でまとめて確認します。
+
 ## 今後の接続
 
 Phase 11ではTransition LayerとAsync Scene Loaderを土台に、次を追加します。
 
 - Loading Screen Contract
 - Main Menu Shell
-- Pause Menu Shell
 - Controller / Keyboard Focus Baseline
