@@ -111,6 +111,21 @@ func _run() -> void:
 		get_viewport().gui_get_focus_owner() == shell.action_button("resume"),
 		"pause menu should move focus to its initial action"
 	)
+	_expect_equal(
+		shell.action_button("resume").focus_neighbor_bottom,
+		shell.action_button("resume").get_path_to(shell.action_button("options")),
+		"pause menu should expose predictable keyboard/controller focus order"
+	)
+	_expect_equal(
+		String(shell.action_button("resume").focus_neighbor_top),
+		"",
+		"pause menu baseline should not hard-trap custom focus extensions"
+	)
+	_expect_equal(
+		String(shell.state_snapshot().get("focused_action_id", "")),
+		"resume",
+		"runtime snapshot should expose pause focus state"
+	)
 
 	_expect_code(
 		shell.request_action("options"),

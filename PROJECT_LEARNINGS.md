@@ -105,3 +105,12 @@
 - Context: Continueを共通Menuへ入れる場合、Saveの存在条件やSlot構造までMain Menuが判断すると、Game固有Save Adapterや後続Save Profiles層と責務が重複する。
 - Decision: Main Menu ShellはNew / Continue / OptionsをGame Callableとして受け取り、Continueは`continue_action`の有無と`continue_available`を分離する。Quitのみ既存Game Flow Safe Quitへ接続する。
 - Prevention: Menuは「押された時に何を呼ぶか」と「今押せるか」だけを扱い、Save File / Slot / New Game初期Stateの正本を持たない。
+
+## GF-012 — Menu Focusは表示状態から再構築し、物理Input名を所有しない
+
+- Date: 2026-09-28
+- Type: UX / Accessibility / Architecture
+- Status: Adopted
+- Context: Optional Actionをhide / disableするMenuでScene固定のFocus neighborを持つと、利用不能ButtonへFocusが向いたり、Game固有Controller MappingとFoundation側Input処理が二重管理になりやすい。
+- Decision: Focus graphは現在のvisible / enabled ControlからRuntimeで再構築し、FoundationはGodot標準UI Focusを使う。物理Key / Gamepad ButtonはHardcodeせず、Custom layoutは`manage_focus_navigation=false`でGame側へ委譲できる。
+- Prevention: Menu Action availabilityを変更する時はFocus graphも同時に更新し、Focused ActionをRuntime Snapshotから観測可能にする。Headless Testではsemantic UI actionでMouseなし操作をRegression Guardする。

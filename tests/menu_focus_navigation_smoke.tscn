@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/menu_focus_navigation_smoke.gd" id="1"]
+
+[node name="MenuFocusNavigationSmoke" type="Node"]
+script = ExtResource("1")

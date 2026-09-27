@@ -144,6 +144,17 @@ jobs:
           fi
           grep -q "LOADING_SCREEN_CONTRACT_SMOKE: PASS" loading-screen-contract-smoke.log
 
+      - name: Run menu focus navigation smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/menu_focus_navigation_smoke.tscn 2>&1 | tee menu-focus-navigation-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" menu-focus-navigation-smoke.log; then
+            echo "Menu focus navigation smoke contains an error."
+            exit 1
+          fi
+          grep -q "MENU_FOCUS_NAVIGATION_SMOKE: PASS" menu-focus-navigation-smoke.log
+
       - name: Run main menu shell smoke test
         shell: bash
         run: |
