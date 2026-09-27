@@ -95,3 +95,13 @@ Current Foundationの強い部分:
 ### Source
 
 Current decision summary: `docs/REFERENCE_TEMPLATES.md`
+
+
+### Validation
+
+- PR #5 Godot CI: PASS
+- PR #5 Windows Build: PASS
+- main merge commit: `71bbdc43cdb7e2a8029530302ae04e6cc522ca51`
+- main Godot CI: PASS
+- main Windows Build: PASS
+- Deep Factory Repositoryは変更していない
