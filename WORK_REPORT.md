@@ -477,5 +477,10 @@ Phase 12のOptions UIで、各GameがToggle / Slider / List / Resolutionの基�
 - List option外 / Slider range外Rejectを検証
 - Session ResetによるControl同期を検証
 - Cancel後disableとRuntime baseline復元を検証
+- PR #14 Godot CI: PASS（Settings Option Control Smokeを含む）
+- PR #14 Windows Build: PASS
+- main merge commit: `ca04a2ca810859bc2fca9234e9e73f5a4eedd636`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - 最終Game ThemeでのVisual quality / Focus順は実Game統合時のRuntime Validation対象
 
