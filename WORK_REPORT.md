@@ -137,3 +137,38 @@ UserがFoundation Repository本体を開いた状態で「v0.10 Starterを作成
 - したがって旧Starterを「基盤を更新」してもStarter側の `scripts/main.gd` は自動更新されない
 
 Roadmapを修正し、Windows実機確認は **Current v0.10 Templateから新規Starterを生成して行う** と明記した。Foundation Repository本体の「Game Foundation 未導入」はこの確認では異常扱いしない。
+
+
+---
+
+## v0.11.0-dev — Phase 10完了 / Transition Layer
+
+### Phase 10 Windows Evidence
+
+Game Dev Hub v0.1.25で新規 `foundation-runtime-test` StarterをCurrent v0.10 Templateから生成し、User実機確認2項目がPassした。
+
+- v0.10.0-dev Starter生成: PASS
+- Starter画面 `Godot Game Foundation 0.10.0-dev / Runtime ready`: PASS
+
+これによりPhase 10 — Integrated Foundation RuntimeのHeadless CI / Windows Build / Windows Starter実機確認がすべて揃った。
+
+### Phase 11 Transition Layer
+
+`addons/game_foundation/shell/transition_layer.gd` をOptional Moduleとして追加した。
+
+- Fade out: Configured colorでSceneを覆う
+- Fade in: Overlayを透明に戻してSceneを見せる
+- duration / color / CanvasLayerをGame側で設定
+- `motion_scale` 0.0〜1.0でAnimation時間を短縮
+- `set_reduced_motion(true)` で即時Transition
+- Mouse入力を奪わない
+- Transition中の重複Requestを `transition_in_progress` で拒否
+- FoundationRuntimeへ必須統合せず、必要Gameだけ利用する
+- v0.11.0-devへFoundation Versionを更新
+
+### Validation
+
+- Transition Layer Headless Smoke TestをCIへ追加
+- PR #7 Godot CI: PASS（Transition Layer Smokeを含む）
+- PR #7 Windows Build: PASS
+- Windows上のVisual Fade確認: 未確認（BehaviorはHeadless Test対象）

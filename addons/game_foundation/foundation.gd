@@ -1,6 +1,6 @@
 extends RefCounted
 
-const FOUNDATION_VERSION: String = "0.10.0-dev"
+const FOUNDATION_VERSION: String = "0.11.0-dev"
 const GODOT_BASELINE: String = "4.7.2"
 
 
@@ -50,4 +50,6 @@ static func capabilities() -> PackedStringArray:
 		"integrated_foundation_runtime",
 		"runtime_lifecycle_bootstrap",
 		"runtime_test_bridge",
+		"application_shell",
+		"transition_layer",
 	])
