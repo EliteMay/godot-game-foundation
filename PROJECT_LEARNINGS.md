@@ -46,3 +46,14 @@
 - Evidence: 比較対象にはSteam、Event Bus、Traits、Obfuscation、Game Jam向けPersist group等、特定用途では有効でもCurrent Foundationの必須Coreには不要な機能も含まれていた。
 - Decision: MIT Licenseの公開TemplateはArchitecture / UX PatternのReferenceとして扱い、必要性が現在のFoundation要件で説明できる機能だけRoadmapへ採用する。
 - Prevention: Popularityや「他Templateにある」という理由だけでCore DependencyやManagerを追加しない。
+
+
+## GF-006 — Managed Path更新とStarter生成File更新を混同しない
+
+- Date: 2026-09-28
+- Type: Distribution / Compatibility
+- Status: Adopted
+- Evidence: Foundation v0.10.0-devではStarterの `scripts/main.gd` が `FoundationRuntime` を初期化するよう更新された。一方、`foundation-template.json` のManaged Pathは `addons/game_foundation` のみで、Game Dev Hubの「基盤を更新」はGame固有Fileを上書きしない。
+- Risk: v0.8等で生成済みのStarterへManaged Path更新だけを行い、「v0.10 Starterと同じBootstrapになった」と誤認すると、Runtime実機確認やMigration判断を誤る。
+- Decision: Starter生成FileのBehavior変更を検証する場合は、Current Templateから新規Starterを生成する。既存Gameへ同じ変更が必要な場合はManaged Path更新とは別の明示Migrationとして扱う。
+- Prevention: Roadmap / Test手順では「新規Starter生成」と「Foundation Managed Path更新」を別操作として明記する。
