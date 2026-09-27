@@ -195,7 +195,7 @@ func _process(_delta: float) -> void:
 		return
 
 	var progress_values: Array = []
-	var status: ResourceLoader.ThreadLoadStatus = (
+	var status: int = (
 		ResourceLoader.load_threaded_get_status(
 			_active_path,
 			progress_values
