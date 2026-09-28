@@ -1,0 +1,178 @@
+extends Control
+
+const Foundation = preload("res://addons/game_foundation/foundation.gd")
+const FoundationRuntime = preload(
+	"res://addons/game_foundation/runtime/foundation_runtime.gd"
+)
+const AsyncSceneLoader = preload(
+	"res://addons/game_foundation/shell/async_scene_loader.gd"
+)
+const LoadingScreenContract = preload(
+	"res://addons/game_foundation/shell/loading_screen_contract.gd"
+)
+
+@onready var title_label: Label = $Header/Content/Title
+@onready var status_label: Label = $Header/Content/Status
+@onready var main_menu: Control = $MainMenuShell
+@onready var recovery_screen: Control = $RecoveryScreen
+
+var foundation_runtime: Node = null
+var async_scene_loader: Node = null
+var loading_contract: Node = null
+
+
+func _ready() -> void:
+	title_label.text = String(
+		ProjectSettings.get_setting("application/config/name", "Game")
+	)
+
+	foundation_runtime = FoundationRuntime.new()
+	add_child(foundation_runtime)
+
+	var configured: Dictionary = foundation_runtime.call("configure", {
+		"app": {
+			"name": String(
+				ProjectSettings.get_setting("application/config/name", "Game")
+			),
+			"version": String(
+				ProjectSettings.get_setting("application/config/version", "")
+			),
+		},
+		"save": {
+			"enabled": false,
+		},
+		"settings": {
+			"enabled": true,
+			"apply_runtime": false,
+		},
+		"input": {
+			"enabled": false,
+		},
+		"flow": {
+			"enabled": true,
+			"scenes": {
+				"main": "res://scenes/main.tscn",
+			},
+			"main_menu_id": "main",
+		},
+		"diagnostics": {
+			"enabled": true,
+		},
+		"runtime_test": {
+			"enabled": false,
+		},
+		"crash_marker": {
+			"enabled": true,
+		},
+	})
+
+	if not bool(configured.get("ok", false)):
+		_show_setup_error(configured)
+		return
+
+	var initialized: Dictionary = foundation_runtime.call("initialize")
+	_configure_recovery()
+
+	if not bool(initialized.get("ok", false)):
+		_show_setup_error(initialized)
+		recovery_screen.call("open_screen")
+		return
+
+	var shell_result: Dictionary = _configure_standard_shell()
+	if not bool(shell_result.get("ok", false)):
+		_show_setup_error(shell_result)
+		return
+
+	status_label.text = (
+		"Godot Game Foundation "
+		+ Foundation.FOUNDATION_VERSION
+		+ " / 標準Starter準備完了"
+	)
+
+
+func _configure_standard_shell() -> Dictionary:
+	var flow_service: Node = foundation_runtime.call("flow_service")
+	if not is_instance_valid(flow_service):
+		return _error("flow_unavailable", "Game Flowを初期化できませんでした。")
+
+	async_scene_loader = AsyncSceneLoader.new()
+	add_child(async_scene_loader)
+	var loader_result: Dictionary = async_scene_loader.call(
+		"configure",
+		Callable(flow_service, "resolve_scene_path")
+	)
+	if not bool(loader_result.get("ok", false)):
+		return loader_result
+
+	loading_contract = LoadingScreenContract.new()
+	add_child(loading_contract)
+	var loading_result: Dictionary = loading_contract.call(
+		"configure",
+		async_scene_loader
+	)
+	if not bool(loading_result.get("ok", false)):
+		return loading_result
+
+	return main_menu.call("configure", {
+		"flow_service": flow_service,
+		"new_game_action": Callable(self, "_on_new_game_hook"),
+		"options_action": Callable(self, "_on_options_hook"),
+		"continue_available": false,
+		"labels": {
+			"new_game": "ゲーム開始フック",
+			"options": "設定フック",
+			"quit": "終了",
+		},
+	})
+
+
+func _configure_recovery() -> void:
+	var result: Dictionary = recovery_screen.call("configure", {
+		"runtime": foundation_runtime,
+		"labels": {
+			"title": "起動を完了できませんでした",
+			"retry": "再試行",
+			"main_menu": "メインメニュー",
+			"safe_quit": "安全に終了",
+		},
+	})
+	if not bool(result.get("ok", false)):
+		_show_setup_error(result)
+
+
+func _on_new_game_hook() -> Dictionary:
+	status_label.text = (
+		"ゲーム固有のGameplay Sceneを追加し、"
+		+ "このHookからLoading Contractへ接続してください。"
+	)
+	return _success("starter_new_game_hook_ready")
+
+
+func _on_options_hook() -> Dictionary:
+	status_label.text = (
+		"Foundation Settings Edit Sessionへ"
+		+ "ゲーム固有の設定画面を接続してください。"
+	)
+	return _success("starter_options_hook_ready")
+
+
+func _show_setup_error(result: Dictionary) -> void:
+	status_label.text = (
+		"Foundation setup error: "
+		+ String(result.get("code", "unknown"))
+	)
+
+
+func _success(code: String) -> Dictionary:
+	return {
+		"ok": true,
+		"code": code,
+	}
+
+
+func _error(code: String, message: String) -> Dictionary:
+	return {
+		"ok": false,
+		"code": code,
+		"message": message,
+	}
