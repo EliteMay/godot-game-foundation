@@ -182,6 +182,17 @@ func _run() -> void:
 		not bool(_service.status_snapshot().get("configured", true)),
 		"dispose should require reconfigure"
 	)
+	for child in _service.get_children():
+		if child is AudioStreamPlayer:
+			_expect_true(
+				(child as AudioStreamPlayer).stream == null,
+				"dispose should release music stream references"
+			)
+			_expect_true(
+				not (child as AudioStreamPlayer).playing,
+				"dispose should stop reusable music players"
+			)
+
 	_expect_ok(
 		_service.configure(
 			{
@@ -190,6 +201,27 @@ func _run() -> void:
 			}
 		),
 		"service should reconfigure after dispose"
+	)
+	_expect_ok(
+		_service.play_music(
+			second_stream,
+			{"track_id": "reused", "fade_in_seconds": 0.0}
+		),
+		"reconfigured service should play a new track"
+	)
+	await get_tree().create_timer(0.55, true, false, true).timeout
+	_expect_equal(
+		_service.current_track_id(),
+		"reused",
+		"disposed transition must not overwrite reused service state"
+	)
+	_expect_true(
+		_service.is_music_playing(),
+		"reused service should remain playing after old transition duration"
+	)
+	_expect_ok(
+		_service.stop_music(0.0),
+		"reused service should stop normally"
 	)
 
 	_expect_code(
