@@ -665,7 +665,7 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
 
 ## Phase 15 — Localization / Accessibility Shell
 
-状態: **実装中 / Locale Setting Adapter・Translation Contract完了**
+状態: **実装中 / Locale Setting Adapter・Translation Contract・Focus Navigation Baseline完了**
 
 目的: Menu Shellで繰り返すLocale適用と基本操作Accessibilityを共通化する。
 
@@ -684,9 +684,16 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
   - 既存 `labels` APIは互換用の最終明示上書きとして維持する
   - Locale変更時の `NOTIFICATION_TRANSLATION_CHANGED` でShell表示を自動再解決する
   - Translation Resource / Font / Content / supported language menuはGame側が所有する
-- [ ] Focus / Navigation Baseline
+- [x] Focus / Navigation Baseline
   - 担当: ChatGPT
-  - Keyboard / Gamepadで主要Menuを操作できることを共通Contractにする
+  - `ui_up / ui_down / ui_accept` を物理Key/Buttonではなくsemantic UI actionとして共通Baselineにする
+  - Required UI actionとKeyboard / Gamepad binding coverageを監査し、不足を構造化Resultで返す
+  - 既存Menu Focus graphを再利用し、hidden / disabled Controlを除外して上下Navigationを構成する
+  - Initial focusとFocus喪失 / availability変更後の安全なrepairを共通化する
+  - Validな外部Focusは奪わず、Game独自Overlay / Custom layoutと共存する
+  - Main Menu / Pause MenuのRuntime SnapshotからNavigation readinessを確認できる
+  - Headless Smokeで `ui_up / ui_down / ui_accept` のsemantic操作をRegression確認する
+  - 物理Controller実機の操作感はGame統合時Runtime Validationへ残す
 - [ ] Motion / Feedback Hooks
   - 担当: ChatGPT
   - Reduced motion、UI sound等をGame要件に応じて無効化できるHookを用意する
