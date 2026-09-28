@@ -1148,4 +1148,5 @@ Phase 15最後のTaskとして、Reduced MotionとUI FeedbackをGame Theme / Ass
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #27 Godot CI: PASS（UI Feedback Hooks Smoke / Menu Feedback Integration Smoke / 既存Regressionを含む）
+- PR #27 Windows Build: PASS
