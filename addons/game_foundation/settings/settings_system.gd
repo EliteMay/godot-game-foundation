@@ -18,6 +18,7 @@ static func default_settings(gameplay_defaults: Dictionary = {}) -> Dictionary:
 		gameplay = gameplay_defaults.duplicate(true)
 
 	return {
+		"locale": "automatic",
 		"audio": {
 			"master": 1.0,
 			"bgm": 1.0,
@@ -44,6 +45,19 @@ static func normalize_settings(
 
 	var normalized: Dictionary = default_settings(gameplay_defaults)
 	var warnings: Array[String] = []
+
+	var locale_variant: Variant = candidate.get("locale", "automatic")
+	if typeof(locale_variant) == TYPE_STRING:
+		var locale_preference: String = String(locale_variant).strip_edges()
+		if (
+			not locale_preference.is_empty()
+			and locale_preference.length() <= 64
+		):
+			normalized["locale"] = locale_preference
+		else:
+			warnings.append("locale_invalid")
+	else:
+		warnings.append("locale_invalid")
 
 	var audio_variant: Variant = candidate.get("audio", {})
 	if audio_variant is Dictionary:
