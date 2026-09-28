@@ -1006,4 +1006,5 @@ Phase 15の最初のTaskとして、Gameごとに重複していた「保存済�
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #24 Godot CI: PASS（Locale Setting Adapter Smoke / 既存Regressionを含む）
+- PR #24 Windows Build: PASS
