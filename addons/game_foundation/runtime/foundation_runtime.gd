@@ -24,6 +24,9 @@ const SettingsEditSession = preload(
 const InputSystem = preload("res://addons/game_foundation/input/input_system.gd")
 const GameFlowService = preload("res://addons/game_foundation/flow/game_flow_service.gd")
 const DiagnosticsService = preload("res://addons/game_foundation/diagnostics/diagnostics_service.gd")
+const DiagnosticsExportHook = preload(
+	"res://addons/game_foundation/diagnostics/diagnostics_export_hook.gd"
+)
 const RuntimeTestBridge = preload("res://addons/game_foundation/testing/runtime_test_bridge.gd")
 const RuntimeFailureState = preload(
 	"res://addons/game_foundation/recovery/runtime_failure_state.gd"
@@ -388,6 +391,21 @@ func diagnostics_snapshot() -> Dictionary:
 	if _diagnostics_service == null:
 		return {}
 	return _diagnostics_service.call("build_snapshot")
+
+
+func diagnostics_export(
+	options: Dictionary = {}
+) -> Dictionary:
+	if _diagnostics_service == null:
+		return _error(
+			"diagnostics_unavailable",
+			"diagnostics service is not initialized"
+		)
+	return DiagnosticsExportHook.build_export(
+		diagnostics_snapshot(),
+		status_snapshot(),
+		options
+	)
 
 
 func status_snapshot() -> Dictionary:

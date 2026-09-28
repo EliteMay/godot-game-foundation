@@ -82,7 +82,9 @@ Godot固有型などJSONへ直接保存しづらいContextは文字列化してL
 
 `build_snapshot()` はRuntime Info、Path、Error Summary、最近のLog、FPSをまとめる。
 
-Game Dev Hubや将来の共有ReportはこのSnapshotを利用できる。
+内部OverlayやRuntime調査ではこのSnapshotを利用できる。
+
+Game Dev Hub等へ外部共有する場合は、生のSnapshotをそのまま送らず `DiagnosticsExportHook` を通す。
 
 ## Debug Overlay
 
@@ -137,3 +139,72 @@ Game:
 - Game固有Context
 - Overlayを開くInput
 - ユーザー共有用Reportに何を含めるか
+
+
+## Diagnostics Export Hook
+
+`diagnostics_export_hook.gd` はDiagnostics Serviceの内部Snapshotを、Game Dev HubやBug Reportへ渡しやすい共有用Payloadへ変換する。
+
+```gdscript
+var export_result := runtime.diagnostics_export({
+    "reason": "game_dev_hub_share",
+})
+
+if export_result.ok:
+    var payload: Dictionary = export_result.payload
+    var json_text: String = export_result.json
+```
+
+共有用Payloadは次を含む。
+
+- App / Foundation / Godot Version
+- OS / Display Server / Headless / Debug Build
+- Foundation Runtimeの安全な状態Field
+- Runtime Failure Stateの共有可能Field
+- `user://` / `res://` のVirtual Path
+- Error件数
+- Sanitized Recent Error / Log
+- FPS
+- Sanitization / Payload size metadata
+
+### 共有しないもの
+
+共有用PayloadはDiagnostics SnapshotやRuntime Statusの単純コピーではない。
+
+次はホワイトリスト外にする。
+
+- Save Payload
+- `last_load.payload`
+- Settings本体
+- Input Binding本体
+- Game固有Domain State
+- Binary Data
+- 絶対File Path
+- password / token / API key / authorization / cookie / credential等の既知Sensitive Field
+
+Log ContextはGame側が任意Dataを渡せるため、Export時に再Sanitizeする。
+
+### Bounded export
+
+共有Payloadは次を上限化する。
+
+- Recent Entry件数
+- Recent Error件数
+- String長
+- ContextのNest深さ
+- Collection item数
+- JSON全体: 128 KiB
+
+上限を超えた場合はRecent Entry / Recent Error detailを落として再構築する。それでも上限を超える場合はExport失敗として返し、巨大Payloadをそのまま送らない。
+
+### Path privacy
+
+`user://` と `res://` は共有可能なVirtual Pathとして保持する。
+
+Absolute Pathは `<redacted-path>` へ置換する。Free text内でも検出可能なHome Path / Absolute Path / known token patternはRedaction対象とする。
+
+### Boundary
+
+Foundationは共有可能Payloadを生成するだけで、Network送信、Clipboard、File Picker、Upload先を所有しない。
+
+Game Dev Hub側は `FoundationRuntime.diagnostics_export()` のResultを既存共有パックへ取り込める。
