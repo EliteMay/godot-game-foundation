@@ -630,7 +630,7 @@ Game固有Audio AssetをFoundationへ入れず、BGM / SFX / UI / Voiceの共通
 
 ## Phase 14 — Save Profiles / Slots
 
-状態: **実装完了 / Headless Save Slot Smoke・Windows Build確認対象**
+状態: **実装完了 / Headless Save Slot Smoke・Windows Build済み**
 
 目的: Current Generic Save Systemの安全性を維持したまま、複数SlotやContinue/New Gameに必要な共通管理層を追加する。
 
