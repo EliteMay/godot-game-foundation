@@ -1093,4 +1093,11 @@ Phase 15のFocus / Navigation Baselineとして、Main Menu / Pause MenuがMouse
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #26 初回Godot CI: FAIL
+  - 原因: `PackedStringArray(...)` をconst expressionとして使用してGodot 4.7 parse error
+  - 修正: Required UI action listをruntime生成へ変更
+- PR #26 2回目Godot CI: FAIL
+  - 原因: Harness built-in `ui_accept` のGamepad coverage不足をFocus graph構成自体のhard gateにしていた
+  - 修正: Focus behaviorとDevice coverage auditを分離。Device不足はSnapshot / validation resultへ残し、Focus graphはsemantic action存在時に成立させる
+- PR #26 最終Godot CI: PASS（Focus Navigation Baseline Smoke / Main Menu / Pause Menu regressionを含む）
+- PR #26 最終Windows Build: PASS
