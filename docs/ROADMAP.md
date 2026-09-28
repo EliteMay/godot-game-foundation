@@ -710,7 +710,7 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 
 ## Phase 16 — Controlled Failure / Recovery UX
 
-状態: **実装完了 / Crash Marker含むPhase 16全Task完了・CI検証待ち**
+状態: **完了 / Headless Smoke Test・Windows Build済み**
 
 目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
 
