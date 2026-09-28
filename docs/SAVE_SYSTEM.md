@@ -99,6 +99,22 @@ func migrate_save(
 
 Migration後PayloadもFoundationが再Validationする。
 
+
+## Extra Metadata / Read-only Inspection
+
+`save_game()` は第4引数の `extra_metadata` を任意で受け取れる。既存3引数APIは互換維持される。
+
+Foundationが所有する次のKeyは上書きできない。
+
+- `format`
+- `foundation_schema_version`
+- `game_schema_version`
+- `saved_at_unix`
+
+`inspect_game(path, allow_backup)` はGame RuntimeへPayloadを適用せず、Save envelopeとJSON互換Payloadを検証してMetadataを取得する。Slot一覧など、Load / Migrationを実行せずSave状態を確認したい用途で使う。
+
+複数Slotはこの拡張を利用するOptional layerであり、Single SaveのDefault Pathや既存APIは変更しない。詳細は `docs/SAVE_SLOTS.md` を参照する。
+
 ## Auto Save API
 
 `AutoSaveService` は短時間に連続するSave要求をDebounceし、最後のStateを保存する。

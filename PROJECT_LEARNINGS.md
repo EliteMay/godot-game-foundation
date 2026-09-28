@@ -203,3 +203,16 @@
 - Reuse: DisposeはService Node自体を破棄せず未configured状態へ戻し、再configure後の再利用を許可する。
 - Prevention: Persistent Serviceへ外部Node所有Resourceを持たせる場合、通常完了だけでなくService shutdown pathでもResourceを回収できることをTestする。
 
+
+
+## GF-022 — Save Slot MetadataはGame Payloadへ混ぜず同じAtomic EnvelopeでCommitする
+
+- Date: 2026-09-28
+- Type: Save / Data / Reliability
+- Status: Adopted
+- Context: Slot一覧用Metadataを別Fileへ分けると、Payload Save成功・Metadata更新失敗のような2 File partial commitが発生し、Continue順序や表示内容がCanonical Saveとずれる。
+- Decision: Slot MetadataはGame Payloadとは論理的に分離しつつ、既存Save envelopeの追加Metadataとして同じAtomic Fileへ保存する。Game Payloadは引き続きGame固有Dataだけを持つ。
+- Reliability: save_slot()はHealthy Primaryを確認してから更新し、Corrupt Primary + valid Backupの状態を新しいRuntime Stateで上書きしない。delete_slot()はPrimaryをActive namespace外へrenameしてから関連Artifactを削除する。
+- Compatibility: SaveSlotManagerはOptional layerで、既存Single Save API / user://save.json / FoundationRuntimeのSingle Save lifecycleを変更しない。
+- Cloud Boundary: Slot IDとLocal artifact descriptorだけをCoreから公開し、Steam / Provider SDK、Remote revision、Conflict、Tombstoneは外部Adapterへ残す。
+- Prevention: 複数永続Fileを1 logical Saveとして同時更新する設計を追加する前に、partial commit時のAuthorityとRecoveryを明示する。
