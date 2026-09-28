@@ -157,6 +157,41 @@ func _run() -> void:
 	_expect_code(stopped, "music_stopped", "zero fade should stop immediately")
 	_expect_true(not _service.is_music_playing(), "immediate stop should stop player")
 
+	_expect_ok(
+		_service.play_music(
+			first_stream,
+			{"track_id": "cleanup", "fade_in_seconds": 0.5}
+		),
+		"lifecycle fixture should start"
+	)
+	var disposed: Dictionary = _service.dispose_audio()
+	_expect_code(
+		disposed,
+		"global_music_disposed",
+		"dispose should return stable result"
+	)
+	_expect_true(
+		bool(disposed.get("had_transition", false)),
+		"dispose should report an active transition"
+	)
+	_expect_true(
+		not bool(_service.status_snapshot().get("transition_active", true)),
+		"dispose should clear transition state"
+	)
+	_expect_true(
+		not bool(_service.status_snapshot().get("configured", true)),
+		"dispose should require reconfigure"
+	)
+	_expect_ok(
+		_service.configure(
+			{
+				"bus_name": "Master",
+				"persist_across_scenes": true,
+			}
+		),
+		"service should reconfigure after dispose"
+	)
+
 	_expect_code(
 		_service.play_music(first_stream, {"fade_in_seconds": 31.0}),
 		"invalid_fade_seconds",
