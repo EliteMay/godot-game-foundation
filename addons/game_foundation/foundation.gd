@@ -24,6 +24,7 @@ static func capabilities() -> PackedStringArray:
 		"settings_system",
 		"audio_settings",
 		"global_music_service",
+		"one_shot_audio_service",
 		"display_settings",
 		"gameplay_settings_extension",
 		"settings_persistence",

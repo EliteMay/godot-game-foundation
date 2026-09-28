@@ -691,3 +691,52 @@ Phase 13 — Audio Serviceを開始し、Scene切替ごとにBGM Player / Fade /
 - main Windows Build: PASS
 - 実Audio device上の音質 / Loop seam / Crossfade聴感は実Game統合時のRuntime Validation対象
 
+---
+
+## v0.13.0-dev — One-shot Audio Service
+
+### 目的
+
+Phase 13の次Taskとして、Global SFX / UI / Voiceと2D / 3Dの短いAudio再生をGameごとに作り直さず、共通Lifecycle APIから利用できるようにする。
+
+### 実装
+
+- `addons/game_foundation/audio/one_shot_audio_service.gd`
+  - Global SFX helper
+  - UI one-shot helper
+  - Voice one-shot helper
+  - Node2D parent + global positionによる2D helper
+  - Node3D parent + global positionによる3D helper
+  - `volume_db` / `pitch_scale` / `start_position` / `tag` / `bus_name`
+  - finished playerの自動解放
+  - Spatial Parent tree exit時のactive tracking cleanup
+  - token単位stop
+  - stop_all
+  - max_active_players上限
+  - active count / kind / busのstatus snapshot
+  - Global helper用Serviceのoptional scene-persistent lifetime
+- Foundation capabilityへ `one_shot_audio_service` を追加
+- `docs/AUDIO_SERVICE.md` に利用Contract / Lifecycle / Boundaryを追記
+- RoadmapのOne-shot Audioを完了へ更新
+
+### 設計境界
+
+- Audio AssetはGame側から渡す
+- Global SFX / UI / VoiceはService-owned
+- 2D / 3DはScene-owned Parentを必須にしてWorld lifetimeへ従う
+- 特殊Attenuation / Area Mask / Emission等はGame側専用Playerへ残す
+- Current bus_namesは局所設定で、Settings audio_bus_mapとの正式統合は後続Bus Contract
+- FoundationはAudio Busを勝手に作成しない
+
+### Validation
+
+- One-shot Audio Service Headless SmokeをCIへ追加
+- Global SFX / UI / Voice開始を検証
+- 短いAudioStreamWAV終了後の自動cleanupを検証
+- 2D / 3D helperとScene-owned Parent contractを検証
+- Spatial Parent解放時のtracking cleanupを検証
+- token stop / stop_allを検証
+- max_active_players上限を検証
+- invalid volume / pitch / null streamを検証
+- 実Audio deviceでの定位 / 距離減衰 / Voice / Mix聴感は実Game統合時のRuntime Validation対象
+
