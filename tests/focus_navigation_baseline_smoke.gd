@@ -19,22 +19,33 @@ func _run() -> void:
 	)
 	_expect_ok(
 		input_result,
-		"Godot semantic UI baseline should include keyboard and gamepad coverage"
+		"Godot semantic UI actions should exist"
 	)
-	var coverage: Dictionary = input_result.get("coverage", {}) as Dictionary
-	for action_name in FocusNavigationBaseline.required_ui_actions():
-		var action_coverage: Dictionary = coverage.get(
-			action_name,
-			{}
-		) as Dictionary
-		_expect_true(
-			bool(action_coverage.get("keyboard", false)),
-			action_name + " should expose a keyboard binding"
-		)
-		_expect_true(
-			bool(action_coverage.get("gamepad", false)),
-			action_name + " should expose a gamepad binding"
-		)
+	_expect_ok(
+		FocusNavigationBaseline.validate_input_actions({
+			"require_keyboard": true,
+		}),
+		"default semantic UI actions should expose keyboard coverage"
+	)
+
+	var test_actions := PackedStringArray([
+		"gf_test_ui_up",
+		"gf_test_ui_down",
+		"gf_test_ui_accept",
+	])
+	_install_test_device_bindings(test_actions)
+	var device_result: Dictionary = (
+		FocusNavigationBaseline.validate_input_actions({
+			"required_actions": test_actions,
+			"require_keyboard": true,
+			"require_gamepad": true,
+		})
+	)
+	_expect_ok(
+		device_result,
+		"device coverage audit should accept keyboard and gamepad bindings"
+	)
+	_remove_test_device_bindings(test_actions)
 
 	var actions := VBoxContainer.new()
 	actions.name = "Actions"
@@ -169,10 +180,45 @@ func _run() -> void:
 		bool(snapshot.get("input_ready", false)),
 		"snapshot should expose semantic input readiness"
 	)
+	_expect_true(
+		snapshot.has("keyboard_ready"),
+		"snapshot should expose keyboard readiness"
+	)
+	_expect_true(
+		snapshot.has("gamepad_ready"),
+		"snapshot should expose gamepad readiness without blocking focus"
+	)
 
 	actions.queue_free()
 	external.queue_free()
 	_finish()
+
+
+func _install_test_device_bindings(
+	action_names: PackedStringArray
+) -> void:
+	for index in range(action_names.size()):
+		var action_name: String = action_names[index]
+		if InputMap.has_action(action_name):
+			InputMap.erase_action(action_name)
+		InputMap.add_action(action_name)
+
+		var key := InputEventKey.new()
+		key.physical_keycode = KEY_F1 + index
+		InputMap.action_add_event(action_name, key)
+
+		var gamepad := InputEventJoypadButton.new()
+		gamepad.button_index = index
+		gamepad.device = -1
+		InputMap.action_add_event(action_name, gamepad)
+
+
+func _remove_test_device_bindings(
+	action_names: PackedStringArray
+) -> void:
+	for action_name in action_names:
+		if InputMap.has_action(action_name):
+			InputMap.erase_action(action_name)
 
 
 func _send_ui_action(action_name: String) -> void:
