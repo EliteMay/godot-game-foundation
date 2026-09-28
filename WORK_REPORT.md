@@ -1418,7 +1418,9 @@ Phase 11〜16で増えた共通Foundation機能を、新規Gameへ一律強制�
 - PR #32 初回Godot CI: FAIL
   - `Run build configuration smoke test` がFoundation `0.17.0-dev` とHarness `project.godot` の `0.16.0-dev` 不一致を検出
   - Harness Versionを `0.17.0-dev` へ同期して修正
-- 修正後のGodot CI / Windows Buildを再実行して最終確認する
+- 修正後PR #32 Godot CI: PASS
+- 修正後PR #32 Windows Build: PASS
+- main merge後 Godot CI / Windows Build: PASS
 
 ---
 
@@ -1470,4 +1472,48 @@ Phase 17の `standard` ProfileをManifest上の名前だけで終わらせず、
 - `minimal` materialize / import / Main Scene / Integration Smoke: PASS
 - `standard` materialize / import / Main Scene / Integration Smoke: PASS
 - PR #33 Windows Build: PASS
+
+---
+
+## v0.17.0-dev — Game Dev Hub Profile Integration
+
+### 目的
+
+Foundation Phase 17のStarter Profile ContractをGame Dev Hubへ接続し、Userが新規Game作成時にFoundation Manifestで許可されたProfileを選び、その選択を安全に追跡できる状態へする。
+
+### Cross-Repository実装
+
+- Game Dev Hub v0.1.26
+- Hub main commit: `505e3e8977f76f58dd5fb9c7755acb70ba2b8826`
+- Release: `v0.1.26`
+- Foundation ManifestからProfile catalogを取得
+- `selectable` Profileだけを新規Game Dialogへ表示
+- `minimal` / `standard` Profile固有Starter File Setを選択して生成
+- `.game-foundation.json` へ `starterProfile` を保存
+- 旧MetadataにProfileが無いGameは `minimal` として互換読込
+- Foundation Update時も導入Profileを保持
+- Managed Pathは引き続き `addons/game_foundation` のみ
+- Profile固有Scene / Scriptは初回生成だけで、Foundation Update時に自動上書きしない
+
+### Validation
+
+- Game Dev Hub PR #39 Node Test: 111/111 PASS
+- Production runtime dependency verification: PASS
+- Windows installer build: PASS
+- Updater artifact verification: PASS
+- Installer artifact upload: PASS
+- CodeQL: PASS
+- Game Dev Hub main CI: PASS
+- Release workflow: PASS
+- Windows installer attestation: PASS
+- `game_dev_hub_0.1.26_setup.exe` / blockmap / `latest.yml` 公開確認
+- Foundation main `445f5e86...` Godot CI / Windows Build: PASS
+
+### 未確認
+
+- Game Dev Hub v0.1.26を使ったWindows実機の `minimal` 新規生成・起動
+- Game Dev Hub v0.1.26を使ったWindows実機の `standard` 新規生成・起動
+- 生成GameでFoundation Version / Profile Metadata表示とFoundation Update Flowが期待どおり動くこと
+
+これらはPhase 17のWindows実機生成確認としてRoadmapへ残す。
 
