@@ -255,3 +255,15 @@
 - Boundary: `ui_cancel` はClose / Back policyがGameごとに異なるためRequired Baselineにしない。Custom layout / focus topologyはGame側へ委譲可能にする。
 - Validation: Headlessではsemantic action behaviorとbinding coverageを確認し、物理Controller実機の操作感はGame統合時のRuntime Validationへ残す。
 - Prevention: Accessibility対応を「focus_modeが付いている」だけで完成扱いせず、semantic navigation・Device coverage・Focus recoveryを合わせて確認する。
+
+
+## GF-026 — UI FeedbackはPrimary Actionから分離し、Motion preferenceは既存targetへ配布する
+
+- Date: 2026-09-28
+- Type: UX / Accessibility / Architecture
+- Status: Adopted
+- Context: UI soundやhapticをButton action内部へ直接埋め込むと、Audio assetやDevice capabilityがMenu logicの成功条件になり、Feedback失敗でPrimary Actionまで止まる危険がある。またReduced Motionを各Componentが独自Settingとして持つとPreferenceのSource of Truthが分裂する。
+- Decision: Main/Pause Menuは `focus / activate / open / close` のsemantic eventだけを `UIFeedbackHooks` へ通知し、実Audio / Haptic / Visual処理はGame callbackへ委譲する。Feedback failureはPrimary Actionをblockしない。
+- Motion: `UIFeedbackHooks` はmotion_scaleを所有するのではなくPreference distributorとして振る舞い、既存Transition Layer等の `set_motion_scale()` targetへ配布する。複数target適用途中のFailureでは直前Scaleへrollbackする。
+- Boundary: Asset、音量、Haptic pattern、Theme、Preference保存UIはGame側。Foundationはsemantic eventとenable/disable lifecycleだけを共通化する。
+- Prevention: 装飾FeedbackをCore Actionの成功条件にせず、Accessibility preferenceを同じ意味で複数Componentへ再定義しない。
