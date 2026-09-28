@@ -173,3 +173,13 @@
 - Transition: Crossfadeは2つのAudioStreamPlayerを再利用し、Transition中の別Play / Stopを拒否して同一Playerへ複数Tweenが競合しないようにする。
 - Boundary: AudioStream Asset、Loop / Import設定、Codec、最終Bus構成はGame側。Bus Contractは後続Taskで既存Settings mappingと接続する。
 
+## GF-019 — Spatial One-shotはGlobal Serviceへぶら下げずWorld Ownerを明示する
+
+- Date: 2026-09-28
+- Type: Audio / Lifecycle / Reliability
+- Status: Adopted
+- Context: 2D / 3D One-shotをScene-persistent Audio ServiceのChildへ置くと、Scene切替後も古いWorld PositionのPlayerだけが残りやすい。一方、Global SFX / UI / VoiceはSceneを跨いで再生できる方が自然な場合がある。
+- Decision: Global SFX / UI / VoiceはService-owned、2D / 3D PlayerはGame側のNode2D / Node3D Parentを必須にしてWorld lifetimeへ従わせる。Player終了またはParent tree exitでactive trackingを解除する。
+- Reliability: 同時生成数はmax_active_playersで上限化し、token単位Stop / stop_allを提供する。
+- Boundary: 特殊なAttenuation、Area Mask、Emission Angle、Game固有Audio ComponentはFoundation Helperへ固定しない。Bus mappingの正式な正本は後続Bus Contractで既存Settingsと統合する。
+

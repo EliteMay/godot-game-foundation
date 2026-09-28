@@ -582,7 +582,7 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
 
 ## Phase 13 — Audio Service
 
-状態: **実装中 / Global Music完了**
+状態: **実装中 / Global Music・One-shot Audio完了**
 
 目的: Settingsの音量適用だけでなく、複数Gameで共通するAudio再生Lifecycleを提供する。
 
@@ -594,9 +594,15 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
   - Crossfadeは2つのAudioStreamPlayerを再利用し、Transition中の重複Requestを拒否する
   - Game側がbus_nameを指定できるが、Busの存在やSettings mappingとの整合は後続Bus Contractへ分離する
   - Game側Autoload等でLifetimeを所有する場合はpersist_across_scenes=falseでRoot昇格を無効化できる
-- [ ] One-shot Audio
+- [x] One-shot Audio
   - 担当: ChatGPT
-  - Global SFX / UI / Voiceと2D / 3D One-shot helperを提供する
+  - Global SFX / UI / Voice helperを提供する
+  - Node2D / Node3DのScene-owned Parentを明示する2D / 3D One-shot helperを提供する
+  - Stream / Volume / Pitch / Start position / Tag / Bus overrideを共通Optionとして扱う
+  - Finished playerを自動解放し、Spatial ParentがSceneから外れた場合もactive trackingを残さない
+  - max_active_playersで同時One-shot生成数を上限化する
+  - token単位Stopとstop_allを提供する
+  - 特殊なAttenuation / Area / Emission等はGame固有Playerへ残す
 - [ ] Bus Contract
   - 担当: ChatGPT
   - 既存Settings audio bus mappingと同じGame-defined Bus名を利用する

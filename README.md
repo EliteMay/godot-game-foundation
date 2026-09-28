@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通PhaseはAudio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13ではGlobal Music Serviceまで実装し、次TaskはOne-shot Audioです。物理Controllerを使ったPhase 11〜12のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
+次の共通PhaseはAudio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13ではGlobal Music ServiceとOne-shot Audio Serviceまで実装し、次TaskはBus Contractです。物理Controllerを使ったPhase 11〜12のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
