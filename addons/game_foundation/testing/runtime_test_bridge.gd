@@ -1,6 +1,6 @@
 extends Node
 
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = 2
 const STATE_ARG_PREFIX: String = "--foundation-test-state="
 const SESSION_ARG_PREFIX: String = "--foundation-test-session="
 
@@ -10,6 +10,7 @@ var _enabled: bool = false
 var _output_path: String = ""
 var _session_id: String = ""
 var _state_provider: Callable
+var _diagnostics_provider: Callable
 var _elapsed: float = 0.0
 var _sequence: int = 0
 var _last_error: String = ""
@@ -18,11 +19,13 @@ var _last_error: String = ""
 func configure(
 	output_path: String,
 	session_id: String,
-	state_provider: Callable
+	state_provider: Callable,
+	diagnostics_provider: Callable = Callable()
 ) -> Dictionary:
 	_output_path = output_path.strip_edges()
 	_session_id = session_id.strip_edges()
 	_state_provider = state_provider
+	_diagnostics_provider = diagnostics_provider
 	_enabled = (
 		not _output_path.is_empty()
 		and not _session_id.is_empty()
@@ -35,11 +38,15 @@ func configure(
 		"enabled": _enabled,
 		"output_path": _output_path,
 		"session_id": _session_id,
+		"diagnostics_enabled": _diagnostics_provider.is_valid(),
 		"code": "ok" if _enabled else "invalid_config",
 	}
 
 
-func configure_from_command_line(state_provider: Callable) -> Dictionary:
+func configure_from_command_line(
+	state_provider: Callable,
+	diagnostics_provider: Callable = Callable()
+) -> Dictionary:
 	var output_path: String = _find_user_argument(STATE_ARG_PREFIX)
 	var session_id: String = _find_user_argument(SESSION_ARG_PREFIX)
 	if output_path.is_empty() or session_id.is_empty():
@@ -51,7 +58,12 @@ func configure_from_command_line(state_provider: Callable) -> Dictionary:
 			"code": "not_requested",
 		}
 
-	return configure(output_path, session_id, state_provider)
+	return configure(
+		output_path,
+		session_id,
+		state_provider,
+		diagnostics_provider
+	)
 
 
 func is_enabled() -> bool:
@@ -103,11 +115,46 @@ func capture_now() -> Dictionary:
 		"gameVersion": String(ProjectSettings.get_setting("application/config/version", "")),
 		"state": state,
 	}
+	var diagnostics_payload: Dictionary = (
+		_capture_foundation_diagnostics()
+	)
+	if not diagnostics_payload.is_empty():
+		payload["foundationDiagnostics"] = (
+			diagnostics_payload
+		)
 
 	var result: Dictionary = _write_payload(payload)
 	if bool(result.get("ok", false)):
 		_last_error = ""
 	return result
+
+
+func _capture_foundation_diagnostics() -> Dictionary:
+	if not _diagnostics_provider.is_valid():
+		return {}
+
+	var result_variant: Variant = (
+		_diagnostics_provider.call()
+	)
+	if not (result_variant is Dictionary):
+		return {}
+
+	var result: Dictionary = result_variant as Dictionary
+	if not bool(result.get("ok", false)):
+		return {}
+
+	var payload_variant: Variant = result.get(
+		"payload",
+		{}
+	)
+	if not (payload_variant is Dictionary):
+		return {}
+
+	var payload: Dictionary = payload_variant as Dictionary
+	if not _is_json_compatible(payload):
+		return {}
+
+	return payload.duplicate(true)
 
 
 func _write_payload(payload: Dictionary) -> Dictionary:
