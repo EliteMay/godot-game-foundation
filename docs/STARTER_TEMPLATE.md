@@ -30,6 +30,20 @@ Git submodule / subtreeをDefaultにしない。初心者向けHubでGitの追�
 
 `foundation-template.json` がStarter配布Contractの機械可読Source of Truth。Game Dev HubはこのManifestをValidationしてから生成・更新する。
 
+## Starter Profile Contract
+
+Phase 17では、Starterを1種類へ固定せず、用途に応じたProfileをManifestで宣言できるContractを追加する。
+
+現在のProfile:
+
+- `minimal` — 既存Starter互換。FoundationRuntime / Settings / Diagnosticsを使う最小構成。既定Profileかつ選択可能。
+- `standard` — Application Shell / Loading / Save Slots / Localization / Recovery等を組み合わせる標準構成。Contractは宣言済みだが、Game Dev Hub側のProfile materialization対応までは `selectable: false` とする。
+
+互換性のためManifestの `schemaVersion` は1を維持する。既存Game Dev Hubは未知Fieldを無視して従来どおりStarterを生成できる。
+
+ProfileはGame固有Theme、Gameplay、Balance、Domain DataをFoundationへ持ち込む仕組みではない。共通Foundation capabilityの初期導入範囲だけを表す。
+
+
 ## Managed Path
 
 現在Foundationが後から更新してよいのは `addons/game_foundation/` だけ。
