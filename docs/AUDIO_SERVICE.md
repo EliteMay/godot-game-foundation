@@ -146,7 +146,6 @@ Bus名は空文字を拒否しますが、FoundationはProjectのAudio Bus Layou
 
 後続:
 
-- Lifetime / Cleanupの最終Contract確認
 - Phase 13 full Audio Smoke / Runtime playback validation
 
 Headless CIではLifecycle / State / Transition contractを検証します。実際のAudio出力品質、Codec、Loop seam、音量感は実Game / 実Audio deviceで確認します。
@@ -238,4 +237,48 @@ Headless Smokeでは次を検証します。
 - Serviceのscene-persistent lifetime
 
 実Audio device上の定位、距離減衰、Voiceの聞こえ方、同時発音時のMixは実Game統合時のRuntime Validation対象です。
+
+
+## Audio Resource Lifecycle / Cleanup
+
+Phase 13のPlayback Serviceは、再生開始だけでなく**明示的な終了とScene / Service破棄時のResource解放**もContractに含めます。
+
+### Global Music
+
+`GlobalMusicService.dispose_audio()` は次を行います。
+
+- Active Fade / Crossfade Tweenを停止
+- 2つの再利用 `AudioStreamPlayer` を停止
+- Playerの `stream` 参照を `null` へ戻す
+- Current / Pending Track IDとTransition StateをReset
+- Serviceを未configured状態へ戻し、新しいPlayback前に再configureを要求
+
+Dispose時にLifecycle Generationを進めるため、Dispose前に作られた古いTween callbackが後から実行されても、再configure後の新しいTrack Stateを書き換えません。
+
+Service Node自体が破棄される場合も `NOTIFICATION_PREDELETE` で同じCleanupをSignalなしで行います。Scene-persistent化のためのReparentではCleanupしません。
+
+### One-shot Audio
+
+`OneShotAudioService.dispose_audio()` は、Serviceが追跡しているGlobal SFX / UI / Voiceと2D / 3D Spatial Playerをすべて停止・解放します。
+
+- active trackingを即時0へ戻す
+- Serviceを未configured状態へ戻す
+- 同じService Instanceを再configureして再利用できる
+- Service Node自体が破棄される時も、外部Node2D / Node3D配下へ生成したSpatial PlayerをCleanupする
+
+これにより、Scene-persistent Serviceだけを破棄した時にSpatial PlayerがWorld側へ孤立して残る状態を防ぎます。
+
+通常再生時は既存のCleanupも継続します。
+
+- AudioStreamPlayerの `finished`
+- `stop_one_shot(token)`
+- `stop_all()`
+- Spatial Parentのtree exit
+
+### Boundary
+
+`dispose_audio()` はPlayback Resourceを解放しますが、Service Node自体を `queue_free()` しません。Gameは必要に応じて再configureして再利用するか、その後Service Nodeを破棄できます。
+
+FoundationはGameのScene Tree ownershipそのものを変更しません。Spatial Playerは引き続きGame側World Parentへ所属します。
+
 

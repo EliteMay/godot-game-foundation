@@ -4,6 +4,7 @@ signal music_started(track_id: String, result: Dictionary)
 signal music_stopped(result: Dictionary)
 signal transition_started(kind: String, result: Dictionary)
 signal transition_completed(kind: String, result: Dictionary)
+signal service_disposed(result: Dictionary)
 
 const AudioBusContract = preload(
 	"res://addons/game_foundation/audio/audio_bus_contract.gd"
@@ -27,6 +28,7 @@ var _pending_track_id: String = ""
 var _transition_active: bool = false
 var _transition_kind: String = ""
 var _active_tween: Tween = null
+var _lifecycle_generation: int = 0
 
 
 func _ready() -> void:
@@ -127,6 +129,52 @@ func promote_to_scene_tree_root() -> Dictionary:
 			"global music service must be configured before promotion"
 		)
 	return _promote_to_root_if_needed()
+
+
+func dispose_audio() -> Dictionary:
+	return _dispose_audio_internal(true)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		_dispose_audio_internal(false)
+
+
+func _dispose_audio_internal(emit_disposed_signal: bool) -> Dictionary:
+	var was_configured: bool = _configured
+	var track_id: String = _current_track_id
+	var pending_track_id: String = _pending_track_id
+	var had_transition: bool = _transition_active
+	var transition_kind: String = _transition_kind
+	var cleared_player_count: int = 0
+
+	_configured = false
+	_lifecycle_generation += 1
+	if _active_tween != null:
+		_active_tween.kill()
+		_active_tween = null
+	for player in _players:
+		if not is_instance_valid(player):
+			continue
+		if player.playing or player.stream != null:
+			cleared_player_count += 1
+		_stop_and_clear_player(player)
+	_reset_playback_state()
+
+	var result := _success(
+		"global_music_disposed",
+		{
+			"was_configured": was_configured,
+			"track_id": track_id,
+			"pending_track_id": pending_track_id,
+			"had_transition": had_transition,
+			"transition_kind": transition_kind,
+			"cleared_player_count": cleared_player_count,
+		}
+	)
+	if emit_disposed_signal:
+		service_disposed.emit(result.duplicate(true))
+	return result
 
 
 func play_music(stream: AudioStream, options: Dictionary = {}) -> Dictionary:
@@ -242,7 +290,7 @@ func stop_music(fade_seconds: float = -1.0) -> Dictionary:
 	_active_tween = create_tween()
 	_active_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_active_tween.tween_property(current, "volume_db", SILENCE_DB, seconds)
-	_active_tween.finished.connect(_finish_fade_out.bind(current, _current_track_id))
+	_active_tween.finished.connect(_finish_fade_out.bind(current, _current_track_id, _lifecycle_generation))
 
 	var started := _success(
 		"music_stop_started",
@@ -327,7 +375,7 @@ func _start_first_track(
 	_active_tween = create_tween()
 	_active_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_active_tween.tween_property(player, "volume_db", 0.0, fade_seconds)
-	_active_tween.finished.connect(_finish_fade_in.bind(player, track_id))
+	_active_tween.finished.connect(_finish_fade_in.bind(player, track_id, _lifecycle_generation))
 
 	var started := _success(
 		"music_fade_in_started",
@@ -390,7 +438,8 @@ func _start_crossfade(
 			new_player,
 			new_index,
 			_current_track_id,
-			track_id
+			track_id,
+			_lifecycle_generation
 		)
 	)
 
@@ -407,7 +456,13 @@ func _start_crossfade(
 	return started
 
 
-func _finish_fade_in(player: AudioStreamPlayer, track_id: String) -> void:
+func _finish_fade_in(
+	player: AudioStreamPlayer,
+	track_id: String,
+	generation: int
+) -> void:
+	if generation != _lifecycle_generation or not _configured:
+		return
 	if not is_instance_valid(player):
 		_reset_transition_state()
 		return
@@ -430,8 +485,11 @@ func _finish_crossfade(
 	new_player: AudioStreamPlayer,
 	new_index: int,
 	previous_track_id: String,
-	track_id: String
+	track_id: String,
+	generation: int
 ) -> void:
+	if generation != _lifecycle_generation or not _configured:
+		return
 	if is_instance_valid(old_player):
 		_stop_and_clear_player(old_player)
 	if not is_instance_valid(new_player):
@@ -454,7 +512,13 @@ func _finish_crossfade(
 	transition_completed.emit("crossfade", result.duplicate(true))
 
 
-func _finish_fade_out(player: AudioStreamPlayer, track_id: String) -> void:
+func _finish_fade_out(
+	player: AudioStreamPlayer,
+	track_id: String,
+	generation: int
+) -> void:
+	if generation != _lifecycle_generation or not _configured:
+		return
 	if is_instance_valid(player):
 		_stop_and_clear_player(player)
 	_reset_playback_state()

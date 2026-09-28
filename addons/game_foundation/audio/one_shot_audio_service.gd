@@ -2,6 +2,7 @@ extends Node
 
 signal one_shot_started(kind: String, token: int, result: Dictionary)
 signal one_shot_finished(kind: String, token: int, reason: String)
+signal service_disposed(result: Dictionary)
 
 const AudioBusContract = preload(
 	"res://addons/game_foundation/audio/audio_bus_contract.gd"
@@ -115,6 +116,15 @@ func configure(options: Dictionary = {}) -> Dictionary:
 
 func is_configured() -> bool:
 	return _configured
+
+
+func dispose_audio() -> Dictionary:
+	return _dispose_audio_internal("service_disposed", true)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		_dispose_audio_internal("service_predelete", false)
 
 
 func promote_to_scene_tree_root() -> Dictionary:
@@ -278,6 +288,27 @@ func stop_all() -> Dictionary:
 		"all_one_shots_stopped",
 		{"stopped_count": tokens.size()}
 	)
+
+
+func _dispose_audio_internal(reason: String, emit_disposed_signal: bool) -> Dictionary:
+	var was_configured: bool = _configured
+	var tokens: Array = _active.keys().duplicate()
+	_configured = false
+
+	for token_variant in tokens:
+		_release_token(int(token_variant), reason, true)
+
+	var result := _success(
+		"one_shot_audio_disposed",
+		{
+			"was_configured": was_configured,
+			"cleared_player_count": tokens.size(),
+			"reason": reason,
+		}
+	)
+	if emit_disposed_signal:
+		service_disposed.emit(result.duplicate(true))
+	return result
 
 
 func status_snapshot() -> Dictionary:
