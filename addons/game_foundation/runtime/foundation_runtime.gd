@@ -31,6 +31,9 @@ const RuntimeTestBridge = preload("res://addons/game_foundation/testing/runtime_
 const RuntimeFailureState = preload(
 	"res://addons/game_foundation/recovery/runtime_failure_state.gd"
 )
+const CrashMarker = preload(
+	"res://addons/game_foundation/recovery/crash_marker.gd"
+)
 
 const DEFAULT_SAVE_CONFIG: Dictionary = {
 	"enabled": false,
@@ -68,6 +71,10 @@ const DEFAULT_DIAGNOSTICS_CONFIG: Dictionary = {
 const DEFAULT_RUNTIME_TEST_CONFIG: Dictionary = {
 	"enabled": true,
 }
+const DEFAULT_CRASH_MARKER_CONFIG: Dictionary = {
+	"enabled": false,
+	"path": CrashMarker.DEFAULT_MARKER_PATH,
+}
 
 var _config: Dictionary = {}
 var _adapters: Dictionary = {}
@@ -88,6 +95,21 @@ var _auto_save_service: Node = null
 var _flow_service: Node = null
 var _diagnostics_service: Node = null
 var _runtime_test_bridge: Node = null
+var _crash_marker: RefCounted = null
+var _last_crash_marker_result: Dictionary = {}
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_mark_crash_marker_clean_nonfatal(
+			"window_close_request"
+		)
+
+
+func _exit_tree() -> void:
+	_mark_crash_marker_clean_nonfatal(
+		"runtime_exit_tree"
+	)
 
 
 func configure(config: Dictionary = {}, adapters: Dictionary = {}) -> Dictionary:
@@ -127,11 +149,18 @@ func initialize() -> Dictionary:
 			"scene_tree"
 		)
 
+	var crash_marker_result: Dictionary = _initialize_crash_marker()
+
 	var diagnostics_result: Dictionary = _initialize_diagnostics()
 	if not bool(diagnostics_result.get("ok", false)):
 		return _finish_initialize_failure(
 			diagnostics_result,
 			"diagnostics"
+		)
+	if not bool(crash_marker_result.get("ok", false)):
+		_log_warning(
+			"crash marker initialization did not complete",
+			crash_marker_result
 		)
 
 	var settings_result: Dictionary = _initialize_settings()
@@ -179,6 +208,7 @@ func initialize() -> Dictionary:
 		"flow": flow_result,
 		"save": save_result,
 		"runtime_test": runtime_test_result,
+		"crash_marker": crash_marker_result,
 		"status": status_snapshot(),
 	})
 	initialized.emit(result.duplicate(true))
@@ -383,8 +413,20 @@ func request_quit(exit_code: int = 0) -> Dictionary:
 	var save_result: Dictionary = _safe_quit_save()
 	if save_result.has("ok") and not bool(save_result.get("ok", false)):
 		return save_result
+
+	var marker_result: Dictionary = (
+		_mark_crash_marker_clean_nonfatal(
+			"runtime_request_quit"
+		)
+	)
 	get_tree().quit(exit_code)
-	return _success("quit_requested", {"exit_code": exit_code})
+	return _success(
+		"quit_requested",
+		{
+			"exit_code": exit_code,
+			"crash_marker": marker_result,
+		}
+	)
 
 
 func diagnostics_snapshot() -> Dictionary:
@@ -420,6 +462,8 @@ func status_snapshot() -> Dictionary:
 		"input_enabled": _input_enabled(),
 		"flow_enabled": _flow_enabled(),
 		"diagnostics_enabled": _diagnostics_enabled(),
+		"crash_marker_enabled": _crash_marker_enabled(),
+		"crash_marker": crash_marker_snapshot(),
 		"has_runtime_failure": has_runtime_failure(),
 		"runtime_failure": runtime_failure_state(),
 		"last_save": _last_save_result.duplicate(true),
@@ -446,6 +490,36 @@ func diagnostics_service() -> Node:
 	return _diagnostics_service
 
 
+func crash_marker_snapshot() -> Dictionary:
+	var result: Dictionary = {
+		"enabled": _crash_marker_enabled(),
+		"active": false,
+		"previous_session": {
+			"marker_found": false,
+			"possible_unclean_exit": false,
+			"reason": (
+				"disabled"
+				if not _crash_marker_enabled()
+				else "not_started"
+			),
+		},
+		"last_result": (
+			_last_crash_marker_result.duplicate(true)
+		),
+	}
+	if _crash_marker == null:
+		return result
+
+	var value: Variant = _crash_marker.call("snapshot")
+	if value is Dictionary:
+		var marker_state: Dictionary = (
+			value as Dictionary
+		).duplicate(true)
+		for key in marker_state:
+			result[key] = marker_state[key]
+	return result
+
+
 func runtime_test_bridge() -> Node:
 	return _runtime_test_bridge
 
@@ -464,6 +538,49 @@ func has_runtime_failure() -> bool:
 
 func runtime_failure_state() -> Dictionary:
 	return _runtime_failure_state.duplicate(true)
+
+
+func _initialize_crash_marker() -> Dictionary:
+	if not _crash_marker_enabled():
+		_crash_marker = null
+		_last_crash_marker_result = _success(
+			"crash_marker_disabled"
+		)
+		return _last_crash_marker_result.duplicate(true)
+
+	var marker_config: Dictionary = _section(
+		"crash_marker",
+		DEFAULT_CRASH_MARKER_CONFIG
+	)
+	_crash_marker = CrashMarker.new()
+	var configured: Dictionary = _crash_marker.call(
+		"configure",
+		{
+			"path": String(
+				marker_config.get(
+					"path",
+					CrashMarker.DEFAULT_MARKER_PATH
+				)
+			),
+			"app_version": String(
+				(
+					_section("app", {}) as Dictionary
+				).get("version", "")
+			),
+			"foundation_version": (
+				Foundation.FOUNDATION_VERSION
+			),
+		}
+	)
+	if not bool(configured.get("ok", false)):
+		_last_crash_marker_result = configured.duplicate(true)
+		return configured
+
+	var started: Dictionary = _crash_marker.call(
+		"begin_session"
+	)
+	_last_crash_marker_result = started.duplicate(true)
+	return started
 
 
 func _initialize_diagnostics() -> Dictionary:
@@ -663,13 +780,86 @@ func _initialize_runtime_test() -> Dictionary:
 
 
 func _register_safe_quit_hook() -> void:
-	if _flow_service == null or not _save_enabled():
+	if _flow_service == null:
 		return
-	_flow_service.call("register_quit_hook", Callable(self, "_safe_quit_save"))
+
+	if _save_enabled():
+		_flow_service.call(
+			"register_quit_hook",
+			Callable(self, "_safe_quit_save")
+		)
+
+	if (
+		_crash_marker_enabled()
+		and _crash_marker != null
+		and bool(
+			crash_marker_snapshot().get(
+				"active",
+				false
+			)
+		)
+	):
+		_flow_service.call(
+			"register_quit_hook",
+			Callable(
+				self,
+				"_safe_quit_crash_marker"
+			)
+		)
 
 
 func _safe_quit_save() -> Dictionary:
 	return save_now()
+
+
+func _safe_quit_crash_marker() -> Dictionary:
+	return _mark_crash_marker_clean_nonfatal(
+		"safe_quit_hook"
+	)
+
+
+func _mark_crash_marker_clean() -> Dictionary:
+	if _crash_marker == null:
+		var unavailable: Dictionary = _success(
+			"crash_marker_not_active"
+		)
+		_last_crash_marker_result = unavailable.duplicate(true)
+		return unavailable
+
+	var result: Dictionary = _crash_marker.call(
+		"mark_clean"
+	)
+	_last_crash_marker_result = result.duplicate(true)
+	return result
+
+
+func _mark_crash_marker_clean_nonfatal(
+	reason: String
+) -> Dictionary:
+	var result: Dictionary = _mark_crash_marker_clean()
+	if bool(result.get("ok", false)):
+		return result
+
+	_log_warning(
+		"crash marker cleanup did not complete",
+		{
+			"reason": reason,
+			"code": result.get(
+				"code",
+				"crash_marker_cleanup_failed"
+			),
+		}
+	)
+	return _success(
+		"crash_marker_cleanup_nonfatal",
+		{
+			"cleanup_code": result.get(
+				"code",
+				"crash_marker_cleanup_failed"
+			),
+			"reason": reason,
+		}
+	)
 
 
 func _capture_save_payload() -> Dictionary:
@@ -815,6 +1005,7 @@ func _normalize_config(source: Dictionary) -> Dictionary:
 		"flow": _merge_section(DEFAULT_FLOW_CONFIG, source.get("flow", {})),
 		"diagnostics": _merge_section(DEFAULT_DIAGNOSTICS_CONFIG, source.get("diagnostics", {})),
 		"runtime_test": _merge_section(DEFAULT_RUNTIME_TEST_CONFIG, source.get("runtime_test", {})),
+		"crash_marker": _merge_section(DEFAULT_CRASH_MARKER_CONFIG, source.get("crash_marker", {})),
 	}
 
 
@@ -827,6 +1018,7 @@ func _validate_config(config: Dictionary, adapters: Dictionary) -> Dictionary:
 		"flow",
 		"diagnostics",
 		"runtime_test",
+		"crash_marker",
 	]:
 		if not (config.get(section_name, {}) is Dictionary):
 			return _error("invalid_config_section", section_name + " must be a Dictionary")
@@ -861,6 +1053,26 @@ func _validate_config(config: Dictionary, adapters: Dictionary) -> Dictionary:
 	var flow_config: Dictionary = config.get("flow", {})
 	if not (flow_config.get("scenes", {}) is Dictionary):
 		return _error("invalid_scene_contract", "flow.scenes must be a Dictionary")
+
+	var marker_config: Dictionary = config.get(
+		"crash_marker",
+		{}
+	)
+	if bool(marker_config.get("enabled", false)):
+		var marker_path_result: Dictionary = (
+			CrashMarker.validate_marker_path(
+				String(
+					marker_config.get(
+						"path",
+						CrashMarker.DEFAULT_MARKER_PATH
+					)
+				)
+			)
+		)
+		if not bool(
+			marker_path_result.get("ok", false)
+		):
+			return marker_path_result
 
 	return _success("valid_config")
 
@@ -913,6 +1125,15 @@ func _flow_enabled() -> bool:
 
 func _diagnostics_enabled() -> bool:
 	return bool(_section("diagnostics", DEFAULT_DIAGNOSTICS_CONFIG).get("enabled", true))
+
+
+func _crash_marker_enabled() -> bool:
+	return bool(
+		_section(
+			"crash_marker",
+			DEFAULT_CRASH_MARKER_CONFIG
+		).get("enabled", false)
+	)
 
 
 func _log_info(message: String, context: Dictionary = {}) -> void:
