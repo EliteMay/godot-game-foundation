@@ -594,6 +594,8 @@ func _generate_slot_id() -> String:
 		candidate = base + "_" + str(suffix)
 		suffix += 1
 
+	return candidate
+
 
 func _slot_artifacts_exist(path: String) -> bool:
 	return (
