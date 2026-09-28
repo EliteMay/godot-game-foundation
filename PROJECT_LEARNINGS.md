@@ -267,3 +267,15 @@
 - Motion: `UIFeedbackHooks` はmotion_scaleを所有するのではなくPreference distributorとして振る舞い、既存Transition Layer等の `set_motion_scale()` targetへ配布する。複数target適用途中のFailureでは直前Scaleへrollbackする。
 - Boundary: Asset、音量、Haptic pattern、Theme、Preference保存UIはGame側。Foundationはsemantic eventとenable/disable lifecycleだけを共通化する。
 - Prevention: 装飾FeedbackをCore Actionの成功条件にせず、Accessibility preferenceを同じ意味で複数Componentへ再定義しない。
+
+
+## GF-027 — Runtime FailureはError ResultだけでなくRecovery判断用Stateを持つ
+
+- Date: 2026-09-29
+- Type: Reliability / Recovery / UX
+- Status: Adopted
+- Context: FoundationRuntime initialize() が `{ok:false}` を返すだけでは、呼び出し側がFailure stage、Retry可否、Diagnostics利用可否、Save保護状態を個別に推測する必要があり、Recovery UIごとに判断が分裂する。
+- Decision: Fatal initialization failureはRuntime内のstructured Failure Stateへ記録し、戻り値・Signal・status snapshotから同じStateを公開する。
+- Retry Safety: Retry可能と表示するのはFoundationが副作用前と確認できるstageだけに限定する。部分初期化後のFailureを「もう一度押せば直る」と推測しない。
+- Save Boundary: Save load / restore failureによるwrite blockはData preservation stateであり、Runtime initialization fatalと同一視しない。
+- Prevention: Error codeだけからUI側がRetry / Reset / Continueを勝手に推測せず、Recovery decisionに必要な状態をRuntime Contractから取得する。

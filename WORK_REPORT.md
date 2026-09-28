@@ -1150,3 +1150,53 @@ Phase 15最後のTaskとして、Reduced MotionとUI FeedbackをGame Theme / Ass
 
 - PR #27 Godot CI: PASS（UI Feedback Hooks Smoke / Menu Feedback Integration Smoke / 既存Regressionを含む）
 - PR #27 Windows Build: PASS
+
+
+---
+
+## v0.16.0-dev — Runtime Failure State
+
+### 目的
+
+Phase 16 — Controlled Failure / Recovery UXの最初のTaskとして、FoundationRuntimeのFatal initialization failureを単なる戻り値で終わらせず、後続Recovery UI / Diagnostics Exportから安全に参照できる構造化Stateへする。
+
+### 実装
+
+- `recovery/runtime_failure_state.gd`
+  - inactive state
+  - initialization failure normalization
+  - `kind / stage / code / message`
+  - `retry_supported`
+  - `save_writes_blocked`
+  - `diagnostics_available`
+- `FoundationRuntime`
+  - `initialization_failed(result, state)` Signal
+  - `runtime_failure_changed(state)` Signal
+  - `has_runtime_failure()`
+  - `runtime_failure_state()`
+  - status snapshotへFailure Stateを公開
+  - initialize failure stageを `configure / scene_tree / diagnostics / settings / input / flow / runtime_test` で記録
+  - successful initialization後にFailure Stateをclear
+- Retry safety
+  - `configure / scene_tree` の副作用前Failureのみ `retry_supported=true`
+  - subsystem初期化途中のFailureを自動Retry可能とは扱わない
+- Existing Save safety
+  - Save initialize/load failureは既存のsave-write blockingを維持
+  - 非Fatal Save recovery failureをRuntime initialization fatalへ格上げしない
+- Dedicated smoke
+  - SceneTree外initialize failure
+  - structured state / Signal / status snapshot
+  - SceneTree追加後のsafe retry
+  - successful retry後のstate clear
+
+### Boundary
+
+- Recovery UI自体は次TaskのRecovery Screen Contract
+- Diagnostics exportは後続Task
+- Crash markerは後続Task
+- `retry_supported=false` は「永遠に復旧不能」ではなく、Foundation Coreがその場で安全な再初期化を保証していないという意味
+
+### Validation
+
+- PR #28 Godot CI: PASS（Runtime Failure State Smoke / Foundation Runtime regressionを含む）
+- PR #28 Windows Build: PASS

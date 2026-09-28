@@ -710,13 +710,19 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 
 ## Phase 16 — Controlled Failure / Recovery UX
 
-状態: **調査完了 / 未実装**
+状態: **実装中 / Runtime Failure State完了**
 
 目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
 
-- [ ] Runtime Failure State
+- [x] Runtime Failure State
   - 担当: ChatGPT
   - FoundationRuntime initialize failureを構造化Stateとして公開する
+  - Failure Stateは `kind / stage / code / message / retry_supported / save_writes_blocked / diagnostics_available` を保持する
+  - configure / SceneTree / diagnostics / settings / input / flow / runtime testのFatal initialization stageを区別する
+  - initialize() の戻り値・Signal・Runtime status snapshotから同じFailure Stateを取得できる
+  - SceneTree未参加など副作用前のFailureだけをretry_supportedとして明示し、途中初期化Failureを安全根拠なしにRetry可能扱いしない
+  - Successful initialize後はFailure Stateをclearしてstate change Signalを発火する
+  - Save load failureは既存どおりSave write blockingで保護し、Fatal Runtime Failure Stateへ勝手に昇格しない
 - [ ] Recovery Screen Contract
   - 担当: ChatGPT
   - Error summary / retry / safe quit / main menu return等をOptional Sceneから実行できる
