@@ -3,6 +3,9 @@ extends Control
 const FocusNavigationBaseline = preload(
 	"res://addons/game_foundation/shell/focus_navigation_baseline.gd"
 )
+const UIFeedbackHooks = preload(
+	"res://addons/game_foundation/shell/ui_feedback_hooks.gd"
+)
 const TranslationContract = preload(
 	"res://addons/game_foundation/localization/translation_contract.gd"
 )
@@ -40,6 +43,8 @@ var _active: bool = true
 var _manage_focus_navigation: bool = true
 var _translation_entries: Dictionary = {}
 var _label_overrides: Dictionary = {}
+var _feedback_hooks: Object = null
+var _last_feedback_result: Dictionary = {}
 
 
 func _notification(what: int) -> void:
@@ -120,6 +125,21 @@ func configure(options: Dictionary) -> Dictionary:
 			"manage_focus_navigation must be bool"
 		)
 
+	var feedback_hooks: Object = null
+	if options.has("feedback_hooks"):
+		var feedback_variant: Variant = options.get("feedback_hooks")
+		if not (feedback_variant is Object):
+			return _error(
+				"invalid_feedback_hooks",
+				"feedback_hooks must be an Object"
+			)
+		feedback_hooks = feedback_variant as Object
+		if not feedback_hooks.has_method("request_feedback"):
+			return _error(
+				"invalid_feedback_hooks",
+				"feedback_hooks must implement request_feedback(event_id, context)"
+			)
+
 	_resolve_buttons()
 	for action_id in [
 		ACTION_CONTINUE,
@@ -139,6 +159,8 @@ func configure(options: Dictionary) -> Dictionary:
 	_continue_available = bool(continue_variant)
 	_show_quit = bool(show_quit_variant)
 	_manage_focus_navigation = bool(manage_focus_variant)
+	_feedback_hooks = feedback_hooks
+	_last_feedback_result = {}
 
 	var translation_result: Dictionary = set_translation_entries(
 		options.get("translation_entries", {})
@@ -263,6 +285,7 @@ func activate_menu() -> Dictionary:
 	_refresh_action_availability()
 	call_deferred("_focus_initial_control")
 	menu_activated.emit()
+	_request_ui_feedback(UIFeedbackHooks.EVENT_OPEN)
 	return _success("main_menu_activated", {"state": state_snapshot()})
 
 
@@ -277,6 +300,7 @@ func deactivate_menu() -> Dictionary:
 		focus_owner.release_focus()
 	hide()
 	menu_deactivated.emit()
+	_request_ui_feedback(UIFeedbackHooks.EVENT_CLOSE)
 	return _success("main_menu_deactivated", {"state": state_snapshot()})
 
 
@@ -346,6 +370,9 @@ func state_snapshot() -> Dictionary:
 		"navigation_baseline": FocusNavigationBaseline.snapshot(
 			_focus_controls()
 		),
+		"feedback_hooks_configured": is_instance_valid(_feedback_hooks),
+		"feedback": _feedback_state_snapshot(),
+		"last_feedback_result": _last_feedback_result.duplicate(true),
 	}
 
 
@@ -560,9 +587,66 @@ func _connect_buttons() -> void:
 		if not button.pressed.is_connected(callback):
 			button.pressed.connect(callback)
 
+		var focus_callback := Callable(
+			self,
+			"_on_action_button_focused"
+		).bind(String(action_id))
+		if not button.focus_entered.is_connected(focus_callback):
+			button.focus_entered.connect(focus_callback)
+
 
 func _on_action_button_pressed(action_id: String) -> void:
+	_request_ui_feedback(
+		UIFeedbackHooks.EVENT_ACTIVATE,
+		action_id
+	)
 	request_action(action_id)
+
+
+func _on_action_button_focused(action_id: String) -> void:
+	_request_ui_feedback(
+		UIFeedbackHooks.EVENT_FOCUS,
+		action_id
+	)
+
+
+func _request_ui_feedback(
+	event_id: String,
+	action_id: String = ""
+) -> void:
+	if not is_instance_valid(_feedback_hooks):
+		return
+	var context: Dictionary = {
+		"surface": "main_menu",
+	}
+	if not action_id.is_empty():
+		context["action_id"] = action_id
+	var value: Variant = _feedback_hooks.call(
+		"request_feedback",
+		event_id,
+		context
+	)
+	if value is Dictionary:
+		_last_feedback_result = (
+			value as Dictionary
+		).duplicate(true)
+	else:
+		_last_feedback_result = {
+			"ok": true,
+			"code": "feedback_result_unstructured",
+			"value": value,
+		}
+
+
+func _feedback_state_snapshot() -> Dictionary:
+	if not is_instance_valid(_feedback_hooks):
+		return {}
+	if not _feedback_hooks.has_method("state_snapshot"):
+		return {}
+	var value: Variant = _feedback_hooks.call("state_snapshot")
+	if value is Dictionary:
+		return (value as Dictionary).duplicate(true)
+	return {}
 
 
 func _focus_initial_control() -> String:
