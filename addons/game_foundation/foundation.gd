@@ -70,5 +70,6 @@ static func capabilities() -> PackedStringArray:
 		"loading_screen_contract",
 		"main_menu_shell",
 		"menu_focus_navigation",
+		"focus_navigation_baseline",
 		"pause_menu_shell",
 	])
