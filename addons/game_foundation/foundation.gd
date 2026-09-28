@@ -51,6 +51,7 @@ static func capabilities() -> PackedStringArray:
 		"main_menu_contract",
 		"safe_quit_hooks",
 		"diagnostics",
+		"diagnostics_export_hook",
 		"runtime_version_info",
 		"log_service",
 		"debug_overlay",
