@@ -614,7 +614,11 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
   - FoundationはAudioServer Busを勝手に作成・Renameせず、存在確認はinspection Resultとして扱う
 - [x] Audio Resource Lifecycle
   - 担当: ChatGPT
-  - Finished playerを自動Cleanupし、Scene切替でOrphanを残さない
+  - Global Musicはdispose_audio()でFade / Crossfade Tweenを停止し、2 Playerを停止してAudioStream参照を解放する
+  - Dispose前のTransition callbackが再configure後のStateを書き換えないようLifecycle Generationで無効化する
+  - One-shotはdispose_audio()でGlobal / Spatial Playerをまとめて停止・解放し、再configure可能にする
+  - One-shot Service自身がSceneTreeから外れる時も外部Node2D / Node3D配下のSpatial PlayerをCleanupする
+  - Finished / explicit Stop / Spatial Parent exit時の既存Cleanupも維持し、Scene切替でOrphanを残さない
 - [ ] Audio Smoke Test
   - 担当: ChatGPT
   - Headlessで可能なContractと、Runtimeで必要なPlayback確認を分ける

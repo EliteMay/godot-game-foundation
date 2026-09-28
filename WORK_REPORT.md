@@ -806,3 +806,53 @@ Phase 13のBus Contractとして、Settings・Global Music・One-shot Audioが�
 - main Godot CI: PASS
 - main Windows Build: PASS
 
+---
+
+## v0.13.0-dev — Audio Resource Lifecycle
+
+### 目的
+
+Phase 13のLifetime / Cleanupを最終化し、Scene-persistent Audio Serviceが再生途中・Transition途中・Service破棄時にもPlayer / Tween / AudioStream参照を残さないContractにする。
+
+### 実装
+
+- `GlobalMusicService.dispose_audio()`
+  - Active Fade / Crossfade Tween停止
+  - 2 reusable AudioStreamPlayer停止
+  - AudioStream参照解放
+  - Current / Pending Track / Transition State reset
+  - Dispose後は未configured状態
+  - 再configure後のService reuse
+  - Lifecycle Generationによるstale Transition callback無効化
+  - Service tree exit時も同じResource cleanup
+- `OneShotAudioService.dispose_audio()`
+  - Global SFX / UI / Voiceをまとめて停止・解放
+  - 外部Node2D / Node3D配下のSpatial Playerもまとめて停止・解放
+  - active tracking即時clear
+  - Dispose後の再configure / reuse
+  - Service tree exit時にexternal Spatial Playerをcleanup
+- Existing Cleanup
+  - finished callback
+  - token stop
+  - stop_all
+  - Spatial Parent tree exit
+- Dedicated `audio_lifetime_cleanup_smoke` を追加
+
+### 設計境界
+
+- dispose_audioはService Node自体をqueue_freeしない
+- Spatial Player ownershipはGame側World Parentのまま
+- FoundationはGame Scene Tree ownershipを変更しない
+- 実Audio device上の停止感や残響・MixはHeadless Contract Testでは保証しない
+
+### Validation
+
+- Global Music dispose中のactive fade cancellationを検証
+- Dispose時にMusic Player停止・stream=nullを検証
+- Dispose後reconfigure / reuseを検証
+- stale transition callbackがreused stateを上書きしないことを検証
+- One-shot disposeでGlobal + Spatial active trackingを0へ戻すことを検証
+- One-shot disposeでexternal Spatial PlayerがWorld Parentから消えることを検証
+- One-shot Service queue_free時にもexternal Spatial Playerを残さないことを検証
+- Existing Global Music / One-shot Smoke regressionを継続
+

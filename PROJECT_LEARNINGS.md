@@ -193,3 +193,13 @@
 - Compatibility: 既存の `master / bgm / sfx` だけのMappingでは `ui / voice` を `sfx` へFallbackする。旧 `bus_name / bus_names` APIは互換用に残すがShared Contractとの同時指定は拒否する。
 - Boundary: FoundationはAudioServer Busを作成・Renameしない。Game固有の追加Logical keyは保持し、ProjectのAudio Bus Layout自体はGame側が所有する。
 
+## GF-021 — Persistent Audioは再生開始だけでなくService終了時のCleanupをContract化する
+
+- Date: 2026-09-28
+- Type: Audio / Lifecycle / Reliability
+- Status: Adopted
+- Context: Scene-persistent Audio ServiceはCurrent Sceneより長生きするため、通常のPlayer finishedだけではService破棄・再利用・Transition途中の終了を十分に扱えない。特にSpatial One-shotはService外のWorld Parent配下にいるため、Serviceだけ消えるとPlayerが孤立し得る。
+- Decision: Global Music / One-shotの両方に明示 `dispose_audio()` を持たせ、Service tree exitでもCleanupする。Global MusicはTween停止・Stream参照解除・State resetを行い、Lifecycle Generationで古いTransition callbackを無効化する。One-shotはService-owned / external spatial playerの両方を追跡Tokenから解放する。
+- Reuse: DisposeはService Node自体を破棄せず未configured状態へ戻し、再configure後の再利用を許可する。
+- Prevention: Persistent Serviceへ外部Node所有Resourceを持たせる場合、通常完了だけでなくService shutdown pathでもResourceを回収できることをTestする。
+

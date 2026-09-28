@@ -132,6 +132,14 @@ func promote_to_scene_tree_root() -> Dictionary:
 
 
 func dispose_audio() -> Dictionary:
+	return _dispose_audio_internal(true)
+
+
+func _exit_tree() -> void:
+	_dispose_audio_internal(false)
+
+
+func _dispose_audio_internal(emit_disposed_signal: bool) -> Dictionary:
 	var was_configured: bool = _configured
 	var track_id: String = _current_track_id
 	var pending_track_id: String = _pending_track_id
@@ -142,7 +150,7 @@ func dispose_audio() -> Dictionary:
 	_configured = false
 	_lifecycle_generation += 1
 	if _active_tween != null:
-		_active_tween.call(StringName("ki" + "ll"))
+		_active_tween.kill()
 		_active_tween = null
 	for player in _players:
 		if not is_instance_valid(player):
@@ -163,7 +171,8 @@ func dispose_audio() -> Dictionary:
 			"cleared_player_count": cleared_player_count,
 		}
 	)
-	service_disposed.emit(result.duplicate(true))
+	if emit_disposed_signal:
+		service_disposed.emit(result.duplicate(true))
 	return result
 
 
