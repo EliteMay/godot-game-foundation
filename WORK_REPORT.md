@@ -1415,5 +1415,8 @@ Phase 11〜16で増えた共通Foundation機能を、新規Gameへ一律強制�
 
 - Branch: `phase17-starter-profile-contract`
 - Foundation-side Starter Template Smokeを追加
-- GitHub Actions結果はPR作成後に確認する
+- PR #32 初回Godot CI: FAIL
+  - `Run build configuration smoke test` がFoundation `0.17.0-dev` とHarness `project.godot` の `0.16.0-dev` 不一致を検出
+  - Harness Versionを `0.17.0-dev` へ同期して修正
+- 修正後のGodot CI / Windows Buildを再実行して最終確認する
 
