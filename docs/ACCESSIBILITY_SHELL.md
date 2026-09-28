@@ -20,6 +20,8 @@ Required Baseline:
 
 不足時はInputMapを勝手に変更せず、構造化Resultで不足Action / Device coverageを返します。
 
+Required semantic action自体が無い場合はBaseline成立不能として扱います。一方、Keyboard / Gamepadのどちらか一方のBinding不足はFocus graph構築を止めません。Runtime Snapshotの `keyboard_ready` / `gamepad_ready` で不足を観測し、Game側InputMapで補います。
+
 ## Focus Graph
 
 Vertical Menuでは既存 `MenuFocusNavigation` を利用します。
