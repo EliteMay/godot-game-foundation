@@ -738,5 +738,10 @@ Phase 13の次Taskとして、Global SFX / UI / Voiceと2D / 3Dの短いAudio再
 - token stop / stop_allを検証
 - max_active_players上限を検証
 - invalid volume / pitch / null streamを検証
+- PR #19 Godot CI: PASS（One-shot Audio Service Smokeを含む）
+- PR #19 Windows Build: PASS
+- main merge commit: `2337885c30ee6c3a75224567c2aa51d1189d4bff`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - 実Audio deviceでの定位 / 距離減衰 / Voice / Mix聴感は実Game統合時のRuntime Validation対象
 
