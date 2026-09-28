@@ -17,6 +17,7 @@ FoundationRuntimeが担当するもの:
 - Save読込 / Auto Save要求 / 明示Save / Safe Quit Save
 - Diagnostics Service初期化
 - Runtime Test Bridgeの接続
+- Optional Crash Marker lifecycle
 - Load/Restore Failure時のSave write block
 
 Game側が担当するもの:
@@ -153,6 +154,26 @@ Saveを有効にする場合は `capture_save_state` と `restore_save_state` �
 
 Runtime Test BridgeはGame Dev Hub等がTest用Command Line Argumentを付けた時だけ有効になります。
 
+### crash_marker
+
+```gdscript
+{
+    "enabled": false,
+    "path": "user://foundation_session_marker.json",
+}
+```
+
+前回Runtime Sessionが正常Cleanupされなかった可能性を次回起動時に確認するOptional機能です。
+
+- 既定OFF
+- write先は `user://` のみ
+- Marker残存はCrash確定ではなく `possible_unclean_exit`
+- Safe QuitではSave hookより後にCleanup
+- Window close request / Runtime teardownでもbest-effort Cleanup
+- Cleanup失敗だけでQuitをBlockしない
+
+`crash_marker_snapshot()` と `status_snapshot().crash_marker` から状態を取得できます。
+
 ## Adapter Contract
 
 ### capture_save_state
@@ -273,6 +294,8 @@ foundation_runtime.request_quit()
 を利用できます。
 
 Saveに失敗した場合はGame Flowの既存Contractに従い終了をBlockできます。
+
+Crash Markerが有効な場合はSave Hookの後にMarker Cleanup Hookを登録します。SaveがQuitをBlockした時はMarkerも残るため、そのSessionを誤ってClean扱いしません。
 
 ## Diagnostics
 
