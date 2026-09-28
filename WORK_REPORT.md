@@ -1465,5 +1465,9 @@ Phase 17の `standard` ProfileをManifest上の名前だけで終わらせず、
 ### Validation
 
 - Branch: `phase17-standard-starter-profile`
-- PR / CIでminimalとstandardの生成・起動を確認する
+- PR #33 Godot CI: PASS
+- Starter Template Smoke: PASS
+- `minimal` materialize / import / Main Scene / Integration Smoke: PASS
+- `standard` materialize / import / Main Scene / Integration Smoke: PASS
+- PR #33 Windows Build: PASS
 
