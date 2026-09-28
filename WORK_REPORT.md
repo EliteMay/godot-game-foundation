@@ -745,3 +745,59 @@ Phase 13の次Taskとして、Global SFX / UI / Voiceと2D / 3Dの短いAudio再
 - main Windows Build: PASS
 - 実Audio deviceでの定位 / 距離減衰 / Voice / Mix聴感は実Game統合時のRuntime Validation対象
 
+---
+
+## v0.13.0-dev — Audio Bus Contract
+
+### 目的
+
+Phase 13のBus Contractとして、Settings・Global Music・One-shot Audioが別々のBus名設定を持たず、同じGame-defined Logical Bus Mappingを共有できるようにする。
+
+### 実装
+
+- `addons/game_foundation/audio/audio_bus_contract.gd`
+  - `master / bgm / sfx / ui / voice` のLogical Bus Contract
+  - 旧3-key Mappingの `ui / voice -> sfx` Fallback
+  - Game固有追加Logical keyの保持
+  - Settings向け `master / bgm / sfx` view
+  - One-shot向け `sfx / ui / voice` view
+  - Logical key → Bus名 resolve
+  - Current AudioServerのexisting / missing Bus inspection
+- `FoundationRuntime.settings.audio_bus_map`
+  - configure時にAudioBusContractでNormalize
+  - public_configにもNormalized Mappingを公開
+- `SettingsRuntime`
+  - Shared Contractを通してMaster / BGM / SFX適用先を解決
+  - HeadlessでもBus Contract自体はValidationする
+- `GlobalMusicService`
+  - `audio_bus_map`から `bgm` を解決
+  - 旧 `bus_name` は互換用に維持
+  - Shared Contractと旧bus_name同時指定は拒否
+- `OneShotAudioService`
+  - `audio_bus_map`から `sfx / ui / voice` を解決
+  - 旧 `bus_names` は互換用に維持
+  - Shared Contractと旧bus_names同時指定は拒否
+- Foundation capabilityへ `audio_bus_contract` を追加
+- Roadmap / README / Audio Service Docs / Learningを更新
+
+### 設計境界
+
+- FoundationはAudioServer Busを作成・Renameしない
+- Bus LayoutそのものはGame側が所有する
+- Audio AssetやMix設計をFoundationへ固定しない
+- Game固有Logical keyは削除せず保持する
+- Legacy APIは壊さないが、新規統合ではShared Contractを推奨する
+
+### Validation
+
+- Audio Bus Contract Headless SmokeをCIへ追加
+- 旧 master / bgm / sfx Mappingの互換性を検証
+- ui / voice -> sfx Fallbackを検証
+- Game固有追加Logical key保持を検証
+- Empty / invalid key / unknown logical keyを検証
+- FoundationRuntime public_configのNormalized Mappingを検証
+- Global Musicがshared `bgm` Busを使うことを検証
+- One-shotがshared `sfx / ui / voice` Busを使うことを検証
+- Shared Contract + Legacy Bus設定の二重指定拒否を検証
+- AudioServer inspectionがexisting / missingを安全に分類することを検証
+

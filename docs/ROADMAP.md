@@ -582,7 +582,7 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
 
 ## Phase 13 — Audio Service
 
-状態: **実装中 / Global Music・One-shot Audio完了**
+状態: **実装中 / Global Music・One-shot Audio・Bus Contract完了**
 
 目的: Settingsの音量適用だけでなく、複数Gameで共通するAudio再生Lifecycleを提供する。
 
@@ -603,9 +603,15 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
   - max_active_playersで同時One-shot生成数を上限化する
   - token単位Stopとstop_allを提供する
   - 特殊なAttenuation / Area / Emission等はGame固有Playerへ残す
-- [ ] Bus Contract
+- [x] Bus Contract
   - 担当: ChatGPT
-  - 既存Settings audio bus mappingと同じGame-defined Bus名を利用する
+  - Settings / Global Music / One-shot Audioが同じGame-defined audio_bus_mapを共有する
+  - master / bgm / sfxを共通必須Logical keyとして扱い、ui / voice未指定時はsfxへFallbackする
+  - Game固有の追加Logical keyも保持し、Foundationが未知keyを削除しない
+  - FoundationRuntimeのsettings.audio_bus_mapをNormalizeし、既存3-key Mappingとの互換性を維持する
+  - Global Musicはaudio_bus_mapのbgm、One-shotはsfx / ui / voiceを利用する
+  - Legacy bus_name / bus_names APIは互換用に残すが、Shared Contractと同時指定は曖昧Configurationとして拒否する
+  - FoundationはAudioServer Busを勝手に作成・Renameせず、存在確認はinspection Resultとして扱う
 - [ ] Lifetime / Cleanup
   - 担当: ChatGPT
   - Finished playerを自動Cleanupし、Scene切替でOrphanを残さない

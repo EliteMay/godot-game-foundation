@@ -5,11 +5,17 @@ signal music_stopped(result: Dictionary)
 signal transition_started(kind: String, result: Dictionary)
 signal transition_completed(kind: String, result: Dictionary)
 
+const AudioBusContract = preload(
+	"res://addons/game_foundation/audio/audio_bus_contract.gd"
+)
+
 const SILENCE_DB: float = -80.0
 const MAX_FADE_SECONDS: float = 30.0
 
 var _configured: bool = false
 var _bus_name: String = "Master"
+var _audio_bus_map: Dictionary = {}
+var _using_audio_bus_contract: bool = false
 var _default_fade_seconds: float = 0.25
 var _default_crossfade_seconds: float = 0.5
 var _persist_across_scenes: bool = true
@@ -37,9 +43,30 @@ func configure(options: Dictionary = {}) -> Dictionary:
 			"music service cannot be reconfigured during a fade or crossfade"
 		)
 
-	var bus_name: String = String(options.get("bus_name", "Master")).strip_edges()
-	if bus_name.is_empty():
-		return _error("invalid_bus_name", "bus_name cannot be empty")
+	var bus_name: String = "Master"
+	var normalized_bus_map: Dictionary = {}
+	var using_audio_bus_contract: bool = false
+	if options.has("audio_bus_map"):
+		if options.has("bus_name"):
+			return _error(
+				"ambiguous_bus_configuration",
+				"use either audio_bus_map or legacy bus_name, not both"
+			)
+		var bus_result: Dictionary = AudioBusContract.resolve_bus(
+			options.get("audio_bus_map", {}),
+			"bgm"
+		)
+		if not bool(bus_result.get("ok", false)):
+			return bus_result
+		bus_name = String(bus_result.get("bus_name", ""))
+		normalized_bus_map = (
+			bus_result.get("bus_map", {}) as Dictionary
+		).duplicate(true)
+		using_audio_bus_contract = true
+	else:
+		bus_name = String(options.get("bus_name", "Master")).strip_edges()
+		if bus_name.is_empty():
+			return _error("invalid_bus_name", "bus_name cannot be empty")
 
 	var fade_result: Dictionary = _validate_fade_seconds(
 		float(options.get("default_fade_seconds", 0.25)),
@@ -56,6 +83,8 @@ func configure(options: Dictionary = {}) -> Dictionary:
 		return crossfade_result
 
 	_bus_name = bus_name
+	_audio_bus_map = normalized_bus_map
+	_using_audio_bus_contract = using_audio_bus_contract
 	_default_fade_seconds = float(options.get("default_fade_seconds", 0.25))
 	_default_crossfade_seconds = float(
 		options.get("default_crossfade_seconds", 0.5)
@@ -77,6 +106,8 @@ func configure(options: Dictionary = {}) -> Dictionary:
 		"global_music_configured",
 		{
 			"bus_name": _bus_name,
+			"audio_bus_map": _audio_bus_map.duplicate(true),
+			"using_audio_bus_contract": _using_audio_bus_contract,
 			"default_fade_seconds": _default_fade_seconds,
 			"default_crossfade_seconds": _default_crossfade_seconds,
 			"persist_across_scenes": _persist_across_scenes,
@@ -242,6 +273,8 @@ func status_snapshot() -> Dictionary:
 	return {
 		"configured": _configured,
 		"bus_name": _bus_name,
+		"audio_bus_map": _audio_bus_map.duplicate(true),
+		"using_audio_bus_contract": _using_audio_bus_contract,
 		"default_fade_seconds": _default_fade_seconds,
 		"default_crossfade_seconds": _default_crossfade_seconds,
 		"persist_across_scenes": _persist_across_scenes,

@@ -155,6 +155,17 @@ jobs:
           fi
           grep -q "INPUT_REMAP_CONTROL_SMOKE: PASS" input-remap-control-smoke.log
 
+      - name: Run audio bus contract smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/audio_bus_contract_smoke.tscn 2>&1 | tee audio-bus-contract-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" audio-bus-contract-smoke.log; then
+            echo "Audio bus contract smoke contains an error."
+            exit 1
+          fi
+          grep -q "AUDIO_BUS_CONTRACT_SMOKE: PASS" audio-bus-contract-smoke.log
+
       - name: Run one-shot audio service smoke test
         shell: bash
         run: |
