@@ -1370,4 +1370,9 @@ Phase 16最後のTaskとして、前回Foundation Runtime Sessionが正常Cleanu
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #31 初回Godot CI: FAIL
+  - 原因: corrupt markerを期待ケースとして読むTestでstatic `JSON.parse_string()` がengine `ERROR:` をstderrへ出し、CIのError検出に該当した
+  - 修正: `JSON.new().parse()` + `get_error_message()/get_error_line()` へ変更し、破損JSONを構造化Resultとして処理
+- 修正後PR #31 Godot CI: PASS（Crash Marker Smoke / Diagnostics Export regression / existing regressionsを含む）
+- 修正後PR #31 Windows Build: PASS
+- Actual OS hard crash / process kill / power loss: NOT_RUN（CIではstale/corrupt markerをdeterministicに再現してContractを検証）
