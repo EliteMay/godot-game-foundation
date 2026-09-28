@@ -2,6 +2,7 @@ extends RefCounted
 
 const SHELL_MAIN_MENU: String = "main_menu"
 const SHELL_PAUSE_MENU: String = "pause_menu"
+const SHELL_RECOVERY_SCREEN: String = "recovery_screen"
 
 const DEFAULT_CONTRACTS: Dictionary = {
 	SHELL_MAIN_MENU: {
@@ -45,6 +46,38 @@ const DEFAULT_CONTRACTS: Dictionary = {
 		"quit": {
 			"key": "GF_PAUSE_MENU_QUIT",
 			"fallback": "Quit",
+			"context": "",
+		},
+	},
+	SHELL_RECOVERY_SCREEN: {
+		"title": {
+			"key": "GF_RECOVERY_TITLE",
+			"fallback": "Recovery needed",
+			"context": "",
+		},
+		"retry": {
+			"key": "GF_RECOVERY_RETRY",
+			"fallback": "Retry",
+			"context": "",
+		},
+		"main_menu": {
+			"key": "GF_RECOVERY_MAIN_MENU",
+			"fallback": "Main Menu",
+			"context": "",
+		},
+		"safe_quit": {
+			"key": "GF_RECOVERY_SAFE_QUIT",
+			"fallback": "Quit",
+			"context": "",
+		},
+		"save_protected": {
+			"key": "GF_RECOVERY_SAVE_PROTECTED",
+			"fallback": "Save data is protected from overwrite.",
+			"context": "",
+		},
+		"diagnostics_available": {
+			"key": "GF_RECOVERY_DIAGNOSTICS_AVAILABLE",
+			"fallback": "Diagnostics are available.",
 			"context": "",
 		},
 	},
