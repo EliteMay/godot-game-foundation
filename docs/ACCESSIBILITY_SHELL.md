@@ -77,3 +77,65 @@ Game統合時:
 - Game固有Options / Modal / Nested Menu
 - Focus visual readability
 - Controller種類ごとのPrompt / Glyph整合
+
+
+## Motion / Feedback Hooks
+
+`UIFeedbackHooks` はMotion preferenceとUI Feedback eventを共通化します。
+
+### Reduced Motion
+
+Hookは0.0〜1.0の `motion_scale` を持ち、`set_motion_scale(value)` を実装したMotion targetへ配布します。
+
+既存Transition LayerはこのContractを既に満たすため、そのまま登録できます。
+
+```gdscript
+var feedback := UIFeedbackHooks.new()
+feedback.configure({
+    "reduced_motion": true,
+    "motion_targets": [transition_layer],
+})
+```
+
+複数targetへの適用中に1つが拒否した場合、先に変更済みのtargetは直前Scaleへrollbackします。
+
+FoundationはReduced Motionの保存Field名やOptions画面を固定しません。Game側SettingsからHookへ値を渡します。
+
+### Semantic UI Feedback
+
+Main Menu / Pause Menuは次のeventを通知できます。
+
+- `focus`
+- `activate`
+- `open`
+- `close`
+
+Game側は `feedback_action(event_id, context)` を渡し、必要に応じて次へ接続できます。
+
+- OneShotAudioServiceのUI sound
+- Haptic / vibration
+- Game固有visual feedback
+- Analytics / debug instrumentation
+
+```gdscript
+feedback.configure({
+    "feedback_action": Callable(self, "_handle_ui_feedback"),
+})
+```
+
+Main / Pause Menuへは `feedback_hooks` として渡します。
+
+Feedbackがdisabled、handler未設定、またはhandler側がFailureを返した場合でも、New Game / Resume / Options / Quit等のPrimary Actionは止めません。
+
+### Ownership Boundary
+
+Foundationが所有しないもの:
+
+- AudioStream asset
+- UI soundの実音量 / pitch
+- Haptic pattern
+- Theme / animation asset
+- Feedback eventごとのGame固有表現
+- Preferenceの保存UI
+
+Headless CIではevent配線、enable/disable、rollback、Transition LayerとのMotion連携を確認します。実音、Animationの快適さ、Focus visual readabilityは実Gameで確認します。
