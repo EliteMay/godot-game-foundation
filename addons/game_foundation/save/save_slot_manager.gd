@@ -36,7 +36,7 @@ func configure(options: Dictionary = {}) -> Dictionary:
 
 	_slots_root = String(root_result.get("path", DEFAULT_SLOTS_ROOT))
 	_current_game_schema_version = game_schema_version
-	_migrator = migrator_variant as Callable
+	_migrator = migrator_variant
 	_configured = true
 
 	return _success("save_slot_manager_configured", {
