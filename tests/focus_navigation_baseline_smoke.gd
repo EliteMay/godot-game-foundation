@@ -22,7 +22,7 @@ func _run() -> void:
 		"Godot semantic UI baseline should include keyboard and gamepad coverage"
 	)
 	var coverage: Dictionary = input_result.get("coverage", {}) as Dictionary
-	for action_name in FocusNavigationBaseline.REQUIRED_UI_ACTIONS:
+	for action_name in FocusNavigationBaseline.required_ui_actions():
 		var action_coverage: Dictionary = coverage.get(
 			action_name,
 			{}
