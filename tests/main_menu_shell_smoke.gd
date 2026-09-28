@@ -95,6 +95,13 @@ func _run() -> void:
 		"new_game",
 		"runtime snapshot should expose the focused action"
 	)
+	var navigation_snapshot: Dictionary = (
+		shell.state_snapshot().get("navigation_baseline", {}) as Dictionary
+	)
+	_expect_true(
+		bool(navigation_snapshot.get("input_ready", false)),
+		"main menu snapshot should expose keyboard/gamepad navigation readiness"
+	)
 
 	_expect_code(
 		shell.request_action("continue"),
@@ -128,6 +135,25 @@ func _run() -> void:
 		shell.action_button("continue").focus_neighbor_bottom,
 		shell.action_button("continue").get_path_to(shell.action_button("new_game")),
 		"enabling Continue should rebuild the focus graph"
+	)
+
+	_expect_code(
+		shell.set_continue_available(false),
+		"continue_availability_changed",
+		"disabling the focused Continue action should refresh availability"
+	)
+	await get_tree().process_frame
+	_expect_true(
+		get_viewport().gui_get_focus_owner() == shell.action_button("new_game"),
+		"focus repair should move away from a newly disabled action"
+	)
+	_expect_ok(
+		shell.set_continue_available(true),
+		"Continue should be available again for action regression"
+	)
+	_expect_ok(
+		shell.focus_initial_action(),
+		"initial focus should return to Continue after it is re-enabled"
 	)
 
 	_expect_code(
