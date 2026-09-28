@@ -1,7 +1,7 @@
 extends Control
 
-const MenuFocusNavigation = preload(
-	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
+const FocusNavigationBaseline = preload(
+	"res://addons/game_foundation/shell/focus_navigation_baseline.gd"
 )
 const TranslationContract = preload(
 	"res://addons/game_foundation/localization/translation_contract.gd"
@@ -318,6 +318,9 @@ func state_snapshot() -> Dictionary:
 		"has_previous_focus": is_instance_valid(_previous_focus),
 		"focused_action_id": focused_action_id(),
 		"managed_focus_navigation": _manage_focus_navigation,
+		"navigation_baseline": FocusNavigationBaseline.snapshot(
+			_focus_controls()
+		),
 	}
 
 
@@ -490,7 +493,7 @@ func _focus_controls() -> Array:
 func _refresh_focus_navigation() -> void:
 	if not _manage_focus_navigation:
 		return
-	MenuFocusNavigation.configure_vertical(_focus_controls())
+	FocusNavigationBaseline.configure_vertical(_focus_controls())
 
 
 func _resolve_buttons() -> void:
@@ -524,13 +527,7 @@ func _on_action_button_pressed(action_id: String) -> void:
 func _focus_initial_control() -> void:
 	if not _is_open:
 		return
-	var resume_button: Button = action_button(ACTION_RESUME)
-	if (
-		is_instance_valid(resume_button)
-		and resume_button.visible
-		and not resume_button.disabled
-	):
-		resume_button.grab_focus()
+	FocusNavigationBaseline.focus_first(_focus_controls())
 
 
 func _restore_previous_focus() -> void:

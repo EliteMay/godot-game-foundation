@@ -1,7 +1,7 @@
 extends Control
 
-const MenuFocusNavigation = preload(
-	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
+const FocusNavigationBaseline = preload(
+	"res://addons/game_foundation/shell/focus_navigation_baseline.gd"
 )
 const TranslationContract = preload(
 	"res://addons/game_foundation/localization/translation_contract.gd"
@@ -343,6 +343,9 @@ func state_snapshot() -> Dictionary:
 		"quit_available": _show_quit,
 		"focused_action_id": focused_action_id(),
 		"managed_focus_navigation": _manage_focus_navigation,
+		"navigation_baseline": FocusNavigationBaseline.snapshot(
+			_focus_controls()
+		),
 	}
 
 
@@ -520,18 +523,18 @@ func _focus_controls() -> Array:
 func _refresh_focus_navigation() -> void:
 	if not _manage_focus_navigation:
 		return
-	MenuFocusNavigation.configure_vertical(_focus_controls())
+	FocusNavigationBaseline.configure_vertical(_focus_controls())
 
 
 func _repair_focus_after_availability_change() -> void:
 	if not _active or not visible or not is_inside_tree():
 		return
-	var owner: Control = get_viewport().gui_get_focus_owner()
-	if not is_instance_valid(owner) or not is_ancestor_of(owner):
-		return
-	if MenuFocusNavigation.is_focusable(owner):
-		return
-	call_deferred("_focus_initial_control")
+	var result: Dictionary = FocusNavigationBaseline.repair_focus(
+		_focus_controls(),
+		{"preserve_external_focus": true}
+	)
+	if not bool(result.get("ok", false)):
+		call_deferred("_focus_initial_control")
 
 
 func _resolve_buttons() -> void:
@@ -563,22 +566,12 @@ func _on_action_button_pressed(action_id: String) -> void:
 
 
 func _focus_initial_control() -> String:
-	for action_id in [
-		ACTION_CONTINUE,
-		ACTION_NEW_GAME,
-		ACTION_OPTIONS,
-		ACTION_QUIT,
-	]:
-		var button: Button = action_button(action_id)
-		if (
-			is_instance_valid(button)
-			and button.visible
-			and not button.disabled
-			and button.focus_mode != Control.FOCUS_NONE
-		):
-			button.grab_focus()
-			return action_id
-	return ""
+	var result: Dictionary = FocusNavigationBaseline.focus_first(
+		_focus_controls()
+	)
+	if not bool(result.get("ok", false)):
+		return ""
+	return focused_action_id()
 
 
 func _success(code: String, extra: Dictionary = {}) -> Dictionary:

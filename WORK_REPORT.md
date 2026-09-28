@@ -1052,3 +1052,52 @@ Phase 15のTranslation Contractとして、Foundation Shellの表示文字列を
 
 - PR #25 Godot CI: PASS（Translation Contract Smoke / Main Menu / Pause Menu regressionを含む）
 - PR #25 Windows Build: PASS
+
+
+---
+
+## v0.15.0-dev — Focus / Navigation Baseline
+
+### 目的
+
+Phase 15のFocus / Navigation Baselineとして、Main Menu / Pause MenuがMouseなしでも安定して操作できる最低限のNavigation Contractを共通化する。
+
+### 実装
+
+- `shell/focus_navigation_baseline.gd`
+  - Required semantic UI action: `ui_up / ui_down / ui_accept`
+  - InputMapのKeyboard / Gamepad binding coverage監査
+  - 既存 `MenuFocusNavigation` を使ったvertical graph構成
+  - Initial focus
+  - Focus lost / disabled focus ownerのrepair
+  - Valid external focusのpreserve
+  - Focusable controls / current focus / input readiness snapshot
+- `MainMenuShell` / `PauseMenuShell`
+  - Focus graphとinitial focusをBaseline経由へ統合
+  - Main Menu availability変更後のfocus repairをBaselineへ統合
+  - Runtime SnapshotへNavigation readinessを追加
+- Dedicated Focus Navigation Baseline Smoke
+  - Keyboard / Gamepad semantic binding coverage
+  - hidden / disabled skip
+  - `ui_down / ui_up / ui_accept`
+  - focus repair
+  - external focus preserve
+  - diagnostics snapshot
+
+### Boundary
+
+- Foundationは物理Key / Controller Buttonを固定しない
+- `ui_cancel` はMenu close policyがGameごとに異なるためRequired Baselineへ含めない
+- Custom layoutは既存 `manage_focus_navigation=false` でGame側へ委譲できる
+- 物理Controllerでの操作感は実Game / 実機Runtime Validation対象
+
+### Validation
+
+- PR #26 初回Godot CI: FAIL
+  - 原因: `PackedStringArray(...)` をconst expressionとして使用してGodot 4.7 parse error
+  - 修正: Required UI action listをruntime生成へ変更
+- PR #26 2回目Godot CI: FAIL
+  - 原因: Harness built-in `ui_accept` のGamepad coverage不足をFocus graph構成自体のhard gateにしていた
+  - 修正: Focus behaviorとDevice coverage auditを分離。Device不足はSnapshot / validation resultへ残し、Focus graphはsemantic action存在時に成立させる
+- PR #26 最終Godot CI: PASS（Focus Navigation Baseline Smoke / Main Menu / Pause Menu regressionを含む）
+- PR #26 最終Windows Build: PASS
