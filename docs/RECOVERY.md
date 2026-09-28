@@ -63,8 +63,6 @@ Failure後に安全な再試行が成功した場合:
 
 ## Next Phase 16 Work
 
-- Recovery Screen Contract
-- Diagnostics Export Hook
 - Crash Marker
 
 Recovery ScreenはError summaryと利用可能ActionをRuntime Stateから構築し、Data削除やResetを暗黙実行しません。
@@ -124,8 +122,26 @@ Recovery ScreenはActionの入口であり、Project DataのAuthorityではあ�
 - unsupported Retryを表示しない
 - Main Menu未設定時に存在すると見せない
 - Safe Quit failureを成功扱いしない
-- Diagnostics exportは次Taskの専用Hookへ分離する
+- Diagnostics exportは専用 `DiagnosticsExportHook` へ分離する
 
 Headless SmokeではAction availability、focus、translation override、Retry close、Save protection表示を確認します。
 
 実Game Themeでのcontrast、狭いViewport、長いLocalized message、物理Controller Focus視認性はRuntime / Visual Validation対象です。
+
+
+## Diagnostics Export Hook
+
+Recovery ScreenやGame Dev Hubから診断情報を共有する場合は、内部 `diagnostics_snapshot()` を直接送信せず `FoundationRuntime.diagnostics_export()` を使います。
+
+Export Hookは内部Snapshotを共有用Schemaへ再構築し、RuntimeのDomain-bearing fieldsをホワイトリスト外にします。
+
+主なSafety:
+
+- Save Payload / Settings / Input Dataを含めない
+- Absolute PathをRedaction
+- Known sensitive key / token patternをRedaction
+- Recent Log / Error / String / Collectionをbounded化
+- JSON全体を128 KiB以下へ制限
+- Network送信やUploadはFoundation外
+
+このHookは「既知のSecret Patternを除去する共有境界」です。Game側がSecretをLogへ記録してよいという意味ではありません。Secretは最初からDiagnostics Contextへ入れないことを基本とします。
