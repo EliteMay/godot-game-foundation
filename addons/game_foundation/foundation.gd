@@ -63,6 +63,7 @@ static func capabilities() -> PackedStringArray:
 		"managed_foundation_distribution",
 		"integrated_foundation_runtime",
 		"runtime_failure_state",
+		"recovery_screen_contract",
 		"runtime_lifecycle_bootstrap",
 		"runtime_test_bridge",
 		"application_shell",
