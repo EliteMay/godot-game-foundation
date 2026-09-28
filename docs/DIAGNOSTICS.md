@@ -161,6 +161,7 @@ if export_result.ok:
 - OS / Display Server / Headless / Debug Build
 - Foundation Runtimeの安全な状態Field
 - Runtime Failure Stateの共有可能Field
+- Crash Markerのsanitized previous-session evidence
 - `user://` / `res://` のVirtual Path
 - Error件数
 - Sanitized Recent Error / Log
@@ -178,6 +179,7 @@ if export_result.ok:
 - Settings本体
 - Input Binding本体
 - Game固有Domain State
+- Current Crash Marker Session ID / Marker Path
 - Binary Data
 - 絶対File Path
 - password / token / API key / authorization / cookie / credential等の既知Sensitive Field
