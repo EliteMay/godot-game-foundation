@@ -15,7 +15,8 @@ static func validate_payload(payload: Dictionary) -> Dictionary:
 static func save_game(
 	payload: Dictionary,
 	game_schema_version: int,
-	path: String = DEFAULT_SAVE_PATH
+	path: String = DEFAULT_SAVE_PATH,
+	extra_metadata: Dictionary = {}
 ) -> Dictionary:
 	if game_schema_version < 1:
 		return _error("invalid_game_schema_version", "game_schema_version must be 1 or greater")
@@ -24,17 +25,26 @@ static func save_game(
 	if not bool(validation.get("ok", false)):
 		return validation
 
+	var metadata_validation: Dictionary = _validate_extra_metadata(extra_metadata)
+	if not bool(metadata_validation.get("ok", false)):
+		return metadata_validation
+
 	var path_error: Dictionary = _validate_save_path(path)
 	if not bool(path_error.get("ok", false)):
 		return path_error
 
+	var saved_at_unix: int = int(Time.get_unix_time_from_system())
+	var metadata: Dictionary = {
+		"format": FORMAT_ID,
+		"foundation_schema_version": FOUNDATION_SCHEMA_VERSION,
+		"game_schema_version": game_schema_version,
+		"saved_at_unix": saved_at_unix,
+	}
+	for key in extra_metadata.keys():
+		metadata[key] = extra_metadata[key]
+
 	var envelope: Dictionary = {
-		"metadata": {
-			"format": FORMAT_ID,
-			"foundation_schema_version": FOUNDATION_SCHEMA_VERSION,
-			"game_schema_version": game_schema_version,
-			"saved_at_unix": int(Time.get_unix_time_from_system()),
-		},
+		"metadata": metadata,
 		"payload": payload.duplicate(true),
 	}
 
@@ -46,6 +56,8 @@ static func save_game(
 		"path": path,
 		"backup_path": backup_path(path),
 		"game_schema_version": game_schema_version,
+		"saved_at_unix": saved_at_unix,
+		"metadata": metadata.duplicate(true),
 	})
 
 
@@ -87,6 +99,117 @@ static func load_game(
 	primary["source"] = "primary"
 	primary["backup_error"] = String(backup.get("code", "backup_load_failed"))
 	return primary
+
+
+
+
+
+static func inspect_game(
+	path: String = DEFAULT_SAVE_PATH,
+	allow_backup: bool = true
+) -> Dictionary:
+	var path_error: Dictionary = _validate_save_path(path)
+	if not bool(path_error.get("ok", false)):
+		return path_error
+
+	var primary: Dictionary = _inspect_from_path(path)
+	if bool(primary.get("ok", false)):
+		primary["source"] = "primary"
+		return primary
+
+	if not allow_backup:
+		primary["source"] = "primary"
+		return primary
+
+	var primary_code: String = String(primary.get("code", "inspect_failed"))
+	if not _should_try_backup(primary_code):
+		primary["source"] = "primary"
+		return primary
+
+	var backup: Dictionary = _inspect_from_path(backup_path(path))
+	if bool(backup.get("ok", false)):
+		backup["source"] = "backup"
+		backup["recovered_from_backup"] = true
+		backup["primary_error"] = primary_code
+		return backup
+
+	primary["source"] = "primary"
+	primary["backup_error"] = String(backup.get("code", "backup_inspect_failed"))
+	return primary
+
+
+static func _inspect_from_path(path: String) -> Dictionary:
+	var read_result: Dictionary = _read_envelope(path)
+	if not bool(read_result.get("ok", false)):
+		return read_result
+
+	var envelope_variant: Variant = read_result.get("envelope", {})
+	if not (envelope_variant is Dictionary):
+		return _error("invalid_envelope", "save root must be a Dictionary")
+
+	var envelope: Dictionary = envelope_variant as Dictionary
+	var metadata_variant: Variant = envelope.get("metadata")
+	if not (metadata_variant is Dictionary):
+		return _error("invalid_metadata", "metadata must be a Dictionary")
+
+	var metadata: Dictionary = metadata_variant as Dictionary
+	if String(metadata.get("format", "")) != FORMAT_ID:
+		return _error("unsupported_format", "save format is not supported")
+	if not metadata.has("foundation_schema_version"):
+		return _error("missing_foundation_schema_version", "foundation schema version is missing")
+	if not metadata.has("game_schema_version"):
+		return _error("missing_game_schema_version", "game schema version is missing")
+	if not envelope.has("payload"):
+		return _error("missing_payload", "payload is missing")
+
+	var foundation_schema_version: int = int(metadata.get("foundation_schema_version", 0))
+	var saved_game_schema_version: int = int(metadata.get("game_schema_version", 0))
+	if foundation_schema_version < FOUNDATION_SCHEMA_VERSION:
+		return _error("foundation_schema_too_old", "foundation schema requires an internal migration")
+	if foundation_schema_version > FOUNDATION_SCHEMA_VERSION:
+		return _error("foundation_schema_too_new", "save was written by a newer Foundation schema")
+	if saved_game_schema_version < 1:
+		return _error("invalid_saved_game_schema_version", "saved game schema version is invalid")
+
+	var payload_variant: Variant = envelope.get("payload")
+	if not (payload_variant is Dictionary):
+		return _error("invalid_payload", "payload must be a Dictionary")
+	var validation: Dictionary = validate_payload(payload_variant as Dictionary)
+	if not bool(validation.get("ok", false)):
+		return _error(
+			"invalid_payload",
+			"saved payload is not JSON-compatible",
+			{"validation": validation}
+		)
+
+	return _success("inspected", {
+		"path": path,
+		"metadata": metadata.duplicate(true),
+		"saved_at_unix": int(metadata.get("saved_at_unix", 0)),
+		"saved_game_schema_version": saved_game_schema_version,
+		"foundation_schema_version": foundation_schema_version,
+	})
+
+
+static func _validate_extra_metadata(extra_metadata: Dictionary) -> Dictionary:
+	var validation: Dictionary = _validate_json_value(extra_metadata, "$.metadata_extra", 0)
+	if not bool(validation.get("ok", false)):
+		return validation
+
+	for reserved_key in [
+		"format",
+		"foundation_schema_version",
+		"game_schema_version",
+		"saved_at_unix",
+	]:
+		if extra_metadata.has(reserved_key):
+			return _error(
+				"reserved_metadata_key",
+				"extra metadata cannot replace Foundation metadata",
+				{"key": reserved_key}
+			)
+
+	return _success("valid_extra_metadata")
 
 
 static func backup_path(path: String) -> String:
@@ -184,6 +307,8 @@ static func _load_from_path(
 	return _success("loaded", {
 		"path": path,
 		"payload": payload,
+		"metadata": metadata.duplicate(true),
+		"saved_at_unix": int(metadata.get("saved_at_unix", 0)),
 		"saved_game_schema_version": saved_game_schema_version,
 		"game_schema_version": current_game_schema_version,
 		"foundation_schema_version": foundation_schema_version,
