@@ -1308,4 +1308,6 @@ Phase 16のRecovery / Diagnostics情報をGame Dev Hub共有へ接続しやす�
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #30 Godot CI: PASS（Diagnostics Export Hook Smoke / existing regressionsを含む）
+- PR #30 Windows Build: PASS
+- Game Dev Hubへの実際の共有パック接続: NOT_RUN（Foundationはsanitized payload生成までを担当）
