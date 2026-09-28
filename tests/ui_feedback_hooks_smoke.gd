@@ -3,6 +3,9 @@ extends Node
 const UIFeedbackHooks = preload(
 	"res://addons/game_foundation/shell/ui_feedback_hooks.gd"
 )
+const TransitionLayer = preload(
+	"res://addons/game_foundation/shell/transition_layer.gd"
+)
 
 class FakeMotionTarget:
 	extends RefCounted
@@ -160,6 +163,28 @@ func _run() -> void:
 		),
 		"empty feedback event ids should be rejected"
 	)
+
+	var transition := TransitionLayer.new()
+	add_child(transition)
+	await get_tree().process_frame
+	_expect_ok(
+		hooks.register_motion_target(transition),
+		"real TransitionLayer should satisfy the motion target contract"
+	)
+	_expect_ok(
+		hooks.set_reduced_motion(true),
+		"reduced motion should propagate to TransitionLayer"
+	)
+	_expect_float(
+		float(transition.state_snapshot().get("motion_scale", -1.0)),
+		0.0,
+		"TransitionLayer should receive reduced motion scale"
+	)
+	_expect_ok(
+		hooks.unregister_motion_target(transition),
+		"TransitionLayer should be removable as a motion target"
+	)
+	transition.queue_free()
 
 	_finish()
 
