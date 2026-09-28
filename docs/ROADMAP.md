@@ -630,28 +630,35 @@ Game固有Audio AssetをFoundationへ入れず、BGM / SFX / UI / Voiceの共通
 
 ## Phase 14 — Save Profiles / Slots
 
-状態: **調査完了 / 未実装**
+状態: **実装完了 / Headless Save Slot Smoke・Windows Build確認対象**
 
 目的: Current Generic Save Systemの安全性を維持したまま、複数SlotやContinue/New Gameに必要な共通管理層を追加する。
 
-- [ ] Slot Metadata
+- [x] Slot Metadata
   - 担当: ChatGPT
-  - Slot ID / display name / updated time / Game schema / optional summaryをGame Payloadと分離する
-- [ ] Slot Lifecycle
+  - Slot ID / display name / created・updated time / Game schema / optional summaryをSave envelope metadataへ格納し、Game Payloadから分離する
+  - Slot MetadataとGame schemaの不整合をLoad/List時に拒否する
+- [x] Slot Lifecycle
   - 担当: ChatGPT
-  - list / create / load / save / deleteを安全なID検証付きで提供する
-- [ ] Continue Latest
+  - list / create / load / save / deleteを安全なlowercase Slot ID contract付きで提供する
+  - saveはHealthy Primaryが確認できたSlotだけを更新し、Corrupt Primaryを暗黙上書きしない
+  - deleteはPrimaryをActive namespace外へrenameしてからBackup / Tempを削除し、古いRuntime save_slot()で同じSlotを復活させない
+- [x] Continue Latest
   - 担当: ChatGPT
-  - 最新の正常Slotを決定するHelperを提供する
-- [ ] New Game Helper
+  - Metadata updated time順に候補を並べ、実際にLoad可能な最新Slotを返す
+  - 壊れた候補やFuture Game Schemaは失敗情報としてskipできる
+- [x] New Game Helper
   - 担当: ChatGPT
-  - 既存Slotを暗黙破壊せず、新規Slot作成を明示する
-- [ ] Existing Save Compatibility
+  - 指定IDまたは衝突しないGenerated IDでcreate_slot()を呼び、既存Slotを暗黙破壊しない
+- [x] Existing Save Compatibility
   - 担当: ChatGPT
-  - 既存Single Save利用Gameを壊さずOptional layerとして追加する
-- [ ] Cloud Extension Boundary
+  - Generic Save Systemの既存3-argument save_game / DEFAULT_SAVE_PATHを維持する
+  - Slot層はOptionalなSaveSlotManagerとして別Rootを使い、Single Save GameへMigrationを強制しない
+- [x] Cloud Extension Boundary
   - 担当: ChatGPT
-  - Steam / Cloud providerはCoreへ依存させず将来Adapterを追加できる境界だけ定義する
+  - CoreはLocal Slot Authorityだけを所有し、Provider SDK / Steam APIへ依存しない
+  - stable slot_id / local path / backup path / metadata formatをcloud_slot_descriptor()で外部Adapterへ渡せる
+  - Sync / Conflict / Remote revision / TombstoneはProvider Adapter側の後続責務とする
 
 完了条件:
 Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / New Gameを共通機能として利用できる。
