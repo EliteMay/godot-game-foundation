@@ -199,6 +199,17 @@ jobs:
           fi
           grep -q "GLOBAL_MUSIC_SERVICE_SMOKE: PASS" global-music-service-smoke.log
 
+      - name: Run integrated audio service smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/audio_service_integration_smoke.tscn 2>&1 | tee audio-service-integration-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" audio-service-integration-smoke.log; then
+            echo "Integrated audio service smoke contains an error."
+            exit 1
+          fi
+          grep -q "AUDIO_SERVICE_INTEGRATION_SMOKE: PASS" audio-service-integration-smoke.log
+
       - name: Run game flow smoke test
         shell: bash
         run: |
