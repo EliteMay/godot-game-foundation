@@ -800,4 +800,9 @@ Phase 13のBus Contractとして、Settings・Global Music・One-shot Audioが�
 - One-shotがshared `sfx / ui / voice` Busを使うことを検証
 - Shared Contract + Legacy Bus設定の二重指定拒否を検証
 - AudioServer inspectionがexisting / missingを安全に分類することを検証
+- PR #20 Godot CI: PASS（Audio Bus Contract Smokeを含む）
+- PR #20 Windows Build: PASS
+- main merge commit: `059eeb3d25edfaca192d0c94f5fc9eb713571f22`
+- main Godot CI: PASS
+- main Windows Build: PASS
 
