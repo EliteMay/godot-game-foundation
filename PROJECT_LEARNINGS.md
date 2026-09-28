@@ -250,6 +250,7 @@
 - Status: Adopted
 - Context: Keyboard / Gamepad対応をFoundationがArrow Key、Enter、A Button等の物理Inputへ固定すると、Game側RemapやController差異と競合する。一方、Focus graphだけ確認してInputMap coverageを見ないと、UIは見た目上Focus可能でも実際のDeviceから操作できない可能性がある。
 - Decision: FoundationのMenu BaselineはGodot semantic UI action `ui_up / ui_down / ui_accept` をRequired Contractとし、Keyboard / Gamepad event coverageを監査する。物理InputはGame / InputMap側が所有する。
+- Separation: Required semantic actionの存在はFocus graph成立条件にできるが、特定Device binding不足までFocus構築のhard gateにしない。Device coverageは`keyboard_ready / gamepad_ready`等の診断Resultとして分離し、Game側がInputMapを修正できるようにする。
 - Focus Recovery: Focus ownerがdisabled等で無効になった場合やFocusが消失した場合はFirst focusableへrepairするが、別Overlay等のValid external focusは奪わない。
 - Boundary: `ui_cancel` はClose / Back policyがGameごとに異なるためRequired Baselineにしない。Custom layout / focus topologyはGame側へ委譲可能にする。
 - Validation: Headlessではsemantic action behaviorとbinding coverageを確認し、物理Controller実機の操作感はGame統合時のRuntime Validationへ残す。
