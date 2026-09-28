@@ -764,6 +764,38 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 完了条件:
 RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次Actionを確認できる。
 
+## Phase 17 — Starter Profiles / Presets
+
+状態: **進行中**
+
+目的: Phase 11〜16で追加した共通Shell / UX / Recovery機能を、新しいGameへ一律強制せず、用途別のStarter Profileとして安全に選べるようにする。
+
+- [x] Starter Profile Contract
+  - 担当: ChatGPT
+  - `foundation-template.json` に `defaultProfile` / `starterProfiles` を追加する
+  - 既存Starter互換の `minimal` を既定かつ選択可能にする
+  - 共通Shellを広く使う `standard` Profileを宣言する
+  - Game Dev Hubが未対応のProfileは `selectable: false` として誤選択を防ぐ
+  - Manifest schemaVersion 1を維持し、既存Hubの生成Flowを壊さない
+  - Starter Template SmokeでProfile ID / default参照 / capability listを検証する
+- [ ] Game Dev Hub Profile Materialization
+  - 担当: ChatGPT
+  - Hubの新規Game作成でProfileを選べるようにする
+  - `minimal` はCurrent生成物と同一挙動を維持する
+  - `standard` は必要な共通Shell初期配線を生成する
+  - Installation Metadataへ選択Profileを記録し、Foundation更新ではGame固有Fileを上書きしない
+- [ ] Standard Starter Runtime Smoke
+  - 担当: ChatGPT
+  - 生成したstandard StarterをCold Import / Main Scene / Foundation Integration Smokeで検証する
+  - Main Menu / Loading / Recovery等の共通ShellがGame固有Themeなしでも起動可能なことを確認する
+- [ ] Windows実機生成確認
+  - 担当: User + ChatGPT
+  - Game Dev Hubからminimal / standardをそれぞれ新規生成する
+  - 起動・Foundation Version表示・Profile Metadata・更新Flowを確認する
+
+完了条件:
+新しいGameを作る時に、既存互換の最小構成とGame-readyな標準構成を安全に選べ、Foundation更新がGame固有領域を破壊しない。
+
 ### 2026-09-25 Generic Save System
 
 Phase 1を特定GameのState構造へ依存しない形で実装した。

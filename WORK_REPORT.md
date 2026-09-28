@@ -1376,3 +1376,47 @@ Phase 16最後のTaskとして、前回Foundation Runtime Sessionが正常Cleanu
 - 修正後PR #31 Godot CI: PASS（Crash Marker Smoke / Diagnostics Export regression / existing regressionsを含む）
 - 修正後PR #31 Windows Build: PASS
 - Actual OS hard crash / process kill / power loss: NOT_RUN（CIではstale/corrupt markerをdeterministicに再現してContractを検証）
+
+---
+
+## v0.17.0-dev — Starter Profile Contract
+
+### 目的
+
+Phase 11〜16で増えた共通Foundation機能を、新規Gameへ一律強制せず、用途別Starter Profileとして段階導入できるManifest Contractを作る。
+
+### 実装
+
+- Foundation Versionを `0.17.0-dev` へ更新
+- `foundation-template.json`
+  - `defaultProfile: "minimal"`
+  - `starterProfiles`
+  - `minimal`: 既存Starter互換 / selectable
+  - `standard`: Game-ready Shell候補 / Hub materialization前はnon-selectable
+- Foundation capabilityへ `starter_profile_contract` を追加
+- Starter Template Smokeへ次を追加
+  - defaultProfile存在確認
+  - Profile ID lowercase / duplicate guard
+  - label必須
+  - capabilities non-empty
+  - default Profile参照整合
+  - standard Profile contract存在確認
+- Starter Template / Roadmap / READMEをPhase 17開始状態へ更新
+
+### Compatibility
+
+- Manifest `schemaVersion` は1を維持
+- Current Game Dev Hubのvalidatorは未知Fieldを拒否せず、既存 `starterFiles` / `managedPaths` Contractをそのまま利用する
+- `minimal` はCurrent Starter生成と同じ意味を維持
+- `standard` はHub側materialization実装前に選択可能扱いにしない
+- Foundation UpdateのManaged Pathは引き続き `addons/game_foundation` のみ
+
+### Validation
+
+- Branch: `phase17-starter-profile-contract`
+- Foundation-side Starter Template Smokeを追加
+- PR #32 初回Godot CI: FAIL
+  - `Run build configuration smoke test` がFoundation `0.17.0-dev` とHarness `project.godot` の `0.16.0-dev` 不一致を検出
+  - Harness Versionを `0.17.0-dev` へ同期して修正
+- 修正後のGodot CI / Windows Buildを再実行して最終確認する
+

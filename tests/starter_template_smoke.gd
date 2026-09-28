@@ -22,6 +22,35 @@ func _run() -> void:
 	_expect_equal(String(manifest.get("godotBaseline", "")), Foundation.GODOT_BASELINE, "starter manifest Godot baseline must match Foundation baseline")
 	_expect_equal(String(manifest.get("sourceRepository", "")), "EliteMay/godot-game-foundation", "starter source repository must remain explicit")
 
+	var default_profile: String = String(manifest.get("defaultProfile", ""))
+	_expect_equal(default_profile, "minimal", "starter default profile must remain backward-compatible")
+
+	var profiles_variant: Variant = manifest.get("starterProfiles", [])
+	if not (profiles_variant is Array):
+		_fail("starterProfiles must be an Array")
+	else:
+		var profile_ids: Dictionary = {}
+		for profile_variant in profiles_variant as Array:
+			if not (profile_variant is Dictionary):
+				_fail("starterProfiles entry must be a Dictionary")
+				continue
+			var profile: Dictionary = profile_variant as Dictionary
+			var profile_id: String = String(profile.get("id", ""))
+			if profile_id.is_empty() or profile_id.to_lower() != profile_id:
+				_fail("starter profile id must be non-empty lowercase: " + profile_id)
+			if profile_ids.has(profile_id):
+				_fail("duplicate starter profile id: " + profile_id)
+			profile_ids[profile_id] = true
+			if String(profile.get("label", "")).is_empty():
+				_fail("starter profile label is required: " + profile_id)
+			var capabilities_variant: Variant = profile.get("capabilities", [])
+			if not (capabilities_variant is Array) or (capabilities_variant as Array).is_empty():
+				_fail("starter profile capabilities must be a non-empty Array: " + profile_id)
+		if not profile_ids.has(default_profile):
+			_fail("defaultProfile must reference an existing starter profile")
+		if not profile_ids.has("standard"):
+			_fail("standard starter profile contract is missing")
+
 	var files_variant: Variant = manifest.get("starterFiles", [])
 	if not (files_variant is Array):
 		_fail("starterFiles must be an Array")

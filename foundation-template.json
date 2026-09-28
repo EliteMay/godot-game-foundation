@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "foundationVersion": "0.16.0-dev",
+  "foundationVersion": "0.17.0-dev",
   "godotBaseline": "4.7.2",
   "sourceRepository": "EliteMay/godot-game-foundation",
   "sourceUrl": "https://github.com/EliteMay/godot-game-foundation.git",
@@ -59,5 +59,37 @@
     "{{GAME_NAME_GODOT}}",
     "{{GAME_SLUG}}",
     "{{FOUNDATION_VERSION}}"
+  ],
+  "defaultProfile": "minimal",
+  "starterProfiles": [
+    {
+      "id": "minimal",
+      "label": "最小構成",
+      "description": "FoundationRuntime、Settings、Diagnosticsを使う既存互換Starter。",
+      "selectable": true,
+      "capabilities": [
+        "integrated_foundation_runtime",
+        "settings_system",
+        "diagnostics"
+      ]
+    },
+    {
+      "id": "standard",
+      "label": "標準構成",
+      "description": "Application Shell、Loading、Save Slots、Localization、Recoveryを含む標準ゲーム外枠。Game Dev HubのProfile materialization対応後に選択可能。",
+      "selectable": false,
+      "capabilities": [
+        "integrated_foundation_runtime",
+        "application_shell",
+        "async_scene_loader",
+        "loading_screen_contract",
+        "save_slot_manager",
+        "translation_contract",
+        "focus_navigation_baseline",
+        "recovery_screen_contract",
+        "diagnostics_export_hook",
+        "crash_marker"
+      ]
+    }
   ]
 }
