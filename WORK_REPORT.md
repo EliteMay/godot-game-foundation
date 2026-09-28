@@ -907,3 +907,63 @@ Headless Integration SmokeはLifecycle / State / Bus Routing / Cleanupを検証�
 - PR #22 Godot CI: PASS（Audio Service Integration Smokeを含む）
 - PR #22 Windows Build: PASS
 - 実Audio device聴感: Game統合時のRuntime Validation対象
+
+
+---
+
+## v0.14.0-dev — Save Profiles / Slots
+
+### 目的
+
+既存Generic Save SystemのAtomic Save / Backup / Migration安全性を維持したまま、必要なGameだけ複数Slot / Continue / New Gameを利用できるOptional管理層を追加する。
+
+### 実装
+
+- `SaveSystem.save_game(..., extra_metadata)`
+  - 既存3引数API互換を維持
+  - Foundation reserved metadata keyの上書きを拒否
+  - Slot等のJSON互換追加MetadataをGame Payload外へ保存
+- `SaveSystem.inspect_game()`
+  - Runtime Load / MigrationなしでEnvelope / Payload / Metadataを検証
+  - Primary破損時のBackup inspectionを任意で利用可能
+- `SaveSlotManager`
+  - safe lowercase Slot ID
+  - Slot Metadata
+  - list / create / load / save / delete
+  - Continue Latest
+  - New Game Helper
+  - Generic Save Migration再利用
+  - Cloud Provider非依存descriptor
+- Delete safety
+  - PrimaryをActive namespace外へrename
+  - Backup / Temp cleanup
+  - delete後のstale save_slot()はPrimary不在として拒否
+- Corrupt Primary safety
+  - BackupからLoad可能でもsave_slot()はPrimary上書きを拒否
+- Foundation Version
+  - `0.14.0-dev`
+  - Starter manifestと同期
+
+### Compatibility
+
+- `SaveSystem.DEFAULT_SAVE_PATH = user://save.json` を維持
+- FoundationRuntimeの既存Single Save lifecycleは変更しない
+- Save Slotsは `user://save_slots` を既定とするOptional layer
+- Game Payload schemaへSlot Metadataを混在させない
+- Cloud SDK / Steam APIはFoundation Coreへ追加しない
+
+### Validation
+
+- Save Slot Manager Headless SmokeをCIへ追加
+- Existing Single Save API互換を検証
+- Slot ID path traversal拒否を検証
+- Slot Metadata / Game Payload分離を検証
+- Duplicate create拒否を検証
+- list / save / Continue Latestを検証
+- Corrupt Primary + Backup Recoveryを検証
+- Corrupt Primaryへのsave_slot上書き拒否を検証
+- Delete後のstale save_slot復活防止を検証
+- New Gameが既存Slotを破壊しないことを検証
+- Game Schema Migration再利用を検証
+- Cloud Extensionがexternal adapter境界のままであることを検証
+- PR CI / Windows Build: 実行して確認する
