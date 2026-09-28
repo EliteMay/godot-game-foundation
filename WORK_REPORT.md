@@ -1050,4 +1050,5 @@ Phase 15のTranslation Contractとして、Foundation Shellの表示文字列を
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #25 Godot CI: PASS（Translation Contract Smoke / Main Menu / Pause Menu regressionを含む）
+- PR #25 Windows Build: PASS
