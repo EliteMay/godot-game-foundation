@@ -48,6 +48,7 @@ class FakeFlowService:
 var _failed: bool = false
 var _new_game_calls: int = 0
 var _events: Array[Dictionary] = []
+var _reject_feedback: bool = false
 
 
 func _ready() -> void:
@@ -96,11 +97,13 @@ func _run() -> void:
 		"main menu snapshot should expose feedback hook wiring"
 	)
 
+	_reject_feedback = true
 	await _send_ui_action("ui_accept")
+	_reject_feedback = false
 	_expect_equal(
 		_new_game_calls,
 		1,
-		"ui_accept should still run the main menu action"
+		"ui_accept should still run the main menu action when feedback fails"
 	)
 	_expect_event(
 		"activate",
@@ -223,6 +226,11 @@ func _on_feedback(
 		"surface": String(context.get("surface", "")),
 		"action_id": String(context.get("action_id", "")),
 	})
+	if _reject_feedback:
+		return {
+			"ok": false,
+			"code": "feedback_test_rejected",
+		}
 	return {
 		"ok": true,
 		"code": "feedback_recorded",
