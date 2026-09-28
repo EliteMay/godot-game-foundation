@@ -710,7 +710,7 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 
 ## Phase 16 — Controlled Failure / Recovery UX
 
-状態: **実装中 / Runtime Failure State・Recovery Screen Contract・Diagnostics Export Hook完了**
+状態: **実装完了 / Crash Marker含むPhase 16全Task完了・CI検証待ち**
 
 目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
 
@@ -746,10 +746,20 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
   - Export JSON全体を128 KiB以内に制限し、必要時はRecent Entry/Error detailを落として再構築する
   - FoundationRuntime `diagnostics_export()` から共有用Payload / JSON / byte countを取得できる
   - Dedicated SmokeでSecret/absolute path/Game Data非流出、size bound、Runtime統合を検証する
-- [ ] Crash Marker
+- [x] Crash Marker
   - 担当: ChatGPT
-  - 前回Sessionが正常終了しなかった可能性を次回起動時に判定できるLightweight markerを検討する
-  - OS-level hard crashを完全捕捉できると誤認しない
+  - Optional `CrashMarker` が `user://` 配下へ軽量なrunning-session markerを保持する
+  - 次回起動時にMarker残存を `possible_unclean_exit=true` として公開し、Crash確定とは表現しない
+  - 壊れたMarkerも「前回Sessionが正常終了しなかった可能性」のEvidenceとして区別して返す
+  - Session ID ownershipを確認してからCleanupし、古いSessionが新しいSessionのMarkerを削除しない
+  - Safe Quit HookではSave Hookの後にMarker Cleanupを登録し、Save失敗でQuitがBlockされた場合はMarkerを残す
+  - Window close request / Runtime tree exitでもbest-effort cleanupを行う
+  - Marker cleanup失敗だけでGame終了を封鎖せず、次回False Positiveになり得る状態として扱う
+  - Crash Markerは既定OFFで、既存GameのFile write behaviorを勝手に変えない
+  - Diagnostics Exportでは前回Sessionの判定・Reason・Version等だけを共有し、Current Session ID / Marker Pathを共有しない
+  - OS kill / power loss / kernel crash / mobile suspend termination等を完全捕捉できる保証はしない
+  - Multi-instanceでは別Processのactive Markerをprevious uncleanと誤認する可能性があるため、結果は常にpossible evidenceとして扱う
+  - Dedicated Smokeでstale marker、corrupt marker、session ownership、Safe Quit ordering、Runtime統合を検証する
 
 完了条件:
 RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次Actionを確認できる。
