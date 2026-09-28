@@ -1198,4 +1198,5 @@ Phase 16 — Controlled Failure / Recovery UXの最初のTaskとして、Foundat
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #28 Godot CI: PASS（Runtime Failure State Smoke / Foundation Runtime regressionを含む）
+- PR #28 Windows Build: PASS
