@@ -291,3 +291,16 @@
 - Data Safety: Reset / Delete / New Game等のData変更ActionはGeneric Recovery Screenの既定Actionに含めない。必要なGameでは明示した別Flowで確認付き実装にする。
 - Presentation: ScreenはReason、Current protection state、Next Actionを示すが、Runtime / SaveのAuthorityを持たない。
 - Prevention: Recovery UXを「何かボタンを出す」だけで設計せず、ActionごとのAuthority / Reversibility / Data impactを先に固定する。
+
+
+## GF-029 — 内部Diagnostics Snapshotと共有Payloadを同一Contractにしない
+
+- Date: 2026-09-29
+- Type: Security / Observability / Architecture
+- Status: Adopted
+- Context: Runtime内部のDiagnostics SnapshotはDebug用途として十分でも、Game Dev HubやBug Reportへそのまま渡すとGame Payload、Settings、Absolute Path、任意Log Context等が将来追加された時に共有範囲が意図せず拡大する。
+- Decision: 内部Snapshotと外部共有Payloadを別Contractにし、共有側はWhitelistで再構築する。Runtime Statusも全体Copyせず必要Fieldだけ選ぶ。
+- Privacy: Virtual Pathだけ保持し、Absolute Path / Home Path / known sensitive key / known token patternをRedactionする。
+- Boundedness: External handoffはRecent Entry、Context depth、Collection size、String length、total JSON bytesを上限化する。
+- Boundary: Sanitizerを「SecretをLogへ入れてよい免罪符」にしない。SecretはDiagnosticsへ投入しないことが第一防御で、Export redactionは第二防御。
+- Prevention: Internal observability schemaをremote handoff schemaとして再利用せず、共有境界ではData minimizationとsize boundを独立して検証する。
