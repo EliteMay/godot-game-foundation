@@ -46,6 +46,40 @@ func _run() -> void:
 			var capabilities_variant: Variant = profile.get("capabilities", [])
 			if not (capabilities_variant is Array) or (capabilities_variant as Array).is_empty():
 				_fail("starter profile capabilities must be a non-empty Array: " + profile_id)
+
+			if profile.has("starterFiles"):
+				var profile_files_variant: Variant = profile.get("starterFiles", [])
+				if not (profile_files_variant is Array) or (profile_files_variant as Array).is_empty():
+					_fail("starter profile files must be a non-empty Array: " + profile_id)
+				else:
+					var profile_targets: Dictionary = {}
+					for file_variant in profile_files_variant as Array:
+						if not (file_variant is Dictionary):
+							_fail("starter profile file entry must be a Dictionary: " + profile_id)
+							continue
+						var file_entry: Dictionary = file_variant as Dictionary
+						var source: String = String(file_entry.get("source", ""))
+						var target: String = String(file_entry.get("target", ""))
+						if not _safe_relative_path(source) or not source.begins_with("starter/"):
+							_fail("unsafe starter profile source: " + source)
+						if not _safe_relative_path(target):
+							_fail("unsafe starter profile target: " + target)
+						if profile_targets.has(target):
+							_fail("duplicate starter profile target: " + target)
+						profile_targets[target] = true
+						if not FileAccess.file_exists("res://" + source):
+							_fail("starter profile source is missing: " + source)
+					for required_target in [
+						"project.godot",
+						"README.md",
+						"docs/ROADMAP.md",
+						"scenes/main.tscn",
+						"scripts/main.gd",
+						"tests/foundation_integration_smoke.gd",
+						"tests/foundation_integration_smoke.tscn",
+					]:
+						if not profile_targets.has(required_target):
+							_fail("starter profile target is missing: " + profile_id + " / " + required_target)
 		if not profile_ids.has(default_profile):
 			_fail("defaultProfile must reference an existing starter profile")
 		if not profile_ids.has("standard"):
