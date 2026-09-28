@@ -1008,3 +1008,46 @@ Phase 15の最初のTaskとして、Gameごとに重複していた「保存済�
 
 - PR #24 Godot CI: PASS（Locale Setting Adapter Smoke / 既存Regressionを含む）
 - PR #24 Windows Build: PASS
+
+
+---
+
+## v0.15.0-dev — Translation Contract
+
+### 目的
+
+Phase 15のTranslation Contractとして、Foundation Shellの表示文字列を英語固定やGameごとの生文字列配線へ依存させず、Game側Translation Resourceへ接続できる共通Text Contractを追加する。
+
+### 実装
+
+- `localization/translation_contract.gd`
+  - Main Menu / Pause Menuのsemantic action → default translation key / fallback / context
+  - Game側 `translation_entries` override
+  - String key shorthandとDictionary entryを両対応
+  - `TranslationServer.translate()` でCurrent Localeを解決
+  - Translation未登録時はfallback textへ安全に戻す
+  - unknown action / empty key / invalid fieldを構造化Errorで拒否
+- `MainMenuShell` / `PauseMenuShell`
+  - Translation Contractをconfigure時に適用
+  - Locale変更時の `NOTIFICATION_TRANSLATION_CHANGED` で自動refresh
+  - public `refresh_translations()` / `set_translation_entries()`
+  - 既存 `labels` は最終明示overrideとして維持
+- Dedicated Translation Contract Smoke
+  - Test Translation ResourceをRuntime登録
+  - Japanese / English locale切替
+  - Translation context
+  - fallback
+  - legacy label precedence
+  - locale change auto refresh
+- Foundation capabilityへ `translation_contract` を追加
+
+### Compatibility
+
+- 既存Main / Pause Menuの `labels` APIを維持
+- Translation Resource未導入Gameでもfallback textで従来同等の表示
+- FoundationはGameのTranslation Asset / Font / Locale menuを所有しない
+- Versionは同一Phaseの `0.15.0-dev` を維持
+
+### Validation
+
+- Pull Request Godot CI / Windows Buildで確認
