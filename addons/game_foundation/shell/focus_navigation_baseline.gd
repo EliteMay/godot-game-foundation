@@ -128,14 +128,8 @@ static func repair_focus(
 	if not bool(validated.get("ok", false)):
 		return validated
 
-	var control_list: Array[Control] = validated.get(
-		"controls",
-		[]
-	) as Array[Control]
-	var focusable: Array[Control] = validated.get(
-		"focusable",
-		[]
-	) as Array[Control]
+	var control_list: Array = validated.get("controls", [])
+	var focusable: Array = validated.get("focusable", [])
 	if focusable.is_empty():
 		return _error(
 			"no_focusable_control",
@@ -150,7 +144,8 @@ static func repair_focus(
 	if preferred_variant is Control:
 		preferred = preferred_variant as Control
 
-	var viewport: Viewport = focusable[0].get_viewport()
+	var first_focusable: Control = focusable[0] as Control
+	var viewport: Viewport = first_focusable.get_viewport()
 	var owner: Control = viewport.gui_get_focus_owner()
 	if is_instance_valid(owner):
 		for control in focusable:
@@ -205,14 +200,8 @@ static func snapshot(controls: Array) -> Dictionary:
 	if not bool(validated.get("ok", false)):
 		return validated
 
-	var control_list: Array[Control] = validated.get(
-		"controls",
-		[]
-	) as Array[Control]
-	var focusable: Array[Control] = validated.get(
-		"focusable",
-		[]
-	) as Array[Control]
+	var control_list: Array = validated.get("controls", [])
+	var focusable: Array = validated.get("focusable", [])
 	var input_result: Dictionary = validate_input_actions()
 
 	var focusable_paths: Array[String] = []
@@ -221,7 +210,8 @@ static func snapshot(controls: Array) -> Dictionary:
 
 	var focused_path: String = ""
 	if not control_list.is_empty():
-		var owner: Control = control_list[0].get_viewport().gui_get_focus_owner()
+		var first_control: Control = control_list[0] as Control
+		var owner: Control = first_control.get_viewport().gui_get_focus_owner()
 		if is_instance_valid(owner):
 			focused_path = String(owner.get_path())
 
