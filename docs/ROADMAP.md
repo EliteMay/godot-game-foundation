@@ -710,7 +710,7 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 
 ## Phase 16 — Controlled Failure / Recovery UX
 
-状態: **実装中 / Runtime Failure State完了**
+状態: **実装中 / Runtime Failure State・Recovery Screen Contract完了**
 
 目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
 
@@ -723,9 +723,17 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
   - SceneTree未参加など副作用前のFailureだけをretry_supportedとして明示し、途中初期化Failureを安全根拠なしにRetry可能扱いしない
   - Successful initialize後はFailure Stateをclearしてstate change Signalを発火する
   - Save load failureは既存どおりSave write blockingで保護し、Fatal Runtime Failure Stateへ勝手に昇格しない
-- [ ] Recovery Screen Contract
+- [x] Recovery Screen Contract
   - 担当: ChatGPT
   - Error summary / retry / safe quit / main menu return等をOptional Sceneから実行できる
+  - `RecoveryScreenContract` がRuntime Failure Stateから利用可能Actionだけを公開する
+  - Retryは `retry_supported=true` のFailureでのみ有効化し、UI側がError codeから勝手にRetry可否を推測しない
+  - Main MenuはGame FlowのMain Menu ContractまたはGame側Callableが存在する時だけ表示する
+  - Safe Quitは既存Runtime `request_quit()` またはGame側Callableへ委譲し、Screen自身がSave削除や強制Resetを行わない
+  - Optional `recovery_screen.tscn` はError summary / stage / code / Save保護 / Diagnostics availability / Actionを表示する
+  - Main/Pauseと同じTranslation Contract・semantic UI focus baselineを再利用する
+  - Retry成功でRuntime Failure Stateがclearされた場合はRecovery Screenを自動で閉じる
+  - Dedicated Smokeでunsafe retry rejection、Main Menu、Safe Quit、Save保護表示、translation override、successful retry closeを検証する
 - [ ] Diagnostics Export Hook
   - 担当: ChatGPT
   - Game Dev Hub共有へ接続しやすいSanitized snapshotを生成する
