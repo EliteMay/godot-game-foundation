@@ -10,6 +10,9 @@ const SaveSystem = preload("res://addons/game_foundation/save/save_system.gd")
 const AutoSaveService = preload("res://addons/game_foundation/save/auto_save_service.gd")
 const SettingsSystem = preload("res://addons/game_foundation/settings/settings_system.gd")
 const SettingsRuntime = preload("res://addons/game_foundation/settings/settings_runtime.gd")
+const AudioBusContract = preload(
+	"res://addons/game_foundation/audio/audio_bus_contract.gd"
+)
 const SettingsEditSession = preload(
 	"res://addons/game_foundation/settings/settings_edit_session.gd"
 )
@@ -32,6 +35,8 @@ const DEFAULT_SETTINGS_CONFIG: Dictionary = {
 		"master": "Master",
 		"bgm": "BGM",
 		"sfx": "SFX",
+		"ui": "SFX",
+		"voice": "SFX",
 	},
 	"apply_runtime": true,
 }
@@ -673,10 +678,22 @@ func _normalize_config(source: Dictionary) -> Dictionary:
 		"name": String(ProjectSettings.get_setting("application/config/name", "Game")),
 		"version": String(ProjectSettings.get_setting("application/config/version", "")),
 	}
+	var settings_section: Dictionary = _merge_section(
+		DEFAULT_SETTINGS_CONFIG,
+		source.get("settings", {})
+	)
+	var audio_bus_variant: Variant = settings_section.get("audio_bus_map", {})
+	if audio_bus_variant is Dictionary:
+		var bus_result: Dictionary = AudioBusContract.normalize(audio_bus_variant)
+		if bool(bus_result.get("ok", false)):
+			settings_section["audio_bus_map"] = (
+				bus_result.get("bus_map", {}) as Dictionary
+			).duplicate(true)
+
 	return {
 		"app": _merge_section(app_defaults, source.get("app", {})),
 		"save": _merge_section(DEFAULT_SAVE_CONFIG, source.get("save", {})),
-		"settings": _merge_section(DEFAULT_SETTINGS_CONFIG, source.get("settings", {})),
+		"settings": settings_section,
 		"input": _merge_section(DEFAULT_INPUT_CONFIG, source.get("input", {})),
 		"flow": _merge_section(DEFAULT_FLOW_CONFIG, source.get("flow", {})),
 		"diagnostics": _merge_section(DEFAULT_DIAGNOSTICS_CONFIG, source.get("diagnostics", {})),
@@ -709,8 +726,11 @@ func _validate_config(config: Dictionary, adapters: Dictionary) -> Dictionary:
 	var settings_config: Dictionary = config.get("settings", {})
 	if not (settings_config.get("gameplay_defaults", {}) is Dictionary):
 		return _error("invalid_gameplay_defaults", "settings.gameplay_defaults must be a Dictionary")
-	if not (settings_config.get("audio_bus_map", {}) is Dictionary):
-		return _error("invalid_audio_bus_map", "settings.audio_bus_map must be a Dictionary")
+	var audio_bus_result: Dictionary = AudioBusContract.normalize(
+		settings_config.get("audio_bus_map", {})
+	)
+	if not bool(audio_bus_result.get("ok", false)):
+		return audio_bus_result
 
 	var input_config: Dictionary = config.get("input", {})
 	if bool(input_config.get("enabled", true)):

@@ -3,6 +3,10 @@ extends Node
 signal one_shot_started(kind: String, token: int, result: Dictionary)
 signal one_shot_finished(kind: String, token: int, reason: String)
 
+const AudioBusContract = preload(
+	"res://addons/game_foundation/audio/audio_bus_contract.gd"
+)
+
 const DEFAULT_MAX_ACTIVE_PLAYERS: int = 64
 const MAX_ACTIVE_PLAYERS_LIMIT: int = 256
 const MIN_VOLUME_DB: float = -80.0
@@ -13,6 +17,8 @@ const MAX_PITCH_SCALE: float = 4.0
 var _configured: bool = false
 var _persist_across_scenes: bool = true
 var _max_active_players: int = DEFAULT_MAX_ACTIVE_PLAYERS
+var _audio_bus_map: Dictionary = {}
+var _using_audio_bus_contract: bool = false
 var _bus_names: Dictionary = {
 	"sfx": "Master",
 	"ui": "Master",
@@ -46,14 +52,42 @@ func configure(options: Dictionary = {}) -> Dictionary:
 			+ str(MAX_ACTIVE_PLAYERS_LIMIT)
 		)
 
-	var bus_names_result: Dictionary = _normalize_bus_names(
-		options.get("bus_names", {})
-	)
-	if not bool(bus_names_result.get("ok", false)):
-		return bus_names_result
+	if options.has("audio_bus_map") and options.has("bus_names"):
+		return _error(
+			"ambiguous_bus_configuration",
+			"use either audio_bus_map or legacy bus_names, not both"
+		)
+
+	var bus_names_result: Dictionary = {}
+	var normalized_bus_map: Dictionary = {}
+	var using_audio_bus_contract: bool = false
+	if options.has("audio_bus_map"):
+		var shared_result: Dictionary = AudioBusContract.one_shot_bus_map(
+			options.get("audio_bus_map", {})
+		)
+		if not bool(shared_result.get("ok", false)):
+			return shared_result
+		bus_names_result = {
+			"ok": true,
+			"bus_names": (
+				shared_result.get("bus_map", {}) as Dictionary
+			).duplicate(true),
+		}
+		normalized_bus_map = (
+			shared_result.get("full_bus_map", {}) as Dictionary
+		).duplicate(true)
+		using_audio_bus_contract = true
+	else:
+		bus_names_result = _normalize_bus_names(
+			options.get("bus_names", {})
+		)
+		if not bool(bus_names_result.get("ok", false)):
+			return bus_names_result
 
 	_persist_across_scenes = bool(options.get("persist_across_scenes", true))
 	_max_active_players = max_active_players
+	_audio_bus_map = normalized_bus_map
+	_using_audio_bus_contract = using_audio_bus_contract
 	_bus_names = (
 		bus_names_result.get("bus_names", {}) as Dictionary
 	).duplicate(true)
@@ -72,6 +106,8 @@ func configure(options: Dictionary = {}) -> Dictionary:
 			"persist_across_scenes": _persist_across_scenes,
 			"max_active_players": _max_active_players,
 			"bus_names": _bus_names.duplicate(true),
+			"audio_bus_map": _audio_bus_map.duplicate(true),
+			"using_audio_bus_contract": _using_audio_bus_contract,
 			"persistence": persistence_result,
 		}
 	)
@@ -271,6 +307,8 @@ func status_snapshot() -> Dictionary:
 		"active_player_count": _active.size(),
 		"active_by_kind": by_kind,
 		"bus_names": _bus_names.duplicate(true),
+		"audio_bus_map": _audio_bus_map.duplicate(true),
+		"using_audio_bus_contract": _using_audio_bus_contract,
 	}
 
 

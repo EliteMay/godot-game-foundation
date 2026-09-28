@@ -1,5 +1,9 @@
 extends RefCounted
 
+const AudioBusContract = preload(
+	"res://addons/game_foundation/audio/audio_bus_contract.gd"
+)
+
 
 static func apply_settings(
 	settings: Dictionary,
@@ -9,6 +13,13 @@ static func apply_settings(
 		"sfx": "SFX",
 	}
 ) -> Dictionary:
+	var bus_result: Dictionary = AudioBusContract.normalize(audio_bus_map)
+	if not bool(bus_result.get("ok", false)):
+		return bus_result
+	var normalized_bus_map: Dictionary = (
+		bus_result.get("bus_map", {}) as Dictionary
+	).duplicate(true)
+
 	if DisplayServer.get_name() == "headless":
 		return {
 			"ok": true,
@@ -16,13 +27,14 @@ static func apply_settings(
 			"audio": {
 				"applied": [],
 				"missing_buses": [],
+				"bus_map": normalized_bus_map,
 			},
 			"display": {
 				"applied": false,
 			},
 		}
 
-	var audio_result: Dictionary = apply_audio(settings, audio_bus_map)
+	var audio_result: Dictionary = apply_audio(settings, normalized_bus_map)
 	var display_result: Dictionary = apply_display(settings)
 	return {
 		"ok": bool(audio_result.get("ok", false)) and bool(display_result.get("ok", false)),
@@ -47,12 +59,19 @@ static func apply_audio(
 			"code": "audio_settings_missing",
 		}
 
+	var bus_result: Dictionary = AudioBusContract.settings_bus_map(audio_bus_map)
+	if not bool(bus_result.get("ok", false)):
+		return bus_result
+	var normalized_bus_map: Dictionary = (
+		bus_result.get("bus_map", {}) as Dictionary
+	).duplicate(true)
+
 	var audio: Dictionary = audio_variant as Dictionary
 	var applied: Array[String] = []
 	var missing_buses: Array[String] = []
 
 	for setting_key in ["master", "bgm", "sfx"]:
-		var bus_name: String = String(audio_bus_map.get(setting_key, ""))
+		var bus_name: String = String(normalized_bus_map.get(setting_key, ""))
 		if bus_name.is_empty():
 			continue
 
@@ -74,6 +93,7 @@ static func apply_audio(
 		"code": "audio_applied",
 		"applied": applied,
 		"missing_buses": missing_buses,
+		"bus_map": normalized_bus_map,
 	}
 
 

@@ -183,3 +183,13 @@
 - Reliability: 同時生成数はmax_active_playersで上限化し、token単位Stop / stop_allを提供する。
 - Boundary: 特殊なAttenuation、Area Mask、Emission Angle、Game固有Audio ComponentはFoundation Helperへ固定しない。Bus mappingの正式な正本は後続Bus Contractで既存Settingsと統合する。
 
+## GF-020 — Audio Bus名はSettingsとPlayback Serviceで同じContractを共有する
+
+- Date: 2026-09-28
+- Type: Audio / Settings / Architecture
+- Status: Adopted
+- Context: Settingsは `audio_bus_map`、Global Musicは `bus_name`、One-shotは `bus_names` を別々に持つと、Volume Sliderが操作するBusと実際のPlayback先がずれるSplit-brainが起きる。
+- Decision: `AudioBusContract` をLogical Bus名の共通境界にし、FoundationRuntimeの `settings.audio_bus_map` をNormalizeする。Global Musicは `bgm`、One-shotは `sfx / ui / voice` を同じMappingから解決する。
+- Compatibility: 既存の `master / bgm / sfx` だけのMappingでは `ui / voice` を `sfx` へFallbackする。旧 `bus_name / bus_names` APIは互換用に残すがShared Contractとの同時指定は拒否する。
+- Boundary: FoundationはAudioServer Busを作成・Renameしない。Game固有の追加Logical keyは保持し、ProjectのAudio Bus Layout自体はGame側が所有する。
+

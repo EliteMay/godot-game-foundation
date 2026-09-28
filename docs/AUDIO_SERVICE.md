@@ -53,15 +53,73 @@ Fade値は0〜30秒です。0なら即時切替 / Stopです。
 
 ### Bus
 
-Current Global Music実装は `bus_name` をGame側から受け取ります。Standaloneの安全なDefaultは `Master` です。
+推奨構成では、Settingsと同じGame-defined `audio_bus_map` を渡し、Global Musicはその `bgm` を利用します。
 
-Phase 13の後続Bus Contractで、既存Settingsの `audio_bus_map` と同じGame-defined Bus名を正式に共有します。現時点ではFoundationが `BGM` Busの存在を勝手に作成したり、ProjectのAudio Bus Layoutを書き換えたりしません。
+```gdscript
+music.configure({
+    "audio_bus_map": audio_bus_map,
+    "persist_across_scenes": true,
+})
+```
+
+旧 `bus_name` もStandalone / 既存Game互換用に残します。ただし `audio_bus_map` と `bus_name` を同時指定するとSource of Truthが二重になるため `ambiguous_bus_configuration` で拒否します。
 
 ### Asset Boundary
 
 FoundationはBGM Asset自体を持ちません。
 
 `AudioStream` はGame側から渡します。Loop設定、Import設定、Codec、Music内容等もGame Asset側の責務です。
+
+
+## Audio Bus Contract
+
+`addons/game_foundation/audio/audio_bus_contract.gd` は、Settings・Global Music・One-shot Audioが同じLogical Bus → Godot Bus名Mappingを使うための共通Contractです。
+
+```gdscript
+var audio_bus_map := {
+    "master": "Master",
+    "bgm": "Music",
+    "sfx": "Effects",
+    "ui": "Interface",
+    "voice": "Dialogue",
+}
+```
+
+### Logical keys
+
+Foundation共通の基準は次です。
+
+- `master` — Settings Master volume
+- `bgm` — Settings BGM volume / Global Music
+- `sfx` — Settings SFX volume / 2D・3D One-shot default
+- `ui` — UI one-shot
+- `voice` — Voice one-shot
+
+既存Gameとの互換性のため、`master / bgm / sfx` だけの旧Mappingも有効です。その場合 `ui / voice` は `sfx` と同じBusへ自動Fallbackします。
+
+Game固有の `ambience` 等の追加Logical keyも保持します。Foundationは未知keyを勝手に削除しません。
+
+### FoundationRuntimeとの共有
+
+`FoundationRuntime.settings.audio_bus_map` はconfigure時にこのContractでNormalizeされます。
+
+```gdscript
+runtime.configure({
+    "settings": {
+        "audio_bus_map": audio_bus_map,
+    },
+})
+```
+
+同じMappingをOptional Audio Serviceへ渡すことで、SettingsのVolume適用先と再生Serviceの出力先を一致させられます。
+
+### Validation / AudioServer boundary
+
+Bus名は空文字を拒否しますが、FoundationはProjectのAudio Bus Layoutを勝手に作成・Renameしません。
+
+`AudioBusContract.inspect_audio_server()` でCurrent Projectに存在するBus / Missing Busを確認できます。Settings Runtimeも実際の適用時にMissing BusをResultへ返します。
+
+このContractは「Logical keyとBus名の正本」を共通化するもので、AudioServer LayoutそのものをFoundationへ所有させる仕組みではありません。
 
 ## Current Phase 13 scope
 
@@ -80,10 +138,14 @@ FoundationはBGM Asset自体を持ちません。
   - active player limit
   - explicit stop / stop_all
   - finished / parent-exit tracking cleanup
+- Bus Contract
+  - Settings / Global Music / One-shot shared mapping
+  - ui / voice → sfx compatibility fallback
+  - legacy per-service mapping compatibility
+  - AudioServer bus inspection
 
 後続:
 
-- Bus Contract
 - Lifetime / Cleanupの最終Contract確認
 - Phase 13 full Audio Smoke / Runtime playback validation
 
@@ -150,11 +212,18 @@ one_shots.play_3d(
 
 特殊なAttenuation、Area Mask、Emission Angle等が必要なGameはGame側の専用Playerを使えます。FoundationのHelperは共通的なStream / Bus / Volume / Pitch / Position Lifecycleへ限定します。
 
-### Interim bus mapping
+### Bus mapping
 
-One-shot Serviceは現段階で `sfx / ui / voice` のBus名をGame側から受け取ります。2D / 3Dは既定で `sfx` Busを使います。
+推奨構成ではGlobal Music / Settingsと同じ `audio_bus_map` を渡します。One-shot Serviceは `sfx / ui / voice` を利用し、2D / 3Dは既定で `sfx` を利用します。
 
-これはPhase 13後続のBus Contract前の局所設定です。FoundationはBusを作成せず、存在しないBusを自動修正しません。後続TaskでSettingsの `audio_bus_map` とAudio Serviceを同じGame-defined Bus Contractへ接続します。
+```gdscript
+one_shots.configure({
+    "audio_bus_map": audio_bus_map,
+    "persist_across_scenes": true,
+})
+```
+
+旧 `bus_names` も互換用に残しますが、Shared Contractとの同時指定は拒否します。個別の `play_*()` 呼出しで `bus_name` を明示するOverrideは引き続き利用できます。
 
 ### Headless / Runtime validation
 

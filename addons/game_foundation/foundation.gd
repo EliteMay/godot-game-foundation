@@ -23,6 +23,7 @@ static func capabilities() -> PackedStringArray:
 		"autosave_api",
 		"settings_system",
 		"audio_settings",
+		"audio_bus_contract",
 		"global_music_service",
 		"one_shot_audio_service",
 		"display_settings",

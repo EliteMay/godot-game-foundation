@@ -99,7 +99,7 @@ Phase 0〜12は実装済みです。Phase 8 — Deep Factory PilotはGame Dev Hu
 
 v0.12.0-devではPhase 12の **Settings Edit Session**、**Generic Option Controls**、**Input Remap UI**、**Conflict Detection**、**Input Prompt Resolver** を実装しました。SettingsはPreview → Apply / Cancel / Resetを共通化し、Toggle / Slider / List / ResolutionをSession DraftへBindingできます。InputはKeyboard / Mouse / GamepadのRebind、Conflict Policy、Current deviceに応じたPrompt Text / semantic Icon key解決まで共通化しています。Theme / Label / Action表示名 / Option構成 / Conflict Policy / Localization / Icon Pack mappingはGame側へ残します。
 
-FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
+FoundationRuntimeは引き続き個別SystemをGameごとに手動配線する負担を減らすLifecycle Coordinatorです。Phase 13では `settings.audio_bus_map` がAudio Bus ContractとしてNormalizeされ、Settings・Global Music・One-shot Audioで同じGame-defined Bus名を共有できます。Game側はSave Adapter / Gameplay Settings Adapter / Input・Scene Contract / Runtime Test Provider等、ゲーム固有部分だけを渡し、Settings → Input → Flow → Save/Load → Safe Quit → Diagnostics → Runtime Test Bridgeの共通LifecycleをFoundation側で初期化できます。
 
 Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定へ依存させず、Game側が公開を許可したJSON互換Runtime StateだけをHub指定Local FileへTest Run中だけ出力します。
 
@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通PhaseはAudio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13ではGlobal Music ServiceとOne-shot Audio Serviceまで実装し、次TaskはBus Contractです。物理Controllerを使ったPhase 11〜12のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
+次の共通PhaseはAudio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13ではGlobal Music Service、One-shot Audio Service、Bus Contractまで実装し、次TaskはLifetime / Cleanupの最終Contract確認です。物理Controllerを使ったPhase 11〜12のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
