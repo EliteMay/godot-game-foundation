@@ -1249,4 +1249,6 @@ Phase 16のRuntime Failure Stateを、UserがReasonと安全なNext Actionを確
 
 ### Validation
 
-- Pull Request Godot CI / Windows Buildで確認
+- PR #29 Godot CI: PASS（Recovery Screen Contract Smoke / existing regressionsを含む）
+- PR #29 Windows Build: PASS
+- Recovery Screenの実Game Theme / narrow viewport / long localized text / physical controller focus visual: NOT_RUN（Headless環境では確認不能。実Game統合時のVisual / Runtime Validationへ残す）
