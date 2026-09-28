@@ -855,4 +855,12 @@ Phase 13のLifetime / Cleanupを最終化し、Scene-persistent Audio Serviceが
 - One-shot disposeでexternal Spatial PlayerがWorld Parentから消えることを検証
 - One-shot Service queue_free / predelete時にもexternal Spatial Playerを残さないことを検証
 - Existing Global Music / One-shot Smoke regressionを継続
+- 初回追加CIでは `_exit_tree()` CleanupがScene-persistent化のReparentでも発火し、既存One-shot Smokeを壊すRegressionを検出
+- Cleanup triggerを `NOTIFICATION_PREDELETE` へ変更し、ReparentはLifecycle終了として扱わないよう修正
+- PR #21 Godot CI: PASS（Audio Lifetime Cleanup / Global Music / One-shot regressionを含む）
+- PR #21 Windows Build: PASS
+- main merge commit: `56e2f99a01035677143640e442b15a45beaf5611`
+- main Godot CI: PASS
+- main Windows Build: PASS
+- 実Audio device上の停止感 / 残響 / Mixは次のAudio Smoke / Runtime Validation対象
 
