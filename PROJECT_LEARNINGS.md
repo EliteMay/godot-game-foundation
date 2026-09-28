@@ -304,3 +304,17 @@
 - Boundedness: External handoffはRecent Entry、Context depth、Collection size、String length、total JSON bytesを上限化する。
 - Boundary: Sanitizerを「SecretをLogへ入れてよい免罪符」にしない。SecretはDiagnosticsへ投入しないことが第一防御で、Export redactionは第二防御。
 - Prevention: Internal observability schemaをremote handoff schemaとして再利用せず、共有境界ではData minimizationとsize boundを独立して検証する。
+
+
+## GF-030 — Crash MarkerはCrash判定ではなくUnclean SessionのEvidenceとして扱う
+
+- Date: 2026-09-29
+- Type: Reliability / Recovery / Observability
+- Status: Adopted
+- Context: Session markerが残っている事実だけでは、hard crash、kill、power loss、cleanup失敗、multiple instance等を区別できない。
+- Decision: Marker残存は `possible_unclean_exit` として扱い、Crash確定・原因推定・Crash率計測へ直接変換しない。
+- Ordering: Clean marker削除はSave等のblocking Safe Quit Hookより後に置く。終了が実際にはBlockされたSessionをClean扱いしない。
+- Ownership: Marker cleanupはSession ID一致時だけ削除し、古いInstanceが新しいSessionのMarkerを消さない。
+- Compatibility: MarkerはOptional / default disabledとし、Foundation updateだけで既存Gameへ新規Disk writeを強制しない。
+- Failure semantics: Marker cleanup failureはGame終了を封鎖せず、次回false positiveになり得るDiagnostic conditionとして扱う。
+- Prevention: Lightweight markerをOS crash detectorと呼ばず、観測可能なEvidenceと推論を分離する。
