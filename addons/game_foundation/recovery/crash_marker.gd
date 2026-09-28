@@ -354,7 +354,22 @@ func _read_marker() -> Dictionary:
 	var text_value: String = file.get_as_text()
 	file.close()
 
-	var parsed: Variant = JSON.parse_string(text_value)
+	var parser := JSON.new()
+	var parse_error: Error = parser.parse(text_value)
+	if parse_error != OK:
+		return _error(
+			"crash_marker_invalid_json",
+			"crash marker is not valid JSON",
+			{
+				"error": int(parse_error),
+				"error_line": parser.get_error_line(),
+				"error_message": (
+					parser.get_error_message()
+				),
+			}
+		)
+
+	var parsed: Variant = parser.data
 	if not (parsed is Dictionary):
 		return _error(
 			"crash_marker_invalid_json",
