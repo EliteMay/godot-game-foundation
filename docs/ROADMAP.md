@@ -582,7 +582,7 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
 
 ## Phase 13 — Audio Service
 
-状態: **実装中 / Global Music・One-shot Audio・Bus Contract・Audio Resource Lifecycle完了**
+状態: **実装完了 / Headless Audio Integration Smoke済み / 実Audio device聴感確認はGame統合時**
 
 目的: Settingsの音量適用だけでなく、複数Gameで共通するAudio再生Lifecycleを提供する。
 
@@ -619,9 +619,11 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
   - One-shotはdispose_audio()でGlobal / Spatial Playerをまとめて停止・解放し、再configure可能にする
   - One-shot Service Node自体を破棄する時も外部Node2D / Node3D配下のSpatial PlayerをCleanupする
   - Finished / explicit Stop / Spatial Parent exit時の既存Cleanupも維持し、Scene切替でOrphanを残さない
-- [ ] Audio Smoke Test
+- [x] Audio Smoke Test
   - 担当: ChatGPT
-  - Headlessで可能なContractと、Runtimeで必要なPlayback確認を分ける
+  - Settingsの共通Audio Bus MappingからBGM / SFX / UI / Voice / 2D / 3Dを同じ構成で起動するIntegration Smokeを追加する
+  - Temporary AudioServer Busと生成AudioStreamを使い、Settings音量適用・Playback routing・Active tracking・Dispose cleanupをHeadlessで検証する
+  - Codec / Loop seam / 定位 / 距離減衰 / 実際の音量感・Mixは実Audio deviceが必要なRuntime Validationとして分離する
 
 完了条件:
 Game固有Audio AssetをFoundationへ入れず、BGM / SFX / UI / Voiceの共通再生処理を再利用できる。
