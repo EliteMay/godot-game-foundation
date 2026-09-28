@@ -683,5 +683,11 @@ Phase 13 — Audio Serviceを開始し、Scene切替ごとにBGM Player / Fade /
 - Fade out / Fade in / immediate Stopを検証
 - Invalid fade durationを検証
 - persist_across_scenes=falseでParent ownershipを維持することを検証
+- 初回PR CIはFoundation Version更新に対してfoundation-template.jsonが0.12.0-devのままでStarter Template Smokeが失敗したため、Manifestを0.13.0-devへ同期して修正
+- PR #18 Godot CI: PASS（Global Music Service Smoke / Starter Materializationを含む）
+- PR #18 Windows Build: PASS
+- main merge commit: `0bf6f5ef341d22b809c220d64a56a838a36774d5`
+- main Godot CI: PASS
+- main Windows Build: PASS
 - 実Audio device上の音質 / Loop seam / Crossfade聴感は実Game統合時のRuntime Validation対象
 
