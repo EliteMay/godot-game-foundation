@@ -1101,3 +1101,52 @@ Phase 15のFocus / Navigation Baselineとして、Main Menu / Pause MenuがMouse
   - 修正: Focus behaviorとDevice coverage auditを分離。Device不足はSnapshot / validation resultへ残し、Focus graphはsemantic action存在時に成立させる
 - PR #26 最終Godot CI: PASS（Focus Navigation Baseline Smoke / Main Menu / Pause Menu regressionを含む）
 - PR #26 最終Windows Build: PASS
+
+
+---
+
+## v0.15.0-dev — Motion / Feedback Hooks
+
+### 目的
+
+Phase 15最後のTaskとして、Reduced MotionとUI FeedbackをGame Theme / Assetへ依存せず共通Hookとして扱い、Main Menu / Pause MenuのFeedbackをGame側から安全に無効化・差し替えできるようにする。
+
+### 実装
+
+- `shell/ui_feedback_hooks.gd`
+  - `motion_scale` / `set_reduced_motion()`
+  - 複数Motion target登録 / 解除
+  - Motion targetへのScale配布
+  - 複数target適用中のFailure時rollback
+  - `feedback_enabled`
+  - Game側 `feedback_action(event_id, context)`
+  - semantic event: `focus / activate / open / close`
+  - handler未設定 / disabled時のnon-blocking skip
+  - handler result normalization / state snapshot
+- `MainMenuShell` / `PauseMenuShell`
+  - optional `feedback_hooks` をconfigure可能
+  - Button focus / activate、Menu open / closeをsemantic feedback eventへ変換
+  - Feedback failureはPrimary Menu Actionをblockしない
+  - Runtime SnapshotへFeedback wiring / state / last resultを追加
+- Existing Transition Layer integration
+  - 既存 `set_motion_scale()` をMotion target Contractとして再利用
+  - Reduced Motion preferenceの第二実装を追加しない
+- Dedicated Smoke
+  - Motion scale / Reduced Motion
+  - target rollback
+  - Feedback enable / disable
+  - actual Transition Layer integration
+  - Main/Pause focus / activate / open / close integration
+  - Feedback failure時もMenu action継続
+
+### Boundary
+
+- FoundationはAudioStream / UI sound asset / volume / haptic / Theme / visual effectを所有しない
+- Game側はfeedback_action内でOneShotAudioServiceや独自Haptics等へ接続できる
+- Motion preferenceの保存場所 / Settings UI名はGame側要件に残す
+- Headlessではevent / state / lifecycleを検証し、実音・Focus visual・Animation感覚は実Game Runtime Validation対象
+
+### Validation
+
+- PR #27 Godot CI: PASS（UI Feedback Hooks Smoke / Menu Feedback Integration Smoke / 既存Regressionを含む）
+- PR #27 Windows Build: PASS

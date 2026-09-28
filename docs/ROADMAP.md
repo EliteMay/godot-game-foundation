@@ -665,7 +665,7 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
 
 ## Phase 15 — Localization / Accessibility Shell
 
-状態: **実装中 / Locale Setting Adapter・Translation Contract・Focus Navigation Baseline完了**
+状態: **完了 / Headless Smoke Test済み**
 
 目的: Menu Shellで繰り返すLocale適用と基本操作Accessibilityを共通化する。
 
@@ -694,9 +694,16 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
   - Main Menu / Pause MenuのRuntime SnapshotからNavigation readinessを確認できる
   - Headless Smokeで `ui_up / ui_down / ui_accept` のsemantic操作をRegression確認する
   - 物理Controller実機の操作感はGame統合時Runtime Validationへ残す
-- [ ] Motion / Feedback Hooks
+- [x] Motion / Feedback Hooks
   - 担当: ChatGPT
-  - Reduced motion、UI sound等をGame要件に応じて無効化できるHookを用意する
+  - `UIFeedbackHooks` からReduced Motion preferenceを複数Motion targetへ配布できる
+  - 既存Transition Layerの `set_motion_scale()` Contractを再利用し、Motion設定の第二Source of Truthを作らない
+  - Motion target適用が途中失敗した場合は既に変更したtargetを直前Scaleへrollbackする
+  - Main Menu / Pause Menuから `focus / activate / open / close` をsemantic feedback eventとしてGame側Callableへ通知できる
+  - Feedback disabledまたはhandler未設定時は本来のMenu操作を止めず安全にskipする
+  - Feedback handler failureもPrimary Menu Actionをblockしない
+  - AudioStream / UI sound asset / haptic /音量 / visual effect自体はGame側が所有する
+  - Dedicated SmokeでReduced Motion→Transition Layer、Feedback enable/disable、Menu統合をHeadless検証する
 
 完了条件:
 Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定LanguageやInput Deviceを固定しない。

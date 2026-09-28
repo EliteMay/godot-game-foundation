@@ -71,5 +71,6 @@ static func capabilities() -> PackedStringArray:
 		"main_menu_shell",
 		"menu_focus_navigation",
 		"focus_navigation_baseline",
+		"ui_feedback_hooks",
 		"pause_menu_shell",
 	])
