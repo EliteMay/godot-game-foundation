@@ -68,3 +68,64 @@ Failure後に安全な再試行が成功した場合:
 - Crash Marker
 
 Recovery ScreenはError summaryと利用可能ActionをRuntime Stateから構築し、Data削除やResetを暗黙実行しません。
+
+
+## Recovery Screen Contract
+
+`RecoveryScreenContract` はRuntime Failure StateをUser-facing recovery actionへ変換する非Visual Contractです。
+
+Supported semantic actions:
+
+- `retry`
+- `main_menu`
+- `safe_quit`
+
+### Action availability
+
+`retry` はRuntime Failure Stateの `retry_supported=true` の場合だけ利用可能です。
+
+ScreenやGame側がError codeだけを見て独自にRetry可否を推測しません。
+
+`main_menu` は次のどちらかがある場合だけ利用可能です。
+
+- Game側 `main_menu_action`
+- RuntimeのGame Flow Serviceに有効なMain Menu IDと `go_to_main_menu()`
+
+`safe_quit` は次のどちらかを使います。
+
+- Game側 `safe_quit_action`
+- FoundationRuntime `request_quit(1)`
+
+Recovery ContractはSave file削除、Settings reset、Slot delete等の破壊的Actionを暗黙提供しません。
+
+### Optional Recovery Screen
+
+`recovery/recovery_screen.tscn` は共通Fallback UIです。
+
+表示対象:
+
+- User-facing failure message
+- stage / code
+- Save write protection state
+- Diagnostics availability
+- 現在利用可能なRecovery Action
+
+Main Menu / Pause Menuと同じ `TranslationContract` と `FocusNavigationBaseline` を利用します。
+
+Game側は `translation_entries` または `labels` で表示文言を差し替えられます。
+
+Retry成功後にRuntime Failure Stateがinactiveになった場合、Screenは自動で閉じて `recovery_succeeded` を通知します。
+
+### Safety boundary
+
+Recovery ScreenはActionの入口であり、Project DataのAuthorityではありません。
+
+- Save / Slot / Settingsの削除を行わない
+- unsupported Retryを表示しない
+- Main Menu未設定時に存在すると見せない
+- Safe Quit failureを成功扱いしない
+- Diagnostics exportは次Taskの専用Hookへ分離する
+
+Headless SmokeではAction availability、focus、translation override、Retry close、Save protection表示を確認します。
+
+実Game Themeでのcontrast、狭いViewport、長いLocalized message、物理Controller Focus視認性はRuntime / Visual Validation対象です。
