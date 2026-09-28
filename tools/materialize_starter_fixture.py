@@ -22,8 +22,11 @@ def godot_string(value: str) -> str:
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: materialize_starter_fixture.py <empty-output-directory>", file=sys.stderr)
+    if len(sys.argv) not in (2, 3):
+        print(
+            "usage: materialize_starter_fixture.py <empty-output-directory> [profile-id]",
+            file=sys.stderr,
+        )
         return 2
 
     source_root = Path(__file__).resolve().parents[1]
@@ -37,6 +40,18 @@ def main() -> int:
     )
 
     game_name = "Foundation Starter CI"
+    profile_id = sys.argv[2] if len(sys.argv) == 3 else manifest.get("defaultProfile", "minimal")
+    profiles = {
+        item["id"]: item
+        for item in manifest.get("starterProfiles", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    if profile_id not in profiles:
+        raise ValueError(f"unknown starter profile: {profile_id}")
+    profile = profiles[profile_id]
+    if not profile.get("selectable", False):
+        raise ValueError(f"starter profile is not selectable: {profile_id}")
+
     replacements = {
         "{{GAME_NAME}}": game_name,
         "{{GAME_NAME_GODOT}}": godot_string(game_name),
@@ -44,7 +59,8 @@ def main() -> int:
         "{{FOUNDATION_VERSION}}": manifest["foundationVersion"],
     }
 
-    for item in manifest["starterFiles"]:
+    starter_files = profile.get("starterFiles", manifest["starterFiles"])
+    for item in starter_files:
         source_relative = safe_relative(item["source"])
         target_relative = safe_relative(item["target"])
         source = source_root / source_relative
@@ -72,6 +88,7 @@ def main() -> int:
         "foundationVersion": manifest["foundationVersion"],
         "foundationCommit": "0" * 40,
         "managedPaths": manifest["managedPaths"],
+        "starterProfile": profile_id,
         "installedAt": "2026-01-01T00:00:00.000Z",
     }
     (output_root / ".game-foundation.json").write_text(
