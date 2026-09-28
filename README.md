@@ -95,7 +95,7 @@ godot-game-foundation/
 
 ## 現在の状態
 
-Phase 0〜12は実装済みです。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。Phase 11〜12はHeadless Smoke / Windows Buildまで完了し、Game Themeでの最終Visual / Focusと物理Controller操作感を実Game統合時のRuntime Validationへ残しています。現在はPhase 13 — Audio Serviceを実装中です。
+Phase 0〜13は実装済みです。Phase 8 — Deep Factory PilotはGame Dev Hub v0.1.24のWindows実機回帰6/6 Pass、Phase 10 — Integrated Foundation RuntimeはGame Dev Hub v0.1.25から新規生成したv0.10 StarterのWindows実機確認2/2 Passまで確認済みです。Phase 11〜12はHeadless Smoke / Windows Buildまで完了し、Game Themeでの最終Visual / Focusと物理Controller操作感を実Game統合時のRuntime Validationへ残しています。Phase 13 — Audio ServiceはGlobal Music / One-shot / Bus Contract / Resource Lifecycle / Integration Smokeまで実装し、実Audio deviceでの聴感・Codec・定位・Mix確認をGame統合時のRuntime Validationへ分離しています。
 
 v0.12.0-devではPhase 12の **Settings Edit Session**、**Generic Option Controls**、**Input Remap UI**、**Conflict Detection**、**Input Prompt Resolver** を実装しました。SettingsはPreview → Apply / Cancel / Resetを共通化し、Toggle / Slider / List / ResolutionをSession DraftへBindingできます。InputはKeyboard / Mouse / GamepadのRebind、Conflict Policy、Current deviceに応じたPrompt Text / semantic Icon key解決まで共通化しています。Theme / Label / Action表示名 / Option構成 / Conflict Policy / Localization / Icon Pack mappingはGame側へ残します。
 
@@ -119,4 +119,4 @@ Runtime Test Bridgeは引き続き固定テストをVision AIのScreenshot判定
 
 Researchの詳細と「採用する / Later / 採用しない」は `docs/REFERENCE_TEMPLATES.md` をSource of Truthとします。
 
-次の共通PhaseはAudio Service、Save Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13ではGlobal Music Service、One-shot Audio Service、Bus Contract、Audio Resource Lifecycleまで実装し、次TaskはAudio Smoke Testです。物理Controllerを使ったPhase 11〜12のWindows実機操作感は実Game統合時のRuntime Validationとして未確認です。
+次の共通PhaseはSave Slots、Localization、Controlled Recoveryの順で進めます。Phase 12 — Settings / Input UX ComponentsはInput Prompt Resolverまで実装済みです。Phase 13 — Audio ServiceはGlobal Music Service、One-shot Audio Service、Bus Contract、Audio Resource Lifecycle、Audio Integration Smokeまで完了しました。次はPhase 14 — Save Profiles / Slotsです。物理Controllerを使ったPhase 11〜12のWindows実機操作感と、Phase 13の実Audio device上の聴感・Codec・定位・Mixは実Game統合時のRuntime Validationとして未確認です。
