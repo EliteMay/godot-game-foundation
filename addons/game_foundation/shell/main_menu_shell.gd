@@ -3,6 +3,9 @@ extends Control
 const MenuFocusNavigation = preload(
 	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
 )
+const TranslationContract = preload(
+	"res://addons/game_foundation/localization/translation_contract.gd"
+)
 
 signal menu_activated
 signal menu_deactivated
@@ -35,6 +38,13 @@ var _continue_available: bool = false
 var _show_quit: bool = true
 var _active: bool = true
 var _manage_focus_navigation: bool = true
+var _translation_entries: Dictionary = {}
+var _label_overrides: Dictionary = {}
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		call_deferred("_refresh_translated_labels")
 
 
 func _ready() -> void:
@@ -130,6 +140,12 @@ func configure(options: Dictionary) -> Dictionary:
 	_show_quit = bool(show_quit_variant)
 	_manage_focus_navigation = bool(manage_focus_variant)
 
+	var translation_result: Dictionary = set_translation_entries(
+		options.get("translation_entries", {})
+	)
+	if not bool(translation_result.get("ok", false)):
+		return translation_result
+
 	if options.has("labels"):
 		var label_result: Dictionary = set_labels(options.get("labels"))
 		if not bool(label_result.get("ok", false)):
@@ -141,6 +157,24 @@ func configure(options: Dictionary) -> Dictionary:
 		call_deferred("_focus_initial_control")
 
 	return _success("main_menu_configured", {"state": state_snapshot()})
+
+
+func set_translation_entries(entries_variant: Variant) -> Dictionary:
+	var normalized: Dictionary = TranslationContract.normalize_entries(
+		TranslationContract.SHELL_MAIN_MENU,
+		entries_variant
+	)
+	if not bool(normalized.get("ok", false)):
+		return normalized
+
+	_translation_entries = (
+		normalized.get("entries", {}) as Dictionary
+	).duplicate(true)
+	return _refresh_translated_labels()
+
+
+func refresh_translations() -> Dictionary:
+	return _refresh_translated_labels()
 
 
 func set_labels(labels_variant: Variant) -> Dictionary:
@@ -167,10 +201,41 @@ func set_labels(labels_variant: Variant) -> Dictionary:
 
 	for raw_key in labels.keys():
 		var action_id: String = String(raw_key)
-		var button: Button = _buttons[action_id] as Button
-		button.text = String(labels[raw_key])
+		_label_overrides[action_id] = String(labels[raw_key])
 
-	return _success("labels_changed")
+	return _refresh_translated_labels()
+
+
+func _refresh_translated_labels() -> Dictionary:
+	if _buttons.is_empty():
+		_resolve_buttons()
+
+	var resolved: Dictionary = TranslationContract.resolve_labels(
+		TranslationContract.SHELL_MAIN_MENU,
+		_translation_entries
+	)
+	if not bool(resolved.get("ok", false)):
+		return resolved
+
+	var labels: Dictionary = resolved.get("labels", {}) as Dictionary
+	for action_id in labels.keys():
+		if not _buttons.has(action_id):
+			continue
+		var button: Button = _buttons[action_id] as Button
+		if _label_overrides.has(action_id):
+			button.text = String(_label_overrides[action_id])
+		else:
+			button.text = String(labels[action_id])
+
+	return _success(
+		"translations_refreshed",
+		{
+			"locale": String(resolved.get("locale", "")),
+			"sources": (
+				resolved.get("sources", {}) as Dictionary
+			).duplicate(true),
+		}
+	)
 
 
 func set_continue_available(value: Variant) -> Dictionary:

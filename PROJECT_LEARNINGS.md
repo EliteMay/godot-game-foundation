@@ -228,3 +228,16 @@
 - Default: `automatic` はOSの優先言語を使う。明示LocaleはPlayer preferenceとして優先する。
 - Boundary: Translation files、Font fallback、supported language menu、Text contentはGame側。FoundationはLocale適用Lifecycleだけを共通化する。
 - Prevention: Localization機能で「Assetが今あること」と「Userが選んだLocale」を同じSource of Truthへ統合しない。
+
+
+## GF-024 — Shellの表示文字列はsemantic actionとTranslation keyを分離する
+
+- Date: 2026-09-28
+- Type: Localization / UX / Architecture
+- Status: Adopted
+- Context: Main Menuの`new_game`等のsemantic actionと画面表示文字列を同じ値として扱うと、Game側のTranslation key命名やcontext、Fallback方針をFoundationが固定してしまう。一方でRaw labelだけを渡す方式ではLocale変更時の自動更新がGame側へ重複する。
+- Decision: Foundationはsemantic actionごとにDefault translation key / fallback / contextを持ち、Game側は`translation_entries`で差し替える。Runtime表示はTranslationServerから解決し、未翻訳時のみfallbackを使う。
+- Compatibility: 旧`labels`は明示的な最終overrideとして維持し、Locale変更で勝手に上書きしない。
+- Runtime: Shellは`NOTIFICATION_TRANSLATION_CHANGED`を受けてText Contractを再解決する。
+- Boundary: Translation file、翻訳本文、Font、対応言語選択UIはGame側。
+- Prevention: UI action ID、Translation key、表示済みTextを同じSource of Truthとして混ぜない。

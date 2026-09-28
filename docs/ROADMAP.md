@@ -665,7 +665,7 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
 
 ## Phase 15 — Localization / Accessibility Shell
 
-状態: **実装中 / Locale Setting Adapter完了**
+状態: **実装中 / Locale Setting Adapter・Translation Contract完了**
 
 目的: Menu Shellで繰り返すLocale適用と基本操作Accessibilityを共通化する。
 
@@ -676,9 +676,14 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
   - HeadlessでもLocale適用を行い、Display/AudioのRuntime skipとは分離してRegression Test可能にする
   - 翻訳Resourceの有無は適用拒否条件にせず、loaded translation availabilityを結果として公開する
   - Translation Asset / Font / Locale listの最終所有はGame側へ残す
-- [ ] Translation Contract
+- [x] Translation Contract
   - 担当: ChatGPT
-  - Foundation ShellのText keyをGame側Translationへ差し替え可能にする
+  - Main Menu / Pause Menuのsemantic actionごとにFoundation既定Text key / fallback / optional contextを持つ
+  - Game側は `translation_entries` でText key・fallback・contextを差し替えられる
+  - `TranslationServer.translate()` で現在LocaleのTranslationを解決し、未登録Keyでは安定したfallback textを表示する
+  - 既存 `labels` APIは互換用の最終明示上書きとして維持する
+  - Locale変更時の `NOTIFICATION_TRANSLATION_CHANGED` でShell表示を自動再解決する
+  - Translation Resource / Font / Content / supported language menuはGame側が所有する
 - [ ] Focus / Navigation Baseline
   - 担当: ChatGPT
   - Keyboard / Gamepadで主要Menuを操作できることを共通Contractにする
