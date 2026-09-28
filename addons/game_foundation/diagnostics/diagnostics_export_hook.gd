@@ -83,22 +83,33 @@ static func build_export(
 	var handoff: Dictionary = (
 		payload.get("handoff", {}) as Dictionary
 	)
-	handoff["payload_bytes"] = payload_bytes
 	handoff["trimmed_for_size"] = trimmed_for_size
 	payload["handoff"] = handoff
 
+	for _index in range(4):
+		json_text = JSON.stringify(payload)
+		payload_bytes = json_text.to_utf8_buffer().size()
+		handoff["payload_bytes"] = payload_bytes
+		payload["handoff"] = handoff
+
 	json_text = JSON.stringify(payload)
 	payload_bytes = json_text.to_utf8_buffer().size()
-	handoff["payload_bytes"] = payload_bytes
-	payload["handoff"] = handoff
-	json_text = JSON.stringify(payload)
+	if payload_bytes > MAX_PAYLOAD_BYTES:
+		return _error(
+			"diagnostics_export_too_large",
+			"sanitized diagnostics export exceeds the size limit",
+			{
+				"payload_bytes": payload_bytes,
+				"max_payload_bytes": MAX_PAYLOAD_BYTES,
+			}
+		)
 
 	return _success(
 		"diagnostics_export_built",
 		{
 			"payload": payload,
 			"json": json_text,
-			"payload_bytes": json_text.to_utf8_buffer().size(),
+			"payload_bytes": payload_bytes,
 		}
 	)
 
@@ -520,7 +531,40 @@ static func _looks_sensitive_text(
 		or normalized.begins_with("sk-")
 		or normalized.begins_with("ghp_")
 		or normalized.begins_with("github_pat_")
+		or _contains_absolute_path(normalized)
 	)
+
+
+static func _contains_absolute_path(
+	value: String
+) -> bool:
+	if (
+		value.begins_with("user://")
+		or value.begins_with("res://")
+	):
+		return false
+	if (
+		value.begins_with("/")
+		or value.contains(" /home/")
+		or value.contains(" /Users/")
+		or value.begins_with("\\\\")
+	):
+		return true
+
+	for index in range(maxi(0, value.length() - 2)):
+		var first: String = value.substr(index, 1)
+		var second: String = value.substr(index + 1, 1)
+		var third: String = value.substr(index + 2, 1)
+		var is_letter: bool = (
+			first.to_lower() != first.to_upper()
+		)
+		if (
+			is_letter
+			and second == ":"
+			and third in ["/", "\\"]
+		):
+			return true
+	return false
 
 
 static func _home_paths() -> Array[String]:
