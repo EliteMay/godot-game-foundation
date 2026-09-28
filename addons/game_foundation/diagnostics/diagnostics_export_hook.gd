@@ -239,6 +239,9 @@ static func _sanitize_runtime_status(
 	var failure: Dictionary = (
 		status.get("runtime_failure", {}) as Dictionary
 	)
+	var crash_marker: Dictionary = (
+		status.get("crash_marker", {}) as Dictionary
+	)
 	return {
 		"configured": bool(
 			status.get("configured", false)
@@ -258,6 +261,18 @@ static func _sanitize_runtime_status(
 		"save_writes_blocked": bool(
 			status.get("save_writes_blocked", false)
 		),
+		"crash_marker_enabled": bool(
+			status.get("crash_marker_enabled", false)
+		),
+		"crash_marker_active": bool(
+			crash_marker.get("active", false)
+		),
+		"previous_session": _sanitize_previous_session(
+			crash_marker.get(
+				"previous_session",
+				{}
+			)
+		),
 		"has_runtime_failure": bool(
 			status.get("has_runtime_failure", false)
 		),
@@ -265,6 +280,60 @@ static func _sanitize_runtime_status(
 			failure
 		),
 	}
+
+
+static func _sanitize_previous_session(
+	value: Variant
+) -> Dictionary:
+	if not (value is Dictionary):
+		return {
+			"marker_found": false,
+			"possible_unclean_exit": false,
+			"reason": "unavailable",
+		}
+
+	var source: Dictionary = value as Dictionary
+	var result: Dictionary = {
+		"marker_found": bool(
+			source.get("marker_found", false)
+		),
+		"possible_unclean_exit": bool(
+			source.get(
+				"possible_unclean_exit",
+				false
+			)
+		),
+		"reason": _sanitize_text(
+			String(source.get("reason", ""))
+		),
+	}
+	if source.has("marker_valid"):
+		result["marker_valid"] = bool(
+			source.get("marker_valid", false)
+		)
+	if source.has("previous_started_at_unix"):
+		result["previous_started_at_unix"] = int(
+			source.get(
+				"previous_started_at_unix",
+				0
+			)
+		)
+	if source.has("app_version"):
+		result["app_version"] = _sanitize_text(
+			String(source.get("app_version", ""))
+		)
+	if source.has("foundation_version"):
+		result["foundation_version"] = (
+			_sanitize_text(
+				String(
+					source.get(
+						"foundation_version",
+						""
+					)
+				)
+			)
+		)
+	return result
 
 
 static func _sanitize_failure(
