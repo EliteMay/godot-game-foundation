@@ -904,5 +904,6 @@ Headless Integration SmokeはLifecycle / State / Bus Routing / Cleanupを検証�
 
 ### Validation
 
-- Pull Request CI / Windows Build: 実行して確認する
+- PR #22 Godot CI: PASS（Audio Service Integration Smokeを含む）
+- PR #22 Windows Build: PASS
 - 実Audio device聴感: Game統合時のRuntime Validation対象
