@@ -37,7 +37,7 @@ Phase 17では、Starterを1種類へ固定せず、用途に応じたProfileを
 現在のProfile:
 
 - `minimal` — 既存Starter互換。FoundationRuntime / Settings / Diagnosticsを使う最小構成。既定Profileかつ選択可能。
-- `standard` — Application Shell / Loading / Save Slots / Localization / Recovery等を組み合わせる標準構成。Contractは宣言済みだが、Game Dev Hub側のProfile materialization対応までは `selectable: false` とする。
+- `standard` — Application Shell / Loading / Localization / Recoveryを初期配線した標準構成。Manifest上で選択可能。Game Dev Hub側がProfile選択を実装すると、そのまま生成できる。Save Slot等の共通機能もFoundationから利用できる。
 
 互換性のためManifestの `schemaVersion` は1を維持する。既存Game Dev Hubは未知Fieldを無視して従来どおりStarterを生成できる。
 
@@ -61,6 +61,7 @@ Starter生成後の `project.godot`、README、Roadmap、scenes、scripts、test
   "foundationVersion": "0.8.0-dev",
   "foundationCommit": "<full commit sha>",
   "managedPaths": ["addons/game_foundation"],
+  "starterProfile": "minimal",
   "installedAt": "<ISO-8601>"
 }
 ```
@@ -72,12 +73,13 @@ Starter生成後の `project.godot`、README、Roadmap、scenes、scripts、test
 3. Repositoryが空であることを確認
 4. HubがFoundation Repositoryの最新版を取得
 5. ManifestをValidation
-6. Starter FileをToken展開してCopy
-7. Managed PathをCopy
-8. `.game-foundation.json` を作成
-9. Generated ProjectをGit Commit
-10. GitHubへPush
-11. HubへGameを登録
+6. User選択または`defaultProfile`からStarter Profileを解決
+7. Profile固有`starterFiles`があればそのFile Setを、無ければ既存`starterFiles`をToken展開してCopy
+8. Managed PathをCopy
+9. `.game-foundation.json` に選択Profileを含めて作成
+10. Generated ProjectをGit Commit
+11. GitHubへPush
+12. HubへGameを登録
 
 対象Repositoryに既存Fileがある場合は上書き生成しない。
 
@@ -106,7 +108,7 @@ Phase 8ではDeep FactoryをPilotとして導入し、既存GameplayとSave comp
 
 ## Generated Starter CI
 
-Manifest単体のValidationだけでなく、CIでは `tools/materialize_starter_fixture.py` で実際のStarter Projectを一時Directoryへ生成する。
+Manifest単体のValidationだけでなく、CIでは `tools/materialize_starter_fixture.py` で `minimal` / `standard` の両Starter Projectを一時Directoryへ生成する。
 
 その生成物に対して:
 
