@@ -144,11 +144,16 @@ Bus名は空文字を拒否しますが、FoundationはProjectのAudio Bus Layou
   - legacy per-service mapping compatibility
   - AudioServer bus inspection
 
-後続:
+Audio Service Integration Smoke:
 
-- Phase 13 full Audio Smoke / Runtime playback validation
+- Settingsの共通Audio Bus MappingからGlobal Music / SFX / UI / Voice / 2D / 3Dを同時に構成
+- Test専用のTemporary AudioServer BusへMaster / BGM / SFX音量を適用
+- 各Playback helperが同じContractの正しいBusへRoutingされることを確認
+- Global MusicとGlobal / Spatial One-shotのActive stateを確認
+- dispose_audio()後にPlayback / Tracking / Spatial Playerが残らないことを確認
+- Test終了時にTemporary Busを削除し、Project側Audio Bus Layoutを変更しない
 
-Headless CIではLifecycle / State / Transition contractを検証します。実際のAudio出力品質、Codec、Loop seam、音量感は実Game / 実Audio deviceで確認します。
+Headless CIで保証するのはLifecycle / State / Routing / Cleanup Contractです。実際のAudio出力品質、Codec、Loop seam、2D / 3D定位、距離減衰、残響、音量感・Mixは実Game / 実Audio deviceで確認します。
 
 ## One-shot Audio Service
 
