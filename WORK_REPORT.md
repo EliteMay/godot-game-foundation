@@ -864,3 +864,45 @@ Phase 13のLifetime / Cleanupを最終化し、Scene-persistent Audio Serviceが
 - main Windows Build: PASS
 - 実Audio device上の停止感 / 残響 / Mixは次のAudio Smoke / Runtime Validation対象
 
+
+
+---
+
+## v0.13.0-dev — Audio Service Integration Smoke
+
+### 目的
+
+Phase 13最後のAudio Smokeとして、個別Service Testだけでなく、SettingsのAudio Bus ContractからGlobal Music / One-shot / Spatial Audioまでを1つの構成で通すHeadless Integration Testを追加する。
+
+### 実装
+
+- `tests/audio_service_integration_smoke.gd/.tscn`
+  - Test専用Temporary AudioServer Busを作成
+  - Shared `audio_bus_map` をSettings / Global Music / One-shotへ共通適用
+  - Master / BGM / SFX volume applyを確認
+  - BGM / SFX / UI / Voice / 2D / 3D routingを確認
+  - Music playbackとOne-shot active trackingを確認
+  - `dispose_audio()` 後のPlayback / Tracking / external Spatial Player cleanupを確認
+  - 終了時にTemporary Busを削除
+- Godot CIへIntegrated Audio Service Smokeを追加
+- Roadmap / README / Audio Service DocsをPhase 13完了状態へ更新
+
+### Validation Boundary
+
+Headless Integration SmokeはLifecycle / State / Bus Routing / Cleanupを検証する。
+
+次はHeadless成功だけでは確認済み扱いにしない。
+
+- 実Audio出力
+- Codec / Import設定
+- Loop seam
+- 2D / 3D定位・距離減衰
+- 残響
+- 実際の音量感・Mix
+
+これらはGame固有Audio Assetと実Audio deviceを使うRuntime Validationへ残す。
+
+### Validation
+
+- Pull Request CI / Windows Build: 実行して確認する
+- 実Audio device聴感: Game統合時のRuntime Validation対象
