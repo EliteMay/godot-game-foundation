@@ -255,7 +255,7 @@ Phase 13のPlayback Serviceは、再生開始だけでなく**明示的な終了
 
 Dispose時にLifecycle Generationを進めるため、Dispose前に作られた古いTween callbackが後から実行されても、再configure後の新しいTrack Stateを書き換えません。
 
-Service自身がSceneTreeから外れる場合も同じCleanupをSignalなしで行います。
+Service Node自体が破棄される場合も `NOTIFICATION_PREDELETE` で同じCleanupをSignalなしで行います。Scene-persistent化のためのReparentではCleanupしません。
 
 ### One-shot Audio
 
@@ -264,7 +264,7 @@ Service自身がSceneTreeから外れる場合も同じCleanupをSignalなしで
 - active trackingを即時0へ戻す
 - Serviceを未configured状態へ戻す
 - 同じService Instanceを再configureして再利用できる
-- Service自身がSceneTreeから外れた時も、外部Node2D / Node3D配下へ生成したSpatial PlayerをCleanupする
+- Service Node自体が破棄される時も、外部Node2D / Node3D配下へ生成したSpatial PlayerをCleanupする
 
 これにより、Scene-persistent Serviceだけを破棄した時にSpatial PlayerがWorld側へ孤立して残る状態を防ぎます。
 

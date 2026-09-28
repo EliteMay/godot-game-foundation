@@ -824,13 +824,13 @@ Phase 13のLifetime / Cleanupを最終化し、Scene-persistent Audio Serviceが
   - Dispose後は未configured状態
   - 再configure後のService reuse
   - Lifecycle Generationによるstale Transition callback無効化
-  - Service tree exit時も同じResource cleanup
+  - Service Node predelete時も同じResource cleanup（Reparentは除外）
 - `OneShotAudioService.dispose_audio()`
   - Global SFX / UI / Voiceをまとめて停止・解放
   - 外部Node2D / Node3D配下のSpatial Playerもまとめて停止・解放
   - active tracking即時clear
   - Dispose後の再configure / reuse
-  - Service tree exit時にexternal Spatial Playerをcleanup
+  - Service Node predelete時にexternal Spatial Playerをcleanup（Reparentは除外）
 - Existing Cleanup
   - finished callback
   - token stop
@@ -853,6 +853,6 @@ Phase 13のLifetime / Cleanupを最終化し、Scene-persistent Audio Serviceが
 - stale transition callbackがreused stateを上書きしないことを検証
 - One-shot disposeでGlobal + Spatial active trackingを0へ戻すことを検証
 - One-shot disposeでexternal Spatial PlayerがWorld Parentから消えることを検証
-- One-shot Service queue_free時にもexternal Spatial Playerを残さないことを検証
+- One-shot Service queue_free / predelete時にもexternal Spatial Playerを残さないことを検証
 - Existing Global Music / One-shot Smoke regressionを継続
 

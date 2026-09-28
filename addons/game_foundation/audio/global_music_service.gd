@@ -135,8 +135,9 @@ func dispose_audio() -> Dictionary:
 	return _dispose_audio_internal(true)
 
 
-func _exit_tree() -> void:
-	_dispose_audio_internal(false)
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		_dispose_audio_internal(false)
 
 
 func _dispose_audio_internal(emit_disposed_signal: bool) -> Dictionary:

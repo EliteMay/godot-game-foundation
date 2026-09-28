@@ -199,7 +199,7 @@
 - Type: Audio / Lifecycle / Reliability
 - Status: Adopted
 - Context: Scene-persistent Audio ServiceはCurrent Sceneより長生きするため、通常のPlayer finishedだけではService破棄・再利用・Transition途中の終了を十分に扱えない。特にSpatial One-shotはService外のWorld Parent配下にいるため、Serviceだけ消えるとPlayerが孤立し得る。
-- Decision: Global Music / One-shotの両方に明示 `dispose_audio()` を持たせ、Service tree exitでもCleanupする。Global MusicはTween停止・Stream参照解除・State resetを行い、Lifecycle Generationで古いTransition callbackを無効化する。One-shotはService-owned / external spatial playerの両方を追跡Tokenから解放する。
+- Decision: Global Music / One-shotの両方に明示 `dispose_audio()` を持たせ、Service Node破棄時は `NOTIFICATION_PREDELETE` でもCleanupする。ReparentはLifecycle終了ではないためcleanup triggerにしない。Global MusicはTween停止・Stream参照解除・State resetを行い、Lifecycle Generationで古いTransition callbackを無効化する。One-shotはService-owned / external spatial playerの両方を追跡Tokenから解放する。
 - Reuse: DisposeはService Node自体を破棄せず未configured状態へ戻し、再configure後の再利用を許可する。
 - Prevention: Persistent Serviceへ外部Node所有Resourceを持たせる場合、通常完了だけでなくService shutdown pathでもResourceを回収できることをTestする。
 
