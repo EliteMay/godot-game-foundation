@@ -1252,3 +1252,60 @@ Phase 16のRuntime Failure Stateを、UserがReasonと安全なNext Actionを確
 - PR #29 Godot CI: PASS（Recovery Screen Contract Smoke / existing regressionsを含む）
 - PR #29 Windows Build: PASS
 - Recovery Screenの実Game Theme / narrow viewport / long localized text / physical controller focus visual: NOT_RUN（Headless環境では確認不能。実Game統合時のVisual / Runtime Validationへ残す）
+
+
+---
+
+## v0.16.0-dev — Diagnostics Export Hook
+
+### 目的
+
+Phase 16のRecovery / Diagnostics情報をGame Dev Hub共有へ接続しやすくしつつ、内部Diagnostics SnapshotやRuntime Statusに含まれ得るGame Data・Absolute Path・Secretをそのまま外部共有しない専用境界を作る。
+
+### 実装
+
+- `diagnostics/diagnostics_export_hook.gd`
+  - shared schemaVersion
+  - App / Foundation / Godot / OS / Display情報
+  - safe Runtime status whitelist
+  - Runtime Failure State whitelist
+  - `user://` / `res://` Virtual Pathだけ保持
+  - Absolute Path redaction
+  - known sensitive key redaction
+  - known bearer / API key / GitHub token pattern redaction
+  - Home Path redaction
+  - bounded string / array / dictionary / depth
+  - bounded recent entries / recent errors
+  - 128 KiB total JSON limit
+  - size超過時Recent detailを削減して再構築
+- `FoundationRuntime.diagnostics_export(options)`
+  - sanitized Dictionary
+  - JSON text
+  - payload byte count
+  - reason metadata
+- Domain-data boundary
+  - `last_load`
+  - Save Payload
+  - Settings
+  - Input Binding
+  - Game固有State
+  をexport whitelistへ含めない
+- Dedicated Smoke
+  - token / password / API key redaction
+  - absolute path redaction
+  - Virtual Path preservation
+  - Domain Data non-leak
+  - String truncation
+  - byte bound
+  - FoundationRuntime integration
+
+### Boundary
+
+- Foundationはsanitized payload生成まで
+- Network送信 / Upload / Clipboard /共有パック保存はGame Dev Hub等のConsumer側
+- Unknown secret patternを完全検出できる保証はないため、Game側はSecretをDiagnostics Contextへ記録しない
+- Crash Markerは次Task
+
+### Validation
+
+- Pull Request Godot CI / Windows Buildで確認
