@@ -639,3 +639,49 @@ Phase 12の最後として、HUD / Tutorial / OptionsがCurrent deviceとCurrent
 - main Windows Build: PASS
 - Game Theme / real icon asset / physical controller glyph feelは実Game統合時のRuntime Validation対象
 
+---
+
+## v0.13.0-dev — Global Music Service
+
+### 目的
+
+Phase 13 — Audio Serviceを開始し、Scene切替ごとにBGM Player / Fade / Crossfade処理を作り直さず再利用できるOptional Global Music Serviceを追加する。
+
+### 実装
+
+- `addons/game_foundation/audio/global_music_service.gd`
+  - SceneTree.root直下へ昇格するscene-persistent lifetime
+  - `persist_across_scenes=false`でGame側Lifetimeへ委譲可能
+  - Game-defined AudioStream
+  - Play / Stop
+  - Fade in / Fade out
+  - 2 Player Crossfade
+  - Transition中の重複Request guard
+  - Game-defined `bus_name`
+  - Track ID / Transition / Player state snapshot
+  - Pause中もFadeが進むPROCESS_MODE_ALWAYS
+- `docs/AUDIO_SERVICE.md`
+  - Global Music API / Scene lifetime / Fade / Asset boundaryを記録
+- Foundation Versionを `0.13.0-dev` へ更新
+- Foundation capabilityへ `global_music_service` を追加
+
+### 設計境界
+
+- FoundationはBGM Assetを同梱しない
+- AudioStreamのLoop / Import / Codec設定を変更しない
+- BGM Busを勝手に作成しない
+- Settingsのaudio_bus_mapとの正式接続は後続Bus Contract
+- One-shot SFX / UI / Voice / 2D / 3Dは次Task
+- 実Audio出力品質やLoop seamをHeadless成功だけで確認済み扱いしない
+
+### Validation
+
+- Global Music Service Headless SmokeをCIへ追加
+- Scene-owned Parent解放後もRoot昇格Serviceが生存することを検証
+- immediate Play / duplicate Play guardを検証
+- Crossfade開始 / Transition guard / 完了後Track切替を検証
+- Fade out / Fade in / immediate Stopを検証
+- Invalid fade durationを検証
+- persist_across_scenes=falseでParent ownershipを維持することを検証
+- 実Audio device上の音質 / Loop seam / Crossfade聴感は実Game統合時のRuntime Validation対象
+
