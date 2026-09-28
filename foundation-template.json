@@ -76,8 +76,8 @@
     {
       "id": "standard",
       "label": "標準構成",
-      "description": "Application Shell、Loading、Save Slots、Localization、Recoveryを含む標準ゲーム外枠。Game Dev HubのProfile materialization対応後に選択可能。",
-      "selectable": false,
+      "description": "Application Shell、Loading、Localization、Recoveryを初期配線したGame-ready標準Starter。Save Slot等の共通機能もFoundationから利用可能。",
+      "selectable": true,
       "capabilities": [
         "integrated_foundation_runtime",
         "application_shell",
@@ -89,6 +89,53 @@
         "recovery_screen_contract",
         "diagnostics_export_hook",
         "crash_marker"
+      ],
+      "starterFiles": [
+        {
+          "source": "starter/project.godot.template",
+          "target": "project.godot",
+          "tokens": true
+        },
+        {
+          "source": "starter/README.md.template",
+          "target": "README.md",
+          "tokens": true
+        },
+        {
+          "source": "starter/.gitignore.template",
+          "target": ".gitignore",
+          "tokens": false
+        },
+        {
+          "source": "starter/.gitattributes.template",
+          "target": ".gitattributes",
+          "tokens": false
+        },
+        {
+          "source": "starter/standard/scenes/main.tscn.template",
+          "target": "scenes/main.tscn",
+          "tokens": false
+        },
+        {
+          "source": "starter/standard/scripts/main.gd.template",
+          "target": "scripts/main.gd",
+          "tokens": false
+        },
+        {
+          "source": "starter/tests/foundation_integration_smoke.gd.template",
+          "target": "tests/foundation_integration_smoke.gd",
+          "tokens": false
+        },
+        {
+          "source": "starter/tests/foundation_integration_smoke.tscn.template",
+          "target": "tests/foundation_integration_smoke.tscn",
+          "tokens": false
+        },
+        {
+          "source": "starter/docs/ROADMAP.md.template",
+          "target": "docs/ROADMAP.md",
+          "tokens": true
+        }
       ]
     }
   ]

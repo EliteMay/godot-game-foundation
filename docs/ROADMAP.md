@@ -775,7 +775,7 @@ RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次A
   - `foundation-template.json` に `defaultProfile` / `starterProfiles` を追加する
   - 既存Starter互換の `minimal` を既定かつ選択可能にする
   - 共通Shellを広く使う `standard` Profileを宣言する
-  - Game Dev Hubが未対応のProfileは `selectable: false` として誤選択を防ぐ
+  - Materialize未対応のProfileは `selectable: false` として誤選択を防ぐ
   - Manifest schemaVersion 1を維持し、既存Hubの生成Flowを壊さない
   - Starter Template SmokeでProfile ID / default参照 / capability listを検証する
 - [ ] Game Dev Hub Profile Materialization
@@ -784,8 +784,9 @@ RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次A
   - `minimal` はCurrent生成物と同一挙動を維持する
   - `standard` は必要な共通Shell初期配線を生成する
   - Installation Metadataへ選択Profileを記録し、Foundation更新ではGame固有Fileを上書きしない
-- [ ] Standard Starter Runtime Smoke
+- [x] Standard Starter Runtime Smoke
   - 担当: ChatGPT
+  - `standard`固有Scene / Scriptを生成し、Main Menu / Async Loader / Loading Contract / Recovery / Crash Markerを初期配線する
   - 生成したstandard StarterをCold Import / Main Scene / Foundation Integration Smokeで検証する
   - Main Menu / Loading / Recovery等の共通ShellがGame固有Themeなしでも起動可能なことを確認する
 - [ ] Windows実機生成確認

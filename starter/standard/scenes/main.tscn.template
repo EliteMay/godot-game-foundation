@@ -1,0 +1,53 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/game_foundation/shell/main_menu_shell.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://addons/game_foundation/recovery/recovery_screen.tscn" id="3"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.04, 0.055, 1)
+
+[node name="Header" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 118.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+
+[node name="Content" type="VBoxContainer" parent="Header"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Header/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Game"
+
+[node name="Status" type="Label" parent="Header/Content"]
+layout_mode = 2
+text = "Foundationを初期化しています。"
+autowrap_mode = 2
+
+[node name="MainMenuShell" parent="." instance=ExtResource("2")]
+layout_mode = 1
+
+[node name="RecoveryScreen" parent="." instance=ExtResource("3")]
+layout_mode = 1
