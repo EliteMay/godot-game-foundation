@@ -3,6 +3,9 @@ extends RefCounted
 const AudioBusContract = preload(
 	"res://addons/game_foundation/audio/audio_bus_contract.gd"
 )
+const LocaleSettingAdapter = preload(
+	"res://addons/game_foundation/localization/locale_setting_adapter.gd"
+)
 
 
 static func apply_settings(
@@ -20,6 +23,12 @@ static func apply_settings(
 		bus_result.get("bus_map", {}) as Dictionary
 	).duplicate(true)
 
+	var locale_result: Dictionary = LocaleSettingAdapter.apply_from_settings(
+		settings
+	)
+	if not bool(locale_result.get("ok", false)):
+		return locale_result
+
 	if DisplayServer.get_name() == "headless":
 		return {
 			"ok": true,
@@ -32,15 +41,21 @@ static func apply_settings(
 			"display": {
 				"applied": false,
 			},
+			"locale": locale_result,
 		}
 
 	var audio_result: Dictionary = apply_audio(settings, normalized_bus_map)
 	var display_result: Dictionary = apply_display(settings)
 	return {
-		"ok": bool(audio_result.get("ok", false)) and bool(display_result.get("ok", false)),
+		"ok": (
+			bool(locale_result.get("ok", false))
+			and bool(audio_result.get("ok", false))
+			and bool(display_result.get("ok", false))
+		),
 		"code": "applied",
 		"audio": audio_result,
 		"display": display_result,
+		"locale": locale_result,
 	}
 
 

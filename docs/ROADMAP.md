@@ -665,13 +665,17 @@ Single Save Gameを維持したまま、必要Gameでは複数Slot / Continue / 
 
 ## Phase 15 — Localization / Accessibility Shell
 
-状態: **調査完了 / 未実装**
+状態: **実装中 / Locale Setting Adapter完了**
 
 目的: Menu Shellで繰り返すLocale適用と基本操作Accessibilityを共通化する。
 
-- [ ] Locale Setting Adapter
+- [x] Locale Setting Adapter
   - 担当: ChatGPT
-  - SettingsからLocaleを読み、`TranslationServer`へ適用する
+  - Settings共通項目 `locale` を追加し、既定値 `automatic` でOSの優先言語へ追従する
+  - 明示LocaleはGodotの標準化を通して `TranslationServer` へ適用する
+  - HeadlessでもLocale適用を行い、Display/AudioのRuntime skipとは分離してRegression Test可能にする
+  - 翻訳Resourceの有無は適用拒否条件にせず、loaded translation availabilityを結果として公開する
+  - Translation Asset / Font / Locale listの最終所有はGame側へ残す
 - [ ] Translation Contract
   - 担当: ChatGPT
   - Foundation ShellのText keyをGame側Translationへ差し替え可能にする

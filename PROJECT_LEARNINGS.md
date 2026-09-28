@@ -216,3 +216,15 @@
 - Compatibility: SaveSlotManagerはOptional layerで、既存Single Save API / user://save.json / FoundationRuntimeのSingle Save lifecycleを変更しない。
 - Cloud Boundary: Slot IDとLocal artifact descriptorだけをCoreから公開し、Steam / Provider SDK、Remote revision、Conflict、Tombstoneは外部Adapterへ残す。
 - Prevention: 複数永続Fileを1 logical Saveとして同時更新する設計を追加する前に、partial commit時のAuthorityとRecoveryを明示する。
+
+
+## GF-023 — Locale preferenceとTranslation Asset availabilityを分離する
+
+- Date: 2026-09-28
+- Type: Localization / Settings / Architecture
+- Status: Adopted
+- Context: Locale設定を「現在Translation Resourceがロード済みか」で拒否すると、動的ロードや後からResourceを追加するGameでUser preferenceを保存・適用できず、Localization Asset lifecycleとSettings lifecycleが密結合になる。
+- Decision: Settingsはlocale preferenceを所有し、LocaleSettingAdapterがGodot標準化後にTranslationServerへ適用する。loaded translation availabilityは観測情報として返すが、適用拒否条件にはしない。
+- Default: `automatic` はOSの優先言語を使う。明示LocaleはPlayer preferenceとして優先する。
+- Boundary: Translation files、Font fallback、supported language menu、Text contentはGame側。FoundationはLocale適用Lifecycleだけを共通化する。
+- Prevention: Localization機能で「Assetが今あること」と「Userが選んだLocale」を同じSource of Truthへ統合しない。
