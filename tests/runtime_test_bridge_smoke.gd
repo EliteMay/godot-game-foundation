@@ -17,7 +17,8 @@ func _run() -> void:
 	var configured: Dictionary = bridge.configure(
 		output_path,
 		"smoke-session",
-		Callable(self, "_state_provider")
+		Callable(self, "_state_provider"),
+		Callable(self, "_diagnostics_provider")
 	)
 	if not bool(configured.get("ok", false)):
 		_fail("bridge configuration failed")
@@ -43,7 +44,7 @@ func _run() -> void:
 		return
 
 	var payload: Dictionary = parsed as Dictionary
-	if int(payload.get("schemaVersion", 0)) != 1:
+	if int(payload.get("schemaVersion", 0)) != 2:
 		_fail("schemaVersion mismatch")
 	if String(payload.get("sessionId", "")) != "smoke-session":
 		_fail("sessionId mismatch")
@@ -57,6 +58,28 @@ func _run() -> void:
 		var state: Dictionary = state_variant as Dictionary
 		if String(state.get("mode", "")) != "smoke":
 			_fail("provider state was not preserved")
+
+	var diagnostics_variant: Variant = payload.get(
+		"foundationDiagnostics",
+		{}
+	)
+	if not (diagnostics_variant is Dictionary):
+		_fail("foundation diagnostics payload is missing")
+	else:
+		var diagnostics: Dictionary = (
+			diagnostics_variant as Dictionary
+		)
+		if String(diagnostics.get("source", "")) != (
+			"godot-game-foundation"
+		):
+			_fail("foundation diagnostics source mismatch")
+		var handoff: Dictionary = (
+			diagnostics.get("handoff", {}) as Dictionary
+		)
+		if not bool(handoff.get("sanitized", false)):
+			_fail("foundation diagnostics must be sanitized")
+		if not bool(handoff.get("remote_eligible", false)):
+			_fail("foundation diagnostics must be remote eligible")
 
 	var invalid := RuntimeTestBridge.new()
 	var invalid_config: Dictionary = invalid.configure(
@@ -82,6 +105,21 @@ func _state_provider() -> Dictionary:
 		"player": {
 			"position": [1.0, 2.0, 3.0],
 			"yaw": 0.25,
+		},
+	}
+
+
+func _diagnostics_provider() -> Dictionary:
+	return {
+		"ok": true,
+		"code": "diagnostics_export_built",
+		"payload": {
+			"schemaVersion": 1,
+			"source": "godot-game-foundation",
+			"handoff": {
+				"sanitized": true,
+				"remote_eligible": true,
+			},
 		},
 	}
 
