@@ -778,12 +778,13 @@ RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次A
   - Materialize未対応のProfileは `selectable: false` として誤選択を防ぐ
   - Manifest schemaVersion 1を維持し、既存Hubの生成Flowを壊さない
   - Starter Template SmokeでProfile ID / default参照 / capability listを検証する
-- [ ] Game Dev Hub Profile Materialization
+- [x] Game Dev Hub Profile Materialization
   - 担当: ChatGPT
   - Hubの新規Game作成でProfileを選べるようにする
   - `minimal` はCurrent生成物と同一挙動を維持する
   - `standard` は必要な共通Shell初期配線を生成する
   - Installation Metadataへ選択Profileを記録し、Foundation更新ではGame固有Fileを上書きしない
+  - Game Dev Hub v0.1.26でManifest-driven Profile選択 / 生成 / Metadata保持 / Update互換を実装し、Node Test 111/111・Windows installer・Updater artifact・CodeQLを通過する
 - [x] Standard Starter Runtime Smoke
   - 担当: ChatGPT
   - `standard`固有Scene / Scriptを生成し、Main Menu / Async Loader / Loading Contract / Recovery / Crash Markerを初期配線する
