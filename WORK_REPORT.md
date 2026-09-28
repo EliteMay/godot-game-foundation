@@ -968,3 +968,42 @@ Headless Integration SmokeはLifecycle / State / Bus Routing / Cleanupを検証�
 - Cloud Extensionがexternal adapter境界のままであることを検証
 - PR #23 Godot CI: PASS（Save Slot Manager Smoke / 全Regression / Starter生成を含む）
 - PR #23 Windows Build: PASS
+
+
+---
+
+## v0.15.0-dev — Locale Setting Adapter
+
+### 目的
+
+Phase 15の最初のTaskとして、Gameごとに重複していた「保存済み言語設定をGodotのTranslationServerへ適用する処理」をFoundationのSettings Runtimeへ接続する。
+
+### 実装
+
+- `SettingsSystem`
+  - 共通Settingへ `locale` を追加
+  - 既定値は `automatic`
+  - 既存Settings FileにLocaleが無い場合もautomaticへ安全にFallback
+  - Invalid type / empty /過長値はwarning付きでautomaticへFallback
+- `LocaleSettingAdapter`
+  - explicit Localeの標準化
+  - `automatic` のOS言語解決
+  - `TranslationServer.set_locale()` 適用
+  - loaded locale / translation availability snapshot
+- `SettingsRuntime`
+  - LocaleをDisplayServer headless skipより前に適用
+  - HeadlessでもLocale Contractを検証可能
+- Foundation capabilityへ `locale_setting_adapter` を追加
+- Foundation Versionを `0.15.0-dev` へ更新
+- Dedicated Locale Setting Adapter SmokeをCIへ追加
+
+### Compatibility
+
+- Settings schema versionは1のまま維持する
+- 旧Settingsには `locale` が無くてもautomaticが補われるためMigration不要
+- Translation Resource / Font / supported language listはGame側が所有する
+- loaded translationが存在しなくてもLocale preference自体は拒否しない
+
+### Validation
+
+- Pull Request Godot CI / Windows Buildで確認
