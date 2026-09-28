@@ -1420,3 +1420,50 @@ Phase 11〜16で増えた共通Foundation機能を、新規Gameへ一律強制�
   - Harness Versionを `0.17.0-dev` へ同期して修正
 - 修正後のGodot CI / Windows Buildを再実行して最終確認する
 
+---
+
+## v0.17.0-dev — Standard Starter Materialization
+
+### 目的
+
+Phase 17の `standard` ProfileをManifest上の名前だけで終わらせず、新規Gameとして実際に生成・起動できるGame-readyな共通Shell Starterへする。
+
+### 実装
+
+- `starter/standard/scenes/main.tscn.template`
+  - Foundation Main Menu Shell
+  - Recovery Screen
+  - Game固有Themeへ依存しないDark baseline
+- `starter/standard/scripts/main.gd.template`
+  - FoundationRuntime初期化
+  - Settings / Game Flow / Diagnostics / Crash Marker
+  - Main Menu Shell初期配線
+  - Async Scene Loader + Loading Screen Contract初期配線
+  - Runtime initialization failure時のRecovery Screen
+  - Game固有Gameplay / Settings UIへ接続するHook
+- `foundation-template.json`
+  - `standard.selectable=true`
+  - standard専用 `starterFiles` を宣言
+  - `minimal` root starterFilesとの既存互換を維持
+- `tools/materialize_starter_fixture.py`
+  - Profile IDを受け取り、Profile固有File Setを展開
+  - Installation metadataへ `starterProfile` を記録
+- Foundation CI
+  - `minimal` / `standard` の両方をmaterialize
+  - Godot import
+  - Main Scene load
+  - Foundation Integration Smoke
+
+### 境界
+
+- SaveはGame固有Payload Adapterが必要なためStandardでも既定OFF
+- Input actionはGame固有なので既定OFF
+- Main MenuのNew Game / OptionsはGame固有実装へ接続するHookまで
+- Theme / Gameplay / Balance / Game DataはStarter Profileへ固定しない
+- Foundation更新のManaged Pathは引き続き `addons/game_foundation` のみ
+
+### Validation
+
+- Branch: `phase17-standard-starter-profile`
+- PR / CIでminimalとstandardの生成・起動を確認する
+
