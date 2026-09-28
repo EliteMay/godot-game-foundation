@@ -19,10 +19,10 @@ static func validate_input_actions(
 		options.get("required_actions", required_ui_actions())
 	)
 	var require_keyboard: bool = bool(
-		options.get("require_keyboard", true)
+		options.get("require_keyboard", false)
 	)
 	var require_gamepad: bool = bool(
-		options.get("require_gamepad", true)
+		options.get("require_gamepad", false)
 	)
 	var coverage: Dictionary = {}
 	var missing_actions: Array[String] = []
@@ -211,6 +211,12 @@ static func snapshot(controls: Array) -> Dictionary:
 	var control_list: Array = validated.get("controls", [])
 	var focusable: Array = validated.get("focusable", [])
 	var input_result: Dictionary = validate_input_actions()
+	var keyboard_result: Dictionary = validate_input_actions({
+		"require_keyboard": true,
+	})
+	var gamepad_result: Dictionary = validate_input_actions({
+		"require_gamepad": true,
+	})
 
 	var focusable_paths: Array[String] = []
 	for control in focusable:
@@ -231,7 +237,15 @@ static func snapshot(controls: Array) -> Dictionary:
 			"focusable_paths": focusable_paths,
 			"focused_path": focused_path,
 			"input_ready": bool(input_result.get("ok", false)),
+			"keyboard_ready": bool(
+				keyboard_result.get("ok", false)
+			),
+			"gamepad_ready": bool(
+				gamepad_result.get("ok", false)
+			),
 			"input": input_result,
+			"keyboard": keyboard_result,
+			"gamepad": gamepad_result,
 		}
 	)
 
