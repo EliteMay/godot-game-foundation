@@ -4,18 +4,26 @@ const MenuFocusNavigation = preload(
 	"res://addons/game_foundation/shell/menu_focus_navigation.gd"
 )
 
-const REQUIRED_UI_ACTIONS: PackedStringArray = PackedStringArray([
-	"ui_up",
-	"ui_down",
-	"ui_accept",
-])
+static func required_ui_actions() -> PackedStringArray:
+	return PackedStringArray([
+		"ui_up",
+		"ui_down",
+		"ui_accept",
+	])
 
 
 static func validate_input_actions(
-	required_actions: PackedStringArray = REQUIRED_UI_ACTIONS,
-	require_keyboard: bool = true,
-	require_gamepad: bool = true
+	options: Dictionary = {}
 ) -> Dictionary:
+	var required_actions: PackedStringArray = PackedStringArray(
+		options.get("required_actions", required_ui_actions())
+	)
+	var require_keyboard: bool = bool(
+		options.get("require_keyboard", true)
+	)
+	var require_gamepad: bool = bool(
+		options.get("require_gamepad", true)
+	)
 	var coverage: Dictionary = {}
 	var missing_actions: Array[String] = []
 	var missing_keyboard: Array[String] = []
