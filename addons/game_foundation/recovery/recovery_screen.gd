@@ -336,10 +336,22 @@ func _connect_buttons() -> void:
 
 
 func _connect_contract(contract: RefCounted) -> void:
-	contract.action_requested.connect(_on_contract_action_requested)
-	contract.action_completed.connect(_on_contract_action_completed)
-	contract.action_failed.connect(_on_contract_action_failed)
-	contract.state_changed.connect(_on_contract_state_changed)
+	contract.connect(
+		"action_requested",
+		Callable(self, "_on_contract_action_requested")
+	)
+	contract.connect(
+		"action_completed",
+		Callable(self, "_on_contract_action_completed")
+	)
+	contract.connect(
+		"action_failed",
+		Callable(self, "_on_contract_action_failed")
+	)
+	contract.connect(
+		"state_changed",
+		Callable(self, "_on_contract_state_changed")
+	)
 
 
 func _on_action_button_pressed(action_id: String) -> void:
@@ -416,11 +428,11 @@ func _apply_snapshot(snapshot: Dictionary) -> void:
 				)
 			)
 		)
-	_state_hint_label.text = "\n".join(
-		hints.filter(func(value: String) -> bool:
-			return not value.is_empty()
-		)
-	)
+	var visible_hints: Array[String] = []
+	for hint in hints:
+		if not hint.is_empty():
+			visible_hints.append(hint)
+	_state_hint_label.text = "\n".join(visible_hints)
 
 	for action_id in _buttons.keys():
 		var button: Button = _buttons[action_id] as Button
