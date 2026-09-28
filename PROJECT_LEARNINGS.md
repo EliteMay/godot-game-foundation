@@ -279,3 +279,15 @@
 - Retry Safety: Retry可能と表示するのはFoundationが副作用前と確認できるstageだけに限定する。部分初期化後のFailureを「もう一度押せば直る」と推測しない。
 - Save Boundary: Save load / restore failureによるwrite blockはData preservation stateであり、Runtime initialization fatalと同一視しない。
 - Prevention: Error codeだけからUI側がRetry / Reset / Continueを勝手に推測せず、Recovery decisionに必要な状態をRuntime Contractから取得する。
+
+
+## GF-028 — Recovery UIは可能なActionをFailure Stateから導き、破壊的Resetを既定にしない
+
+- Date: 2026-09-29
+- Type: Reliability / UX / Data Safety
+- Status: Adopted
+- Context: Error画面がError codeだけからRetryやResetを推測すると、partial initialization後のunsafe retryや、Save破損時のData削除を安易なRecoveryとして提示する危険がある。
+- Decision: Recovery ScreenはRuntime Failure Stateと既存Flow Contractから利用可能Actionを導出する。Retryは `retry_supported`、Main MenuはMain Menu Contract、Safe QuitはSafe Quit ContractをAuthorityにする。
+- Data Safety: Reset / Delete / New Game等のData変更ActionはGeneric Recovery Screenの既定Actionに含めない。必要なGameでは明示した別Flowで確認付き実装にする。
+- Presentation: ScreenはReason、Current protection state、Next Actionを示すが、Runtime / SaveのAuthorityを持たない。
+- Prevention: Recovery UXを「何かボタンを出す」だけで設計せず、ActionごとのAuthority / Reversibility / Data impactを先に固定する。
