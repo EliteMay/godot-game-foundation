@@ -582,13 +582,18 @@ Game側はSettings / Input ContractとThemeだけを渡し、Options / Rebind UI
 
 ## Phase 13 — Audio Service
 
-状態: **調査完了 / 未実装**
+状態: **実装中 / Global Music完了**
 
 目的: Settingsの音量適用だけでなく、複数Gameで共通するAudio再生Lifecycleを提供する。
 
-- [ ] Global Music
+- [x] Global Music
   - 担当: ChatGPT
-  - Sceneを跨ぐBGM再生、Stop、Fade / Crossfadeを扱う
+  - SceneTree.root直下へ移動できるOptional ServiceとしてScene切替を跨ぐLifetimeを提供する
+  - Game側AudioStreamを受け取り、Track Asset自体はFoundationへ含めない
+  - Play / Stop / Fade in / Fade out / Crossfadeを扱う
+  - Crossfadeは2つのAudioStreamPlayerを再利用し、Transition中の重複Requestを拒否する
+  - Game側がbus_nameを指定できるが、Busの存在やSettings mappingとの整合は後続Bus Contractへ分離する
+  - Game側Autoload等でLifetimeを所有する場合はpersist_across_scenes=falseでRoot昇格を無効化できる
 - [ ] One-shot Audio
   - 担当: ChatGPT
   - Global SFX / UI / Voiceと2D / 3D One-shot helperを提供する

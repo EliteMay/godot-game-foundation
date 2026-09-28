@@ -163,3 +163,13 @@
 - Reliability: Stick drift、Mouse jitter、release、key echoはCurrent device切替に使わない。Current device向けBindingが無い場合のFallback有無はCallerが選べる。
 - Prevention: Controller名文字列から製品Layoutを推測してHardcodeせず、Third-party Icon AssetをFoundation必須Dependencyにしない。
 
+## GF-018 — Global MusicはScene所有ではなく明示Lifetimeを持たせる
+
+- Date: 2026-09-28
+- Type: Audio / Architecture / Reliability
+- Status: Adopted
+- Context: BGM PlayerをCurrent SceneのChildへ置くとScene切替で解放され、Menu→Gameplay等の切替で音が途切れる。一方、FoundationがGameのAutoload構成まで強制すると既存Lifecycle Managerと競合する。
+- Decision: Global Music Serviceは既定でSceneTree.root直下へ昇格してScene切替を跨ぐ。Gameが独自Autoloadを持つ場合はpersist_across_scenes=falseで親側Lifetimeへ委譲できる。
+- Transition: Crossfadeは2つのAudioStreamPlayerを再利用し、Transition中の別Play / Stopを拒否して同一Playerへ複数Tweenが競合しないようにする。
+- Boundary: AudioStream Asset、Loop / Import設定、Codec、最終Bus構成はGame側。Bus Contractは後続Taskで既存Settings mappingと接続する。
+

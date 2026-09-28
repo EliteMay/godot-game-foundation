@@ -155,6 +155,17 @@ jobs:
           fi
           grep -q "INPUT_REMAP_CONTROL_SMOKE: PASS" input-remap-control-smoke.log
 
+      - name: Run global music service smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/global_music_service_smoke.tscn 2>&1 | tee global-music-service-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" global-music-service-smoke.log; then
+            echo "Global music service smoke contains an error."
+            exit 1
+          fi
+          grep -q "GLOBAL_MUSIC_SERVICE_SMOKE: PASS" global-music-service-smoke.log
+
       - name: Run game flow smoke test
         shell: bash
         run: |
