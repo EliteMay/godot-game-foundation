@@ -760,9 +760,16 @@ func _initialize_runtime_test() -> Dictionary:
 		return _success("runtime_test_provider_not_configured")
 
 	_runtime_test_bridge = RuntimeTestBridge.new()
+	var diagnostics_provider: Callable = Callable()
+	if _diagnostics_service != null:
+		diagnostics_provider = Callable(
+			self,
+			"_runtime_test_diagnostics_export"
+		)
 	var result: Dictionary = _runtime_test_bridge.call(
 		"configure_from_command_line",
-		provider
+		provider,
+		diagnostics_provider
 	)
 	if not bool(result.get("ok", false)):
 		_runtime_test_bridge.free()
@@ -777,6 +784,12 @@ func _initialize_runtime_test() -> Dictionary:
 		_runtime_test_bridge = null
 
 	return result
+
+
+func _runtime_test_diagnostics_export() -> Dictionary:
+	return diagnostics_export({
+		"reason": "game_dev_hub_runtime_test",
+	})
 
 
 func _register_safe_quit_hook() -> void:
