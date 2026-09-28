@@ -175,8 +175,8 @@ func _run() -> void:
 	)
 	_expect_equal(
 		int((recovered.get("payload", {}) as Dictionary).get("score", 0)),
-		10,
-		"backup should preserve the previous alpha payload"
+		30,
+		"backup should reflect the last successfully loaded healthy primary"
 	)
 	_expect_code(
 		manager.save_slot("alpha", {"score": 40}),
