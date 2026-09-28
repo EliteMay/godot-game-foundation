@@ -1,6 +1,11 @@
 extends Node
 
 signal initialized(result: Dictionary)
+signal initialization_failed(
+	result: Dictionary,
+	state: Dictionary
+)
+signal runtime_failure_changed(state: Dictionary)
 signal save_completed(result: Dictionary)
 signal load_completed(result: Dictionary)
 signal settings_applied(result: Dictionary)
@@ -20,6 +25,9 @@ const InputSystem = preload("res://addons/game_foundation/input/input_system.gd"
 const GameFlowService = preload("res://addons/game_foundation/flow/game_flow_service.gd")
 const DiagnosticsService = preload("res://addons/game_foundation/diagnostics/diagnostics_service.gd")
 const RuntimeTestBridge = preload("res://addons/game_foundation/testing/runtime_test_bridge.gd")
+const RuntimeFailureState = preload(
+	"res://addons/game_foundation/recovery/runtime_failure_state.gd"
+)
 
 const DEFAULT_SAVE_CONFIG: Dictionary = {
 	"enabled": false,
@@ -69,6 +77,9 @@ var _last_save_result: Dictionary = {}
 var _last_load_result: Dictionary = {}
 var _last_settings_result: Dictionary = {}
 var _last_input_result: Dictionary = {}
+var _runtime_failure_state: Dictionary = (
+	RuntimeFailureState.inactive()
+)
 
 var _auto_save_service: Node = null
 var _flow_service: Node = null
@@ -93,40 +104,71 @@ func configure(config: Dictionary = {}, adapters: Dictionary = {}) -> Dictionary
 
 func initialize() -> Dictionary:
 	if _initialized:
-		return _success("already_initialized", {"status": status_snapshot()})
+		return _success(
+			"already_initialized",
+			{"status": status_snapshot()}
+		)
 	if not _configured:
 		var configured: Dictionary = configure()
 		if not bool(configured.get("ok", false)):
-			return configured
+			return _finish_initialize_failure(
+				configured,
+				"configure"
+			)
 	if not is_inside_tree():
-		return _error("not_in_scene_tree", "FoundationRuntime must be inside the SceneTree before initialize()")
+		return _finish_initialize_failure(
+			_error(
+				"not_in_scene_tree",
+				"FoundationRuntime must be inside the SceneTree before initialize()"
+			),
+			"scene_tree"
+		)
 
 	var diagnostics_result: Dictionary = _initialize_diagnostics()
 	if not bool(diagnostics_result.get("ok", false)):
-		return _finish_initialize_failure(diagnostics_result)
+		return _finish_initialize_failure(
+			diagnostics_result,
+			"diagnostics"
+		)
 
 	var settings_result: Dictionary = _initialize_settings()
 	if not bool(settings_result.get("ok", false)):
-		return _finish_initialize_failure(settings_result)
+		return _finish_initialize_failure(
+			settings_result,
+			"settings"
+		)
 
 	var input_result: Dictionary = _initialize_input()
 	if not bool(input_result.get("ok", false)):
-		return _finish_initialize_failure(input_result)
+		return _finish_initialize_failure(
+			input_result,
+			"input"
+		)
 
 	var flow_result: Dictionary = _initialize_flow()
 	if not bool(flow_result.get("ok", false)):
-		return _finish_initialize_failure(flow_result)
+		return _finish_initialize_failure(
+			flow_result,
+			"flow"
+		)
 
 	var save_result: Dictionary = _initialize_save()
 	if not bool(save_result.get("ok", false)):
-		_log_warning("save initialization did not complete", save_result)
+		_log_warning(
+			"save initialization did not complete",
+			save_result
+		)
 
 	var runtime_test_result: Dictionary = _initialize_runtime_test()
 	if not bool(runtime_test_result.get("ok", false)):
-		return _finish_initialize_failure(runtime_test_result)
+		return _finish_initialize_failure(
+			runtime_test_result,
+			"runtime_test"
+		)
 
 	_register_safe_quit_hook()
 	_initialized = true
+	_clear_runtime_failure_state()
 
 	var result: Dictionary = _success("initialized", {
 		"settings": settings_result,
@@ -360,6 +402,8 @@ func status_snapshot() -> Dictionary:
 		"input_enabled": _input_enabled(),
 		"flow_enabled": _flow_enabled(),
 		"diagnostics_enabled": _diagnostics_enabled(),
+		"has_runtime_failure": has_runtime_failure(),
+		"runtime_failure": runtime_failure_state(),
 		"last_save": _last_save_result.duplicate(true),
 		"last_load": _last_load_result.duplicate(true),
 		"last_settings": _last_settings_result.duplicate(true),
@@ -394,6 +438,14 @@ func is_runtime_test_mode() -> bool:
 
 func is_save_write_blocked() -> bool:
 	return _save_writes_blocked
+
+
+func has_runtime_failure() -> bool:
+	return bool(_runtime_failure_state.get("active", false))
+
+
+func runtime_failure_state() -> Dictionary:
+	return _runtime_failure_state.duplicate(true)
 
 
 func _initialize_diagnostics() -> Dictionary:
@@ -668,9 +720,56 @@ func _record_load_result(result: Dictionary) -> Dictionary:
 	return result
 
 
-func _finish_initialize_failure(result: Dictionary) -> Dictionary:
-	_log_error("foundation runtime initialization failed", result)
-	return result
+func _finish_initialize_failure(
+	result: Dictionary,
+	stage: String
+) -> Dictionary:
+	_runtime_failure_state = (
+		RuntimeFailureState.initialization_failure(
+			stage,
+			result,
+			{
+				"save_writes_blocked": _save_writes_blocked,
+				"diagnostics_available": (
+					_diagnostics_service != null
+				),
+			}
+		)
+	)
+
+	var recorded: Dictionary = result.duplicate(true)
+	recorded["runtime_failure"] = (
+		_runtime_failure_state.duplicate(true)
+	)
+
+	_log_error(
+		"foundation runtime initialization failed",
+		{
+			"stage": stage,
+			"code": recorded.get(
+				"code",
+				"initialization_failed"
+			),
+			"runtime_failure": _runtime_failure_state,
+		}
+	)
+	initialization_failed.emit(
+		recorded.duplicate(true),
+		_runtime_failure_state.duplicate(true)
+	)
+	runtime_failure_changed.emit(
+		_runtime_failure_state.duplicate(true)
+	)
+	return recorded
+
+
+func _clear_runtime_failure_state() -> void:
+	if not has_runtime_failure():
+		return
+	_runtime_failure_state = RuntimeFailureState.inactive()
+	runtime_failure_changed.emit(
+		_runtime_failure_state.duplicate(true)
+	)
 
 
 func _normalize_config(source: Dictionary) -> Dictionary:
