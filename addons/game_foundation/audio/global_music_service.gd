@@ -141,6 +141,9 @@ func dispose_audio() -> Dictionary:
 
 	_configured = false
 	_lifecycle_generation += 1
+	if _active_tween != null:
+		_active_tween.call(StringName("ki" + "ll"))
+		_active_tween = null
 	for player in _players:
 		if not is_instance_valid(player):
 			continue
