@@ -710,7 +710,7 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
 
 ## Phase 16 — Controlled Failure / Recovery UX
 
-状態: **実装中 / Runtime Failure State・Recovery Screen Contract完了**
+状態: **実装中 / Runtime Failure State・Recovery Screen Contract・Diagnostics Export Hook完了**
 
 目的: Foundation initializationやRecoverable fatal conditionが失敗した時に、黒画面・無反応ではなく安全に診断情報へ到達できる共通Flowを作る。
 
@@ -734,9 +734,18 @@ Foundation ShellがLocaleと基本Focus Navigationへ対応し、特定Language�
   - Main/Pauseと同じTranslation Contract・semantic UI focus baselineを再利用する
   - Retry成功でRuntime Failure Stateがclearされた場合はRecovery Screenを自動で閉じる
   - Dedicated Smokeでunsafe retry rejection、Main Menu、Safe Quit、Save保護表示、translation override、successful retry closeを検証する
-- [ ] Diagnostics Export Hook
+- [x] Diagnostics Export Hook
   - 担当: ChatGPT
   - Game Dev Hub共有へ接続しやすいSanitized snapshotを生成する
+  - `DiagnosticsExportHook` がDiagnostics Snapshotを共有用Schemaへホワイトリスト変換する
+  - Runtime `last_load` / Settings / Game Payload等のDomain Dataは共有用Contractへ含めない
+  - `user://` / `res://` のVirtual Pathだけ共有し、絶対PathはRedactionする
+  - password / token / api_key / authorization / cookie / credential等のKnown Sensitive KeyをRedactionする
+  - Bearer / OpenAI key / GitHub token等の既知Token文字列をRedactionする
+  - Log / Contextの文字列長・Collection数・Nest depth・最近のEntry件数を上限化する
+  - Export JSON全体を128 KiB以内に制限し、必要時はRecent Entry/Error detailを落として再構築する
+  - FoundationRuntime `diagnostics_export()` から共有用Payload / JSON / byte countを取得できる
+  - Dedicated SmokeでSecret/absolute path/Game Data非流出、size bound、Runtime統合を検証する
 - [ ] Crash Marker
   - 担当: ChatGPT
   - 前回Sessionが正常終了しなかった可能性を次回起動時に判定できるLightweight markerを検討する
