@@ -386,6 +386,17 @@ jobs:
           fi
           grep -q "RUNTIME_FAILURE_STATE_SMOKE: PASS" runtime-failure-state-smoke.log
 
+      - name: Run recovery screen contract smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 20s ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --scene res://tests/recovery_screen_contract_smoke.tscn 2>&1 | tee recovery-screen-contract-smoke.log
+          if grep -Eq "SCRIPT ERROR|(^|[[:space:]])ERROR:" recovery-screen-contract-smoke.log; then
+            echo "Recovery screen contract smoke contains an error."
+            exit 1
+          fi
+          grep -q "RECOVERY_SCREEN_CONTRACT_SMOKE: PASS" recovery-screen-contract-smoke.log
+
       - name: Run integrated Foundation runtime smoke test
         shell: bash
         run: |
