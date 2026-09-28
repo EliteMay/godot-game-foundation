@@ -1200,3 +1200,53 @@ Phase 16 — Controlled Failure / Recovery UXの最初のTaskとして、Foundat
 
 - PR #28 Godot CI: PASS（Runtime Failure State Smoke / Foundation Runtime regressionを含む）
 - PR #28 Windows Build: PASS
+
+
+---
+
+## v0.16.0-dev — Recovery Screen Contract
+
+### 目的
+
+Phase 16のRuntime Failure Stateを、UserがReasonと安全なNext Actionを確認できるOptional Recovery Screenへ接続する。Recovery UIがData削除やRetry可否を独自推測しないよう、Action availabilityを共通Contractへ集約する。
+
+### 実装
+
+- `recovery/recovery_screen_contract.gd`
+  - Runtime Failure Stateを観測
+  - semantic action: `retry / main_menu / safe_quit`
+  - Retryは `retry_supported` をAuthorityとして利用
+  - Main MenuはGame Flow main menu contractまたはGame callbackへ委譲
+  - Safe QuitはFoundationRuntime `request_quit(1)` またはGame callbackへ委譲
+  - action in-progress guard
+  - structured action result / Signals / Snapshot
+  - reset / delete等の破壊的Actionは提供しない
+- `recovery/recovery_screen.gd/.tscn`
+  - Error summary / stage / code
+  - Save write protection hint
+  - Diagnostics availability hint
+  - available actionだけ表示
+  - semantic focus navigation
+  - Translation Contract / label override
+  - successful retry後に自動Close
+- `TranslationContract`
+  - Recovery Screen用fallback keyを追加
+- Dedicated Smoke
+  - unsafe retry rejection
+  - main menu action
+  - safe quit action
+  - action setに破壊的Actionが無いこと
+  - Save protection / diagnostics hint
+  - translation/label override
+  - Retry成功後のauto close
+
+### Boundary
+
+- Diagnostics Exportは次Task
+- Crash Markerは後続Task
+- Recovery ScreenはSave / Settings / Slotを削除・Resetしない
+- Game ThemeでのVisual polish / long localized text / physical controller focus feelはHeadless CIでは未確認
+
+### Validation
+
+- Pull Request Godot CI / Windows Buildで確認
