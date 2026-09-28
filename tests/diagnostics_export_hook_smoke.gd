@@ -103,6 +103,21 @@ func _test_direct_sanitization() -> void:
 		"diagnostics_enabled": true,
 		"save_enabled": true,
 		"save_writes_blocked": true,
+		"crash_marker_enabled": true,
+		"crash_marker": {
+			"active": true,
+			"path": "user://foundation_session_marker.json",
+			"previous_session": {
+				"marker_found": true,
+				"marker_valid": true,
+				"possible_unclean_exit": true,
+				"reason": "active_marker_present",
+				"previous_started_at_unix": 123456,
+				"app_version": "0.9.0",
+				"foundation_version": "0.15.0-dev",
+			},
+			"session_id": "must-not-export",
+		},
 		"has_runtime_failure": true,
 		"runtime_failure": {
 			"active": true,
@@ -229,6 +244,54 @@ func _test_direct_sanitization() -> void:
 	_expect_true(
 		not json_text.contains(long_message),
 		"oversized message should be truncated"
+	)
+
+	var exported_runtime: Dictionary = (
+		payload.get("runtime", {}) as Dictionary
+	)
+	_expect_true(
+		bool(
+			exported_runtime.get(
+				"crash_marker_enabled",
+				false
+			)
+		),
+		"export should include crash marker enablement"
+	)
+	var previous_session: Dictionary = (
+		exported_runtime.get(
+			"previous_session",
+			{}
+		) as Dictionary
+	)
+	_expect_true(
+		bool(
+			previous_session.get(
+				"possible_unclean_exit",
+				false
+			)
+		),
+		"export should include previous-session possibility"
+	)
+	_expect_equal(
+		String(
+			previous_session.get(
+				"reason",
+				""
+			)
+		),
+		"active_marker_present",
+		"export should include previous-session reason"
+	)
+	_expect_not_contains(
+		json_text,
+		"must-not-export",
+		"current crash marker session id must not be exported"
+	)
+	_expect_not_contains(
+		json_text,
+		"foundation_session_marker.json",
+		"crash marker path must not be exported"
 	)
 
 	var handoff: Dictionary = (

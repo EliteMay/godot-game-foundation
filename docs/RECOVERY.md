@@ -61,10 +61,6 @@ Failure後に安全な再試行が成功した場合:
 - `runtime_failure_changed` を再発火する
 - `status_snapshot().has_runtime_failure=false` になる
 
-## Next Phase 16 Work
-
-- Crash Marker
-
 Recovery ScreenはError summaryと利用可能ActionをRuntime Stateから構築し、Data削除やResetを暗黙実行しません。
 
 
@@ -145,3 +141,84 @@ Export Hookは内部Snapshotを共有用Schemaへ再構築し、RuntimeのDomain
 - Network送信やUploadはFoundation外
 
 このHookは「既知のSecret Patternを除去する共有境界」です。Game側がSecretをLogへ記録してよいという意味ではありません。Secretは最初からDiagnostics Contextへ入れないことを基本とします。
+
+
+## Crash Marker
+
+`recovery/crash_marker.gd` は、前回Foundation Runtime Sessionが正常Cleanupされなかった**可能性**を次回起動時に知らせるOptionalなLightweight Markerです。
+
+### Config
+
+```gdscript
+{
+    "crash_marker": {
+        "enabled": true,
+        "path": "user://foundation_session_marker.json",
+    }
+}
+```
+
+既定は `enabled=false` です。既存Gameへ新しいFile writeを自動追加しません。
+
+Marker pathは `user://` のみ許可します。
+
+### Lifecycle
+
+Session開始時:
+
+1. 既存Markerを読む
+2. 既存Markerが残っていれば `possible_unclean_exit=true`
+3. 現在Session用Markerへ置き換える
+4. Runtime Status / Diagnostics Exportから前回Session evidenceを確認できる
+
+Clean shutdown時:
+
+- Game Flow Safe QuitではSave hookの後にMarker cleanupを実行
+- Save hookが失敗してQuitがBlockされた場合、Marker cleanupまで進まない
+- Window close requestではbest-effort cleanup
+- RuntimeがSceneTreeから正常に外れる時もbest-effort cleanup
+- Marker cleanup失敗だけでGame終了はBlockしない
+
+### Ownership
+
+Markerには内部Session IDを持たせます。
+
+Cleanup時に現在FileのSession IDが自分と一致する場合だけ削除します。
+
+これにより、古いRuntime instanceが後から終了しても、新しいSessionのMarkerを削除しません。
+
+Session ID自体はDiagnostics Exportへ含めません。
+
+### Interpretation
+
+Marker残存はCrash確定を意味しません。
+
+返す情報は `possible_unclean_exit` であり、考えられる理由には次があります。
+
+- hard crash
+- process kill
+- power loss
+- shutdown中断
+- cleanup failure
+- concurrent / multiple instance
+- Marker file corruption
+
+OSやPlatformがProcessを停止する全経路をGodot scriptだけで完全捕捉できるわけではありません。
+
+GodotのWindow close requestはdesktopでNode notificationとして取得できますが、`SceneTree.quit()` はその通知を自動送信しないため、FoundationRuntimeの明示Safe Quit pathとRuntime teardownでもCleanupを行います。
+
+### Diagnostics
+
+`status_snapshot().crash_marker` から内部状態を取得できます。
+
+`diagnostics_export()` は共有用に次だけをWhitelistします。
+
+- Crash Marker enabled
+- current marker active
+- previous marker found / valid
+- `possible_unclean_exit`
+- reason
+- previous start timestamp
+- previous App / Foundation Version
+
+Current Session IDやMarker Pathは共有しません。
