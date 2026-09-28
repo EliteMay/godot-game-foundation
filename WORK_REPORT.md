@@ -1311,3 +1311,63 @@ Phase 16のRecovery / Diagnostics情報をGame Dev Hub共有へ接続しやす�
 - PR #30 Godot CI: PASS（Diagnostics Export Hook Smoke / existing regressionsを含む）
 - PR #30 Windows Build: PASS
 - Game Dev Hubへの実際の共有パック接続: NOT_RUN（Foundationはsanitized payload生成までを担当）
+
+
+---
+
+## v0.16.0-dev — Crash Marker
+
+### 目的
+
+Phase 16最後のTaskとして、前回Foundation Runtime Sessionが正常Cleanupされなかった可能性を次回起動時に検出できるLightweight Markerを追加する。Crash確定や完全なOS-level crash detectorとは扱わず、Recovery / Diagnosticsの追加Evidenceとして使う。
+
+### 実装
+
+- `recovery/crash_marker.gd`
+  - `user://` path限定
+  - bounded JSON marker
+  - running-session marker
+  - stale marker detection
+  - corrupt marker detection
+  - previous App / Foundation Version
+  - Session ID ownership check
+  - older session cleanupからnewer markerを保護
+- `FoundationRuntime`
+  - Optional `crash_marker` config
+  - default disabled
+  - Runtime initialize時にSession開始
+  - `crash_marker_snapshot()`
+  - `status_snapshot().crash_marker`
+  - Window close request cleanup
+  - `_exit_tree()` cleanup
+  - Safe Quit Hook integration
+- Safe Quit ordering
+  - Save Hookを先に登録
+  - Crash Marker cleanupを後に登録
+  - Save失敗でQuitがBlockされた場合はMarkerを残す
+  - Marker cleanup failureだけではQuitをBlockしない
+- Diagnostics Export
+  - previous-session possibility / reason / timestamp / versionsをWhitelist
+  - Current Session ID / Marker Pathは共有しない
+- Dedicated Smoke
+  - first session
+  - stale marker
+  - corrupt marker
+  - old/new session ownership
+  - unsafe absolute path rejection
+  - Runtime integration
+  - safe quit cleanup
+  - save-hook block時のmarker preservation
+  - diagnostics handoff regression
+
+### Boundary
+
+- Marker残存はCrash確定ではなく `possible_unclean_exit`
+- OS kill / power loss / kernel crash / mobile suspend termination等の全経路を完全に捕捉する保証はない
+- Multiple process / multiple instanceはfalse positive要因になり得る
+- Crash Marker自体はGame Stateを変更しない
+- Actual OS hard crashをCIで強制再現したTestではなく、stale markerを使ったdeterministic simulation
+
+### Validation
+
+- Pull Request Godot CI / Windows Buildで確認
