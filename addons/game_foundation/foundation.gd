@@ -27,6 +27,7 @@ static func capabilities() -> PackedStringArray:
 		"new_game_slot_helper",
 		"settings_system",
 		"locale_setting_adapter",
+		"translation_contract",
 		"audio_settings",
 		"audio_bus_contract",
 		"global_music_service",
