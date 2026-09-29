@@ -1517,3 +1517,46 @@ Foundation Phase 17のStarter Profile ContractをGame Dev Hubへ接続し、User
 
 これらはPhase 17のWindows実機生成確認としてRoadmapへ残す。
 
+---
+
+## v0.17.0-dev — Phase 17 Windows Real-Device Validation Complete
+
+### 実機確認
+
+2026-09-29、Game Dev HubのWindows実機FlowでStarter Profileを確認した。
+
+#### standard
+
+- GitHub管理Flowから `standard` を新規生成: PASS
+- Hub上でFoundation `v0.17.0-dev` / `profile: standard` 表示: PASS
+- Windows実機でGame起動: PASS
+- Main Menu Shell表示: PASS
+- New Game Hook表示切替: PASS
+- Settings Hook表示切替: PASS
+
+#### minimal
+
+- Game Dev Hub v0.1.27のローカル試作FlowからRepositoryなしで新規生成: PASS
+- Hub上で `ローカル試作 / GitHub未接続` 表示: PASS
+- Foundation `v0.17.0-dev` / `profile: minimal` 表示: PASS
+- Windows実機でGame起動: PASS
+- Starter確認画面 / Runtime ready表示: PASS
+- 「基盤を更新」実行: PASS
+- 「Foundationはすでに最新版です」表示: PASS
+
+### 結論
+
+Phase 17 — Starter Profiles / PresetsのWindows実機確認は完了。
+
+確認できた範囲では、
+
+- `minimal` と `standard` の生成
+- Profile Metadata / Foundation Version表示
+- Windows実機起動
+- standard Shell Hook
+- Local PrototypeからのFoundation Update Flow
+
+が期待どおり動作した。
+
+Game Dev Hub v0.1.27のLocal Prototype → GitHub正式管理への実機PushはHub側の別Validation項目として残し、Foundation Phase 17の完了条件には含めない。
+

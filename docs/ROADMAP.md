@@ -766,7 +766,7 @@ RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次A
 
 ## Phase 17 — Starter Profiles / Presets
 
-状態: **進行中**
+状態: **完了**
 
 目的: Phase 11〜16で追加した共通Shell / UX / Recovery機能を、新しいGameへ一律強制せず、用途別のStarter Profileとして安全に選べるようにする。
 
@@ -790,10 +790,12 @@ RecoverableなFoundation failureでGame Stateを壊さず、UserがReasonと次A
   - `standard`固有Scene / Scriptを生成し、Main Menu / Async Loader / Loading Contract / Recovery / Crash Markerを初期配線する
   - 生成したstandard StarterをCold Import / Main Scene / Foundation Integration Smokeで検証する
   - Main Menu / Loading / Recovery等の共通ShellがGame固有Themeなしでも起動可能なことを確認する
-- [ ] Windows実機生成確認
+- [x] Windows実機生成確認
   - 担当: User + ChatGPT
-  - Game Dev Hubからminimal / standardをそれぞれ新規生成する
-  - 起動・Foundation Version表示・Profile Metadata・更新Flowを確認する
+  - Game Dev HubからstandardをGitHub管理Flowで新規生成し、Windows実機起動とMain Menu / Settings Hookを確認
+  - Game Dev Hub v0.1.27からminimalをローカル試作FlowでRepositoryなしに新規生成し、Windows実機起動を確認
+  - 両ProfileでFoundation Version / Profile Metadata表示を確認
+  - minimalローカル試作で「基盤を更新」→「Foundationはすでに最新版です」を確認し、Update Flowを実機確認
 
 完了条件:
 新しいGameを作る時に、既存互換の最小構成とGame-readyな標準構成を安全に選べ、Foundation更新がGame固有領域を破壊しない。
